@@ -9,13 +9,18 @@ import App from './App.jsx'
 
 // Import wagmi config from our wallet service
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import { sepolia, mainnet } from 'viem/chains'
+import { sepolia } from 'viem/chains'
+import { injected, walletConnect } from 'wagmi/connectors'
 
 const projectId = import.meta.env.VITE_REOWN_PROJECT_ID || '5af094431cbc89a0153658536ff59fcc'
 
 const wagmiAdapter = new WagmiAdapter({
   projectId,
-  networks: [sepolia, mainnet]
+  networks: [sepolia],
+  connectors: [
+    injected({ shimDisconnect: true }), // 🔥 CRITICAL FIX
+    walletConnect({ projectId })
+  ]
 })
 
 const queryClient = new QueryClient()
