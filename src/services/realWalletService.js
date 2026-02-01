@@ -62,6 +62,15 @@ class RealWalletService {
   async connectWallet() {
     try {
       console.log("Checking wallet connection...");
+      
+      // Check internet connectivity first
+      const isOnline = navigator.onLine;
+      if (!isOnline) {
+        return {
+          success: false,
+          error: "No internet connection. Please check your network."
+        };
+      }
 
       // First check if already connected
       const account = getAccount(wagmiAdapter.wagmiConfig);
