@@ -14,6 +14,15 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000
   },
   server: {
-    https: false
+    https: false,
+    host: true,
+    port: 5173
+  },
+  preview: {
+    host: true,
+    port: 4173
+  },
+  define: {
+    global: 'globalThis'
   }
 })

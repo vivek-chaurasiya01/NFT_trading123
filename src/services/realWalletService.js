@@ -8,6 +8,7 @@ import {
   sendTransaction,
   waitForTransactionReceipt,
 } from "@wagmi/core";
+import networkUtils from "../utils/networkUtils";
 
 const projectId =
   import.meta.env.VITE_REOWN_PROJECT_ID || "5af094431cbc89a0153658536ff59fcc";
@@ -27,7 +28,7 @@ const modal = createAppKit({
   metadata: {
     name: "GrowTradeNFT",
     description: "NFT Trading Platform with Real Wallet Integration",
-    url: window.location.origin,
+    url: typeof window !== 'undefined' ? window.location.origin : 'https://www.gtnworld.live',
     icons: ["https://avatars.githubusercontent.com/u/37784886"],
   },
   featuredWalletIds: [
@@ -63,12 +64,21 @@ class RealWalletService {
     try {
       console.log("Checking wallet connection...");
       
-      // Check internet connectivity first
-      const isOnline = navigator.onLine;
-      if (!isOnline) {
+      // Check if running in browser environment
+      if (!networkUtils.isBrowser()) {
         return {
           success: false,
-          error: "No internet connection. Please check your network."
+          error: "Wallet connection not available in server environment"
+        };
+      }
+      
+      // Wait for network connectivity with timeout
+      console.log("Checking network connectivity...");
+      const hasNetwork = await networkUtils.waitForNetwork(10000); // 10 second timeout
+      if (!hasNetwork) {
+        return {
+          success: false,
+          error: "No internet connection. Please check your network and try again."
         };
       }
 
@@ -96,8 +106,12 @@ class RealWalletService {
         };
       }
 
-      // If not connected, open modal
-      await this.modal.open({ view: "Connect" });
+      // If not connected, open modal with retry logic
+      const openModal = async () => {
+        await this.modal.open({ view: "Connect" });
+      };
+      
+      await networkUtils.retryWithBackoff(openModal, 3, 1000);
 
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
@@ -141,9 +155,18 @@ class RealWalletService {
       });
     } catch (error) {
       console.error("Wallet connection error:", error);
+      
+      // Provide more specific error messages
+      let errorMessage = error.message;
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = "Network connection failed. Please check your internet connection and try again.";
+      } else if (error.message.includes('User rejected')) {
+        errorMessage = "Connection cancelled by user. Please try again and approve the connection.";
+      }
+      
       return {
         success: false,
-        error: error.message,
+        error: errorMessage,
       };
     }
   }
