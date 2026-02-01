@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const SimpleNFTTest = () => {
   const [data, setData] = useState(null);
@@ -11,18 +11,21 @@ const SimpleNFTTest = () => {
 
   const testNFTAPI = async () => {
     try {
-      const token = localStorage.getItem('token');
-      console.log('Token:', token);
-      
-      const response = await axios.get('http://localhost:5000/api/nft/marketplace', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      console.log('Raw response:', response);
-      console.log('Response data:', response.data);
+      const token = localStorage.getItem("token");
+      console.log("Token:", token);
+
+      const response = await axios.get(
+        "https://api.gtnworld.live/api/nft/marketplace",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      console.log("Raw response:", response);
+      console.log("Response data:", response.data);
       setData(response.data);
     } catch (err) {
-      console.error('Error:', err);
+      console.error("Error:", err);
       setError(err.response?.data || err.message);
     }
   };
@@ -30,8 +33,8 @@ const SimpleNFTTest = () => {
   return (
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4">Simple NFT Test</h2>
-      
-      <button 
+
+      <button
         onClick={testNFTAPI}
         className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
       >
@@ -57,9 +60,15 @@ const SimpleNFTTest = () => {
           <h3 className="font-bold mb-2">NFTs Found:</h3>
           {data.map((nft, index) => (
             <div key={index} className="border p-3 mb-2 rounded">
-              <p><strong>ID:</strong> {nft.nftId}</p>
-              <p><strong>Price:</strong> ${nft.buyPrice}</p>
-              <p><strong>Status:</strong> {nft.status}</p>
+              <p>
+                <strong>ID:</strong> {nft.nftId}
+              </p>
+              <p>
+                <strong>Price:</strong> ${nft.buyPrice}
+              </p>
+              <p>
+                <strong>Status:</strong> {nft.status}
+              </p>
             </div>
           ))}
         </div>

@@ -1,6 +1,7 @@
 # 🚀 NFT Trading Platform - Complete Code Flow Documentation
 
 ## 📋 Table of Contents
+
 1. [Application Overview](#application-overview)
 2. [Technology Stack](#technology-stack)
 3. [Project Structure](#project-structure)
@@ -15,6 +16,7 @@
 ## 🎯 Application Overview
 
 This is a **React-based NFT Trading & MLM Platform** that allows users to:
+
 - Register with crypto wallet integration
 - Buy and sell NFTs with 2x profit mechanism
 - Build MLM teams with referral system
@@ -22,6 +24,7 @@ This is a **React-based NFT Trading & MLM Platform** that allows users to:
 - Manage wallet and track earnings
 
 **Business Model:**
+
 - $10 one-time registration fee
 - NFT buy at $10, sell at $20 (40% profit = $8)
 - MLM commission system based on team levels
@@ -32,6 +35,7 @@ This is a **React-based NFT Trading & MLM Platform** that allows users to:
 ## 🛠️ Technology Stack
 
 ### Frontend
+
 - **React 19.2.0** - UI Library
 - **React Router DOM 7.11.0** - Navigation
 - **Vite 7.2.4** - Build Tool
@@ -42,12 +46,14 @@ This is a **React-based NFT Trading & MLM Platform** that allows users to:
 - **Lottie React 2.4.1** - Animations
 
 ### Blockchain Integration
+
 - **Wagmi 3.2.0** - Ethereum React Hooks
 - **Viem 2.43.5** - Ethereum Library
 - **@reown/appkit** - Wallet Connection
 
 ### Backend API
-- Base URL: `http://localhost:5000/api`
+
+- Base URL: `https://api.gtnworld.live/api`
 - JWT Token Authentication
 
 ---
@@ -101,6 +107,7 @@ main.jsx → App.jsx → Routes.jsx → Components
 ```
 
 **main.jsx:**
+
 ```javascript
 - Creates React root
 - Wraps app in <BrowserRouter>
@@ -108,12 +115,14 @@ main.jsx → App.jsx → Routes.jsx → Components
 ```
 
 **App.jsx:**
+
 ```javascript
 - Simple wrapper component
 - Renders <Routesr /> (Routes component)
 ```
 
 **Routes.jsx:**
+
 ```javascript
 - Defines all application routes
 - Public routes: /, /Login, /SingUp
@@ -181,6 +190,7 @@ Step 3: Auto Payment (after 2 seconds)
 ```
 
 **Key Functions:**
+
 - `connectWallet()` - Generates random wallet address (0x + 40 hex chars)
 - `handleSubmit()` - Registers user
 - `handlePayment()` - Activates account with $10 payment
@@ -232,6 +242,7 @@ Side Drawer (when menu clicked):
 ```
 
 **Navigation Structure:**
+
 - **Bottom Nav:** Quick access to main features
 - **Side Drawer:** Additional features and settings
 - **Outlet:** Renders child routes dynamically
@@ -262,6 +273,7 @@ This is the **ACTIVE FILE** you're viewing!
 ```
 
 #### **Buy NFT Flow:**
+
 ```javascript
 1. User clicks "Buy NFT" button
    ↓
@@ -281,6 +293,7 @@ This is the **ACTIVE FILE** you're viewing!
 ```
 
 #### **Sell NFT Flow:**
+
 ```javascript
 1. User clicks "Sell for $20" on NFT card
    ↓
@@ -302,6 +315,7 @@ This is the **ACTIVE FILE** you're viewing!
 #### **UI Components:**
 
 **Stats Cards (4 cards):**
+
 ```javascript
 1. Total NFTs (Blue) - stats.total
 2. Holding (Green) - stats.holding
@@ -310,6 +324,7 @@ This is the **ACTIVE FILE** you're viewing!
 ```
 
 **NFT List:**
+
 ```javascript
 For each NFT:
 ├── NFT ID (e.g., "NFT-001")
@@ -399,8 +414,8 @@ Upgrade Flow:
 ### **API Configuration**
 
 ```javascript
-Base URL: http://localhost:5000/api
-Headers: 
+Base URL: https://api.gtnworld.live/api
+Headers:
   - Content-Type: application/json
   - Authorization: Bearer <token>
 
@@ -411,6 +426,7 @@ Interceptor:
 ### **API Endpoints**
 
 #### **Auth API**
+
 ```javascript
 authAPI.register(userData)
   → POST /api/auth/register
@@ -424,6 +440,7 @@ authAPI.login(credentials)
 ```
 
 #### **User API**
+
 ```javascript
 userAPI.getProfile()
   → GET /api/user/profile
@@ -443,6 +460,7 @@ userAPI.getDashboard()
 ```
 
 #### **Wallet API**
+
 ```javascript
 walletAPI.activate(paymentData)
   → POST /api/wallet/activate
@@ -460,6 +478,7 @@ walletAPI.getBalance()
 ```
 
 #### **NFT API** (Direct axios calls)
+
 ```javascript
 GET /api/nft/my-nfts
   → Response: { nfts, stats }
@@ -476,6 +495,7 @@ GET /api/nft/marketplace
 ```
 
 #### **Package API**
+
 ```javascript
 GET /api/package/available
   → Response: { packages, currentPackage, userBalance }
@@ -490,6 +510,7 @@ POST /api/package/upgrade
 ## 💾 State Management
 
 ### **Local Storage**
+
 ```javascript
 Stored Data:
 ├── token: JWT authentication token
@@ -502,6 +523,7 @@ Usage:
 ```
 
 ### **Component State (useState)**
+
 ```javascript
 Common patterns:
 ├── Data state: nfts, stats, transactions
@@ -511,6 +533,7 @@ Common patterns:
 ```
 
 ### **Side Effects (useEffect)**
+
 ```javascript
 Common patterns:
 ├── Fetch data on component mount
@@ -523,11 +546,13 @@ Common patterns:
 ## 🎨 Key Features Breakdown
 
 ### **1. Wallet Integration**
+
 - **Dummy Implementation:** Generates random wallet addresses
 - **Real Implementation Ready:** Uses @reown/appkit for actual wallet connection
 - **Supported Wallets:** MetaMask, Trust Wallet, Coinbase, WalletConnect
 
 ### **2. NFT Trading System**
+
 - **Buy:** $10 per NFT
 - **Sell:** $20 per NFT (2x profit)
 - **Profit:** 40% = $8 per NFT
@@ -535,12 +560,14 @@ Common patterns:
 - **Lock Mechanism:** Some NFTs locked until conditions met
 
 ### **3. MLM System**
+
 - **Referral Code:** Each user gets unique code
 - **Team Building:** Invite members using referral
 - **Level System:** Earn from multiple levels
 - **Package-Based:** Higher packages unlock more levels
 
 ### **4. Package System**
+
 ```
 Direct Members → Unlocked Levels
 1 member → 2 levels
@@ -551,6 +578,7 @@ Direct Members → Unlocked Levels
 ```
 
 ### **5. Transaction History**
+
 - All buy/sell transactions tracked
 - Profit calculations
 - Date/time stamps
@@ -562,28 +590,28 @@ Direct Members → Unlocked Levels
 
 ### **Page Components**
 
-| Component | Purpose | Key Features |
-|-----------|---------|--------------|
-| Welcome.jsx | Landing page | Lottie animation, CTA button |
-| Login.jsx | User authentication | Form validation, token storage |
+| Component   | Purpose                | Key Features                    |
+| ----------- | ---------------------- | ------------------------------- |
+| Welcome.jsx | Landing page           | Lottie animation, CTA button    |
+| Login.jsx   | User authentication    | Form validation, token storage  |
 | Singhup.jsx | Registration + Payment | Wallet connection, auto-payment |
 
 ### **Dashboard Components**
 
-| Component | Purpose | Key Features |
-|-----------|---------|--------------|
-| MainDashBord.jsx | Layout wrapper | Navigation, routing, menu |
-| Dashboard.jsx | Main overview | Stats, recent activity, quick actions |
-| NFTManagement.jsx | NFT operations | Buy/sell NFTs, view holdings |
-| NFTMarketplace.jsx | NFT trading | Marketplace, batch info, trading |
-| MyTeam.jsx | Team management | View team members, referrals |
-| MLMTree.jsx | Network visualization | Tree structure, levels |
-| Wallet.jsx | Financial management | Balance, transactions, withdraw |
-| History.jsx | Transaction log | All transactions, filters |
-| NFTHistory.jsx | NFT transactions | NFT-specific history |
-| PackageUpgrade.jsx | Package management | View/upgrade packages |
-| Profile.jsx | User settings | Profile info, settings |
-| AdminDashboard.jsx | Admin panel | Admin controls, analytics |
+| Component          | Purpose               | Key Features                          |
+| ------------------ | --------------------- | ------------------------------------- |
+| MainDashBord.jsx   | Layout wrapper        | Navigation, routing, menu             |
+| Dashboard.jsx      | Main overview         | Stats, recent activity, quick actions |
+| NFTManagement.jsx  | NFT operations        | Buy/sell NFTs, view holdings          |
+| NFTMarketplace.jsx | NFT trading           | Marketplace, batch info, trading      |
+| MyTeam.jsx         | Team management       | View team members, referrals          |
+| MLMTree.jsx        | Network visualization | Tree structure, levels                |
+| Wallet.jsx         | Financial management  | Balance, transactions, withdraw       |
+| History.jsx        | Transaction log       | All transactions, filters             |
+| NFTHistory.jsx     | NFT transactions      | NFT-specific history                  |
+| PackageUpgrade.jsx | Package management    | View/upgrade packages                 |
+| Profile.jsx        | User settings         | Profile info, settings                |
+| AdminDashboard.jsx | Admin panel           | Admin controls, analytics             |
 
 ---
 
@@ -620,6 +648,7 @@ Logout:
 ## 🎨 UI/UX Patterns
 
 ### **Color Scheme**
+
 - Primary: `#0f7a4a` (Green)
 - Success: Green shades
 - Error: Red shades
@@ -627,21 +656,26 @@ Logout:
 - Info: Blue shades
 
 ### **Responsive Design**
+
 - Mobile-first approach
 - Breakpoints: sm, md, lg
 - Max width: 390px (mobile), 820px (desktop)
 - Grid layouts for cards
 
 ### **Loading States**
+
 ```javascript
-{loading ? (
-  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0f7a4a]" />
-) : (
-  <Content />
-)}
+{
+  loading ? (
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0f7a4a]" />
+  ) : (
+    <Content />
+  );
+}
 ```
 
 ### **Alert System (SweetAlert2)**
+
 ```javascript
 Success: Swal.fire({ icon: 'success', ... })
 Error: Swal.fire({ icon: 'error', ... })
@@ -676,6 +710,7 @@ Show Feedback (SweetAlert2)
 ## 📊 NFTManagement.jsx Detailed Flow
 
 ### **Component Structure**
+
 ```javascript
 NFTManagement
 ├── State
@@ -697,6 +732,7 @@ NFTManagement
 ### **Data Structure**
 
 **NFT Object:**
+
 ```javascript
 {
   _id: "mongo_id",
@@ -710,6 +746,7 @@ NFTManagement
 ```
 
 **Stats Object:**
+
 ```javascript
 {
   total: 10,      // Total NFTs owned
@@ -722,6 +759,7 @@ NFTManagement
 ### **Function Details**
 
 #### **fetchNFTs()**
+
 ```javascript
 Purpose: Fetch user's NFTs and stats
 Flow:
@@ -733,6 +771,7 @@ Flow:
 ```
 
 #### **buyNFT()**
+
 ```javascript
 Purpose: Purchase new NFTs
 Flow:
@@ -750,6 +789,7 @@ Flow:
 ```
 
 #### **sellNFT(nftId)**
+
 ```javascript
 Purpose: Sell specific NFT
 Flow:
@@ -767,6 +807,7 @@ Flow:
 ### **UI Rendering Logic**
 
 **Stats Cards:**
+
 ```javascript
 Grid: 2 columns on mobile, 4 on desktop
 Cards:
@@ -777,6 +818,7 @@ Cards:
 ```
 
 **NFT List:**
+
 ```javascript
 Grid: 1 column mobile, 2 tablet, 3 desktop
 Each card shows:
@@ -789,6 +831,7 @@ Each card shows:
 ```
 
 **Empty State:**
+
 ```javascript
 When nfts.length === 0:
 ├── Large icon (FaImage)
@@ -869,17 +912,20 @@ When nfts.length === 0:
 ## 🎓 Key Concepts
 
 ### **1. JWT Authentication**
+
 - Token stored in localStorage
 - Sent with every API request
 - Validates user identity
 - Expires after set time
 
 ### **2. Dummy Wallet Implementation**
+
 - Generates random addresses for demo
 - Real implementation uses Web3 providers
 - Supports MetaMask, WalletConnect, etc.
 
 ### **3. NFT Profit Mechanism**
+
 ```
 Buy Price: $10
 Sell Price: $20
@@ -889,6 +935,7 @@ Platform Fee: $2 (60% to platform/MLM)
 ```
 
 ### **4. MLM Commission Structure**
+
 ```
 Level 1: Direct referrals
 Level 2: Referrals of referrals
@@ -899,6 +946,7 @@ Commission distributed from platform fee
 ```
 
 ### **5. Package Unlock System**
+
 ```
 Direct Members → Levels Unlocked
 0 → 0 levels (basic)
@@ -916,31 +964,34 @@ Higher package = More levels available
 ## 🐛 Error Handling
 
 ### **API Errors**
+
 ```javascript
 try {
   const response = await api.call();
 } catch (error) {
   Swal.fire({
-    icon: 'error',
-    title: 'Operation Failed',
-    text: error.response?.data?.message || 'Something went wrong'
+    icon: "error",
+    title: "Operation Failed",
+    text: error.response?.data?.message || "Something went wrong",
   });
 }
 ```
 
 ### **Form Validation**
+
 ```javascript
 if (!formData.email || !formData.password) {
   Swal.fire({
-    icon: 'warning',
-    title: 'Missing Fields',
-    text: 'Please fill all fields'
+    icon: "warning",
+    title: "Missing Fields",
+    text: "Please fill all fields",
   });
   return;
 }
 ```
 
 ### **Loading States**
+
 ```javascript
 const [loading, setLoading] = useState(false);
 
@@ -974,6 +1025,7 @@ const handleAction = async () => {
 ## 📝 Summary
 
 This NFT Trading Platform is a full-stack application that combines:
+
 - **User Management:** Registration, login, profiles
 - **NFT Trading:** Buy/sell mechanism with profit tracking
 - **MLM System:** Referral-based team building
