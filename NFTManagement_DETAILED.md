@@ -125,7 +125,7 @@ const fetchNFTs = async () => {
 
     // API call with authorization
     const response = await axios.get(
-      "https://api.gtnworld.live/api/nft/my-nfts",
+      "http://api.gtnworld.live/api/nft/my-nfts",
       { headers: { Authorization: `Bearer ${token}` } },
     );
 
@@ -198,7 +198,7 @@ const buyNFT = async () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "https://api.gtnworld.live/api/nft/buy",
+        "http://api.gtnworld.live/api/nft/buy",
         { quantity: parseInt(quantity) },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -291,7 +291,7 @@ const sellNFT = async (nftId) => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `https://api.gtnworld.live/api/nft/sell/${nftId}`,
+        `http://api.gtnworld.live/api/nft/sell/${nftId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       );

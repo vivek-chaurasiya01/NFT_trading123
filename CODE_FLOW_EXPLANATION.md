@@ -53,7 +53,7 @@ This is a **React-based NFT Trading & MLM Platform** that allows users to:
 
 ### Backend API
 
-- Base URL: `https://api.gtnworld.live/api`
+- Base URL: `http://api.gtnworld.live/api`
 - JWT Token Authentication
 
 ---
@@ -414,7 +414,7 @@ Upgrade Flow:
 ### **API Configuration**
 
 ```javascript
-Base URL: https://api.gtnworld.live/api
+Base URL: http://api.gtnworld.live/api
 Headers:
   - Content-Type: application/json
   - Authorization: Bearer <token>

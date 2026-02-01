@@ -15,7 +15,7 @@ const SimpleNFTTest = () => {
       console.log("Token:", token);
 
       const response = await axios.get(
-        "https://api.gtnworld.live/api/nft/marketplace",
+        "http://api.gtnworld.live/api/nft/marketplace",
         {
           headers: { Authorization: `Bearer ${token}` },
         },
