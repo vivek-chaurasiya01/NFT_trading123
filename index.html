@@ -8,30 +8,31 @@
       http-equiv="Content-Security-Policy"
       content="
         default-src 'self';
-        
+
         script-src
           'self'
           'unsafe-inline'
           'unsafe-eval';
-        
+
         style-src
           'self'
           'unsafe-inline';
-        
+
         img-src
           'self'
           data:
+          blob:
           https://api.web3modal.org
           https://explorer-api.walletconnect.com
           https://walletconnect.com
           https:;
-        
+
         font-src
           'self'
+          data:
           https://fonts.reown.com
-          https://fonts.gstatic.com
-          data:;
-        
+          https://fonts.gstatic.com;
+
         connect-src
           'self'
           https://api.web3modal.org
@@ -46,7 +47,7 @@
           https://rpc.*
           https://api.gtnworld.live
           https:;
-        
+
         frame-src
           'self'
           https://walletconnect.com
