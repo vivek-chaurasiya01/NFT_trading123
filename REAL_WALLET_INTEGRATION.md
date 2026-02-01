@@ -91,7 +91,7 @@
 
 ```env
 VITE_REOWN_PROJECT_ID=2f05ae7f394b6187bf8b6aab56272ee4
-VITE_API_URL=http://api.gtnworld.live
+VITE_API_URL=https://api.gtnworld.live
 ```
 
 ### Company Wallet Address:
