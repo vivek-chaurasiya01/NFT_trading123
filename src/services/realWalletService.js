@@ -3,12 +3,12 @@ import { createAppKit } from "@reown/appkit";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { sepolia } from "viem/chains";
 import { parseEther, formatEther } from "viem";
-import {
-  getBalance,
-  sendTransaction,
-  waitForTransactionReceipt,
-  watchAccount,
-} from "@wagmi/core";
+// import {
+//   getBalance,
+//   sendTransaction,
+//   waitForTransactionReceipt,
+//   watchAccount,
+// } from "@wagmi/core";
 import networkUtils from "../utils/networkUtils";
 
 /* ------------------------------------------------------------------ */
@@ -16,8 +16,7 @@ import networkUtils from "../utils/networkUtils";
 /* ------------------------------------------------------------------ */
 
 const projectId =
-  import.meta.env.VITE_REOWN_PROJECT_ID ||
-  "5af094431cbc89a0153658536ff59fcc";
+  import.meta.env.VITE_REOWN_PROJECT_ID || "5af094431cbc89a0153658536ff59fcc";
 
 const COMPANY_WALLET = "0x24d77352bf8cc9165cdd1eb781eca3fae75a778f";
 
@@ -87,51 +86,28 @@ class RealWalletService {
       console.log("🔄 Starting wallet connection...");
 
       if (!networkUtils.isBrowser()) {
-        return {
-          success: false,
-          error: "Wallet not available on server",
-        };
+        return { success: false, error: "Not in browser" };
       }
 
-      // Start listening BEFORE opening modal
-      if (!this.unsubscribe) {
-        this.unsubscribe = watchAccount(this.wagmiConfig, {
-          onChange: (account) => {
-            console.log("🔄 Account changed:", account);
-
-            if (account.isConnected) {
-              this.account = account.address;
-              this.isConnected = true;
-            } else {
-              this.account = null;
-              this.isConnected = false;
-            }
-          },
-        });
-      }
-
+      // 🔥 AppKit handles everything
       await this.modal.open({ view: "Connect" });
 
-      // Wait until wallet connects (event based)
-      return await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error("Connection timeout – wallet not connected"));
-        }, 30000);
+      // ✅ DIRECTLY read connected account from AppKit
+      const account = this.modal.getAccount();
 
-        const check = setInterval(() => {
-          if (this.isConnected && this.account) {
-            clearTimeout(timeout);
-            clearInterval(check);
+      if (!account || !account.address) {
+        throw new Error("Wallet not connected");
+      }
 
-            resolve({
-              success: true,
-              account: this.account,
-              network: 11155111,
-              method: "reown",
-            });
-          }
-        }, 300);
-      });
+      this.account = account.address;
+      this.isConnected = true;
+
+      return {
+        success: true,
+        account: this.account,
+        network: account.chainId,
+        method: "reown",
+      };
     } catch (error) {
       console.error("❌ Wallet connect error:", error);
       return {
