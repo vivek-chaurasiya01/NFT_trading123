@@ -286,22 +286,52 @@ const Signup = () => {
         return;
       }
 
-      // For Trust Wallet, use direct window.ethereum instead of service check
-      const isTrustWallet = window.ethereum?.isTrust || window.ethereum?.isTrustWallet;
-      
-      if (!isTrustWallet && !realWalletService.isWalletConnected()) {
-        // Try to reconnect for non-Trust wallets
-        const reconnectResult = await realWalletService.connectWallet();
-        if (!reconnectResult.success) {
-          Swal.fire({
-            icon: "error",
-            title: "Wallet Connection Lost",
-            text: "Please reconnect your wallet and try again",
-            confirmButtonColor: "#0f7a4a",
-          });
-          setLoading(false);
-          return;
+      // Force switch to BSC network first
+      try {
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        const currentChainId = parseInt(chainId, 16);
+        
+        if (currentChainId !== 56) {
+          // Switch to BSC Mainnet
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x38' }] // BSC Mainnet
+            });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              // Add BSC network if not exists
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x38',
+                  chainName: 'BSC Mainnet',
+                  rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                  blockExplorerUrls: ['https://bscscan.com'],
+                  nativeCurrency: {
+                    name: 'BNB',
+                    symbol: 'BNB',
+                    decimals: 18
+                  }
+                }]
+              });
+            } else {
+              throw switchError;
+            }
+          }
+          
+          // Wait for network switch
+          await new Promise(resolve => setTimeout(resolve, 2000));
         }
+      } catch (networkError) {
+        Swal.fire({
+          icon: "error",
+          title: "Network Switch Required",
+          text: "Please switch to BSC Mainnet in your wallet and try again",
+          confirmButtonColor: "#0f7a4a",
+        });
+        setLoading(false);
+        return;
       }
 
       const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
@@ -309,7 +339,14 @@ const Signup = () => {
       // Show payment confirmation
       const confirmResult = await Swal.fire({
         title: "Confirm Payment",
-        text: `Send $${planAmount} USD payment in BNB?`,
+        html: `
+          <div class="text-left">
+            <p><strong>Amount:</strong> $${planAmount} USD</p>
+            <p><strong>Network:</strong> BSC Mainnet</p>
+            <p><strong>Currency:</strong> BNB</p>
+            <p><strong>Estimated BNB:</strong> ${(planAmount / 600).toFixed(4)} BNB</p>
+          </div>
+        `,
         icon: "question",
         showCancelButton: true,
         confirmButtonColor: "#0f7a4a",
@@ -326,47 +363,36 @@ const Signup = () => {
       // Show processing
       Swal.fire({
         title: "Processing Payment...",
-        text: "Please confirm the transaction in your wallet",
+        text: "Please confirm the BNB transaction in your wallet",
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
         },
       });
 
-      // For Trust Wallet, use direct ethereum API
-      let paymentResult;
-      if (isTrustWallet) {
-        try {
-          // Calculate BNB amount (assuming $600 per BNB)
-          const bnbAmount = (planAmount / 600).toFixed(6);
-          const value = `0x${(parseFloat(bnbAmount) * Math.pow(10, 18)).toString(16)}`;
-          
-          const txHash = await window.ethereum.request({
-            method: 'eth_sendTransaction',
-            params: [{
-              from: connectedWallet,
-              to: import.meta.env.VITE_COMPANY_WALLET,
-              value: value,
-            }],
-          });
-          
-          paymentResult = {
-            success: true,
-            txHash: txHash,
-            amount: bnbAmount,
-            amountUSD: planAmount,
-            tokenSymbol: 'BNB'
-          };
-        } catch (error) {
-          paymentResult = {
-            success: false,
-            error: error.message
-          };
-        }
-      } else {
-        // Use service for other wallets
-        paymentResult = await realWalletService.sendPayment(planAmount);
-      }
+      // Calculate BNB amount (BNB price = $600)
+      const bnbAmount = (planAmount / 600).toFixed(6);
+      const valueInWei = (parseFloat(bnbAmount) * Math.pow(10, 18)).toString();
+      const valueHex = '0x' + parseInt(valueInWei).toString(16);
+
+      // Send BNB transaction directly
+      const txHash = await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: connectedWallet,
+          to: import.meta.env.VITE_COMPANY_WALLET,
+          value: valueHex,
+          chainId: '0x38' // BSC Mainnet
+        }],
+      });
+
+      const paymentResult = {
+        success: true,
+        txHash: txHash,
+        amount: bnbAmount,
+        amountUSD: planAmount,
+        tokenSymbol: 'BNB'
+      };
 
       if (paymentResult.success) {
         // Show transaction pending
@@ -379,7 +405,7 @@ const Signup = () => {
           },
         });
 
-        // Simple validation - just wait 3 seconds for demo
+        // Simple validation - wait 3 seconds
         await new Promise(resolve => setTimeout(resolve, 3000));
 
         // Activate wallet on backend
@@ -399,30 +425,16 @@ const Signup = () => {
         }).then(() => {
           navigate("/dashbord");
         });
-      } else {
-        throw new Error(paymentResult.error || "Payment failed");
       }
     } catch (error) {
       console.error("Payment error:", error);
       
-      // Handle specific connector error
-      if (error.message.includes("Connector not connected")) {
-        Swal.fire({
-          icon: "error",
-          title: "Wallet Connection Lost",
-          text: "Please reconnect your wallet and try again",
-          confirmButtonColor: "#0f7a4a",
-        });
-        // Reset wallet state
-        setConnectedWallet(null);
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Payment Failed",
-          text: error.message || "Transaction failed. Please try again.",
-          confirmButtonColor: "#0f7a4a",
-        });
-      }
+      Swal.fire({
+        icon: "error",
+        title: "Payment Failed",
+        text: error.message || "Transaction failed. Please try again.",
+        confirmButtonColor: "#0f7a4a",
+      });
     }
     setLoading(false);
   };
