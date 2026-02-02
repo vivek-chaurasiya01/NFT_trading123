@@ -91,21 +91,6 @@ const Signup = () => {
       const isProduction = import.meta.env.VITE_APP_ENV === "production";
       Swal.fire({
         title: "Connecting Wallet...",
-        html: `
-          <div class="text-left">
-            <p><strong>Environment:</strong> ${isProduction ? "Production" : "Development"}</p>
-            <p><strong>Network:</strong> BSC Mainnet</p>
-            <hr class="my-3">
-            <p>Please follow these steps:</p>
-            <ol class="mt-2 space-y-1">
-              <li>1. Select your wallet from the popup</li>
-              <li>2. Approve the connection request</li>
-              <li>3. Switch to BSC Mainnet if needed</li>
-              <li>4. Wait for confirmation</li>
-            </ol>
-            <p class="mt-3 text-sm text-gray-600">If popup doesn't appear, check if it's blocked by your browser</p>
-          </div>
-        `,
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
@@ -289,7 +274,8 @@ const Signup = () => {
     try {
       setLoading(true);
 
-      if (!connectedWallet || !realWalletService.isWalletConnected()) {
+      // Check wallet connection before payment
+      if (!connectedWallet) {
         Swal.fire({
           icon: "error",
           title: "Wallet Not Connected",
@@ -300,9 +286,23 @@ const Signup = () => {
         return;
       }
 
+      // Verify wallet is still connected
+      if (!realWalletService.isWalletConnected()) {
+        // Try to reconnect
+        const reconnectResult = await realWalletService.connectWallet();
+        if (!reconnectResult.success) {
+          Swal.fire({
+            icon: "error",
+            title: "Wallet Connection Lost",
+            text: "Please reconnect your wallet and try again",
+            confirmButtonColor: "#0f7a4a",
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
       const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
-      const networkInfo = networkChecker.getCurrentNetwork();
-      const paymentWarning = networkChecker.showPaymentWarning();
 
       // Show payment confirmation
       const confirmResult = await Swal.fire({
@@ -379,12 +379,25 @@ const Signup = () => {
       }
     } catch (error) {
       console.error("Payment error:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Payment Failed",
-        text: error.message || "Transaction failed. Please try again.",
-        confirmButtonColor: "#0f7a4a",
-      });
+      
+      // Handle specific connector error
+      if (error.message.includes("Connector not connected")) {
+        Swal.fire({
+          icon: "error",
+          title: "Wallet Connection Lost",
+          text: "Please reconnect your wallet and try again",
+          confirmButtonColor: "#0f7a4a",
+        });
+        // Reset wallet state
+        setConnectedWallet(null);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Payment Failed",
+          text: error.message || "Transaction failed. Please try again.",
+          confirmButtonColor: "#0f7a4a",
+        });
+      }
     }
     setLoading(false);
   };
