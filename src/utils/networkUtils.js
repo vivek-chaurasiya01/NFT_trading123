@@ -3,30 +3,26 @@ export const networkUtils = {
   // Check if we're in a browser environment
   isBrowser: () => typeof window !== 'undefined',
   
-  // Check network connectivity with fallback
+  // Simplified connectivity check for production
   async checkConnectivity() {
     if (!this.isBrowser()) return false;
     
     try {
-      // Try multiple endpoints for better reliability
-      const endpoints = [
-        'https://api.github.com/zen',
-        'https://httpbin.org/status/200',
-        'https://jsonplaceholder.typicode.com/posts/1'
-      ];
+      // Use navigator.onLine as primary check
+      if (!navigator.onLine) return false;
       
-      const promises = endpoints.map(url => 
-        fetch(url, { 
-          method: 'GET',
-          mode: 'cors',
-          cache: 'no-cache',
-          signal: AbortSignal.timeout(5000) // 5 second timeout
-        }).then(response => response.ok)
-      );
+      // Simple fetch test with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
       
-      // If any endpoint responds successfully, we have connectivity
-      const results = await Promise.allSettled(promises);
-      return results.some(result => result.status === 'fulfilled' && result.value === true);
+      await fetch('https://www.google.com/favicon.ico', {
+        method: 'HEAD',
+        mode: 'no-cors',
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      return true;
     } catch (error) {
       console.warn('Connectivity check failed:', error);
       return navigator.onLine; // Fallback to browser's online status
@@ -34,22 +30,22 @@ export const networkUtils = {
   },
   
   // Wait for network to be available
-  async waitForNetwork(maxWaitTime = 30000) {
+  async waitForNetwork(maxWaitTime = 10000) {
     const startTime = Date.now();
     
     while (Date.now() - startTime < maxWaitTime) {
       if (await this.checkConnectivity()) {
         return true;
       }
-      // Wait 2 seconds before next check
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait 1 second before next check
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
     return false;
   },
   
   // Retry function with exponential backoff
-  async retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
+  async retryWithBackoff(fn, maxRetries = 2, baseDelay = 500) {
     for (let i = 0; i < maxRetries; i++) {
       try {
         return await fn();

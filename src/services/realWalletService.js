@@ -28,7 +28,7 @@ const modal = createAppKit({
   metadata: {
     name: "GrowTradeNFT",
     description: "NFT Trading Platform with Real Wallet Integration",
-    url: typeof window !== 'undefined' ? window.location.origin : 'https://www.gtnworld.live',
+    url: typeof window !== 'undefined' ? window.location.origin : 'https://gtnworld.live',
     icons: ["https://avatars.githubusercontent.com/u/37784886"],
   },
   featuredWalletIds: [
@@ -38,7 +38,7 @@ const modal = createAppKit({
   ],
   enableAnalytics: false,
   enableOnramp: false,
-  enableInjected: true, // 🔥 CRITICAL FIX
+  enableInjected: true,
   allWallets: "SHOW",
   includeWalletIds: [
     "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96",
@@ -73,16 +73,6 @@ class RealWalletService {
         };
       }
       
-      // Wait for network connectivity with timeout
-      console.log("Checking network connectivity...");
-      const hasNetwork = await networkUtils.waitForNetwork(10000); // 10 second timeout
-      if (!hasNetwork) {
-        return {
-          success: false,
-          error: "No internet connection. Please check your network and try again."
-        };
-      }
-
       // First check if already connected
       const account = getAccount(wagmiAdapter.wagmiConfig);
       console.log("Account from wagmi:", account);
@@ -107,17 +97,13 @@ class RealWalletService {
         };
       }
 
-      // If not connected, open modal with retry logic
-      const openModal = async () => {
-        await this.modal.open({ view: "Connect" });
-      };
-      
-      await networkUtils.retryWithBackoff(openModal, 3, 1000);
+      // If not connected, open modal
+      await this.modal.open({ view: "Connect" });
 
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error("Connection timeout - Please try again"));
-        }, 60000); // Increased to 60 seconds
+        }, 30000); // 30 seconds timeout
 
         // Listen for account changes
         const checkConnection = () => {
@@ -152,7 +138,7 @@ class RealWalletService {
         // Clear interval on timeout
         setTimeout(() => {
           clearInterval(pollInterval);
-        }, 60000);
+        }, 30000);
       });
     } catch (error) {
       console.error("Wallet connection error:", error);
