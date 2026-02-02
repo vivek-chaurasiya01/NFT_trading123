@@ -900,18 +900,6 @@ const Signup = () => {
                   <li>
                     • <b>Network:</b> BSC Mainnet (BNB payments only)
                   </li>
-                    • <b>Real Payments:</b> ETH sent to company wallet
-                  </li>
-                  <li>
-                    • Get test ETH:{" "}
-                    <a
-                      href="https://sepoliafaucet.com"
-                      target="_blank"
-                      className="text-[#0f7a4a] underline"
-                    >
-                      Sepolia Faucet
-                    </a>
-                  </li>
                 </ul>
               </div>
             </form>
