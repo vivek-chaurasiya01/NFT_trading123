@@ -376,8 +376,7 @@ const WalletStatus = () => {
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
         <div className="text-center">
           <FaWallet className="mx-auto text-4xl text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">No Wallet Connected</h3>
-          <p className="text-gray-500 mb-4">Connect your crypto wallet to view balance and make transactions</p>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Wallet Not Connected</h3>
           
           <button
             onClick={connectWallet}
@@ -397,7 +396,6 @@ const WalletStatus = () => {
               <FaMobile className="text-blue-500" />
               <span>TrustWallet</span>
             </div>
-            <span>+ More</span>
           </div>
         </div>
       </div>
@@ -406,135 +404,31 @@ const WalletStatus = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          <FaWallet className="text-[#0f7a4a]" />
-          Connected Wallet
-        </h3>
-        <div className="flex items-center gap-2">
-          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-            Connected
+      <div className="text-center">
+        <FaWallet className="mx-auto text-4xl text-[#0f7a4a] mb-4" />
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Wallet Connected</h3>
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            ✅ Connected
           </span>
         </div>
-      </div>
-
-      <div className="space-y-4">
-        {/* Address */}
-        <div>
-          <label className="text-sm font-medium text-gray-600">Wallet Address</label>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex-1 bg-gray-50 px-3 py-2 rounded-md text-sm font-mono">
-              {walletInfo.address?.substring(0, 6)}...{walletInfo.address?.substring(38)}
-            </div>
-            <button
-              onClick={copyAddress}
-              className="p-2 text-gray-500 hover:text-[#0f7a4a] transition-colors"
-              title="Copy Address"
-            >
-              <FaCopy />
-            </button>
-            <button
-              onClick={openEtherscan}
-              className="p-2 text-gray-500 hover:text-[#0f7a4a] transition-colors"
-              title="View on Etherscan"
-            >
-              <FaExternalLinkAlt />
-            </button>
+        
+        <button
+          onClick={disconnectWallet}
+          className="bg-red-500 text-white px-6 py-2 rounded-md font-semibold hover:bg-red-600 transition-colors"
+        >
+          Disconnect
+        </button>
+        
+        <div className="flex items-center justify-center gap-4 mt-4 text-sm text-gray-600">
+          <div className="flex items-center gap-1">
+            <FaEthereum className="text-blue-600" />
+            <span>MetaMask</span>
           </div>
-        </div>
-
-        {/* Balance */}
-        <div>
-          <label className="text-sm font-medium text-gray-600">Balance</label>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex-1 bg-gray-50 px-3 py-2 rounded-md">
-              <span className="text-lg font-semibold text-gray-800">{walletInfo.balance} {walletInfo.tokenSymbol}</span>
-            </div>
-            <button
-              onClick={refreshBalance}
-              disabled={loading}
-              className="px-3 py-2 bg-[#0f7a4a] text-white rounded-md text-sm hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              {loading ? '...' : 'Refresh'}
-            </button>
+          <div className="flex items-center gap-1">
+            <FaMobile className="text-blue-500" />
+            <span>TrustWallet</span>
           </div>
-        </div>
-
-        {/* Network */}
-        <div>
-          <label className="text-sm font-medium text-gray-600">Network</label>
-          <div className="bg-gray-50 px-3 py-2 rounded-md mt-1">
-            <span className="text-sm text-gray-800">{walletInfo.network}</span>
-            {walletInfo.chainId && walletInfo.chainId !== 'Unknown' && (
-              <span className="text-xs text-gray-500 ml-2">(Chain ID: {walletInfo.chainId})</span>
-            )}
-            {import.meta.env.VITE_NETWORK_TYPE === 'bnb' && walletInfo.chainId !== 56 && walletInfo.chainId !== 97 && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs">
-                <span className="text-red-800">🚨 WRONG NETWORK! Click "Switch to BSC" button below</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 pt-2">
-          {walletInfo.chainId !== 56 && walletInfo.chainId !== 97 ? (
-            <button
-              onClick={async () => {
-                try {
-                  // Force switch to BSC Mainnet
-                  await window.ethereum.request({
-                    method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: '0x38' }] // BSC Mainnet
-                  });
-                  
-                  // If network doesn't exist, add it
-                } catch (switchError) {
-                  if (switchError.code === 4902) {
-                    try {
-                      await window.ethereum.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [{
-                          chainId: '0x38',
-                          chainName: 'BSC Mainnet',
-                          rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                          blockExplorerUrls: ['https://bscscan.com'],
-                          nativeCurrency: {
-                            name: 'BNB',
-                            symbol: 'BNB',
-                            decimals: 18
-                          }
-                        }]
-                      });
-                    } catch (addError) {
-                      console.error('Failed to add BSC network:', addError);
-                    }
-                  }
-                }
-                
-                // Refresh status after switch
-                setTimeout(() => {
-                  checkWalletStatus();
-                }, 1000);
-              }}
-              className="flex-1 bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition-colors animate-pulse"
-            >
-              🚨 SWITCH TO BSC NOW
-            </button>
-          ) : (
-            <button
-              disabled
-              className="flex-1 bg-green-500 text-white py-2 rounded-md font-medium"
-            >
-              ✅ On BSC Network
-            </button>
-          )}
-          <button
-            onClick={disconnectWallet}
-            className="flex-1 bg-red-500 text-white py-2 rounded-md font-medium hover:bg-red-600 transition-colors"
-          >
-            Disconnect
-          </button>
         </div>
       </div>
     </div>
