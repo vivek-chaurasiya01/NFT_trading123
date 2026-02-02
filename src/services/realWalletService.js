@@ -89,25 +89,35 @@ class RealWalletService {
         return { success: false, error: "Not in browser" };
       }
 
-      // 🔥 AppKit handles everything
-      await this.modal.open({ view: "Connect" });
+      return await new Promise(async (resolve, reject) => {
+        // 🔥 Listen FIRST
+        const unsubscribe = this.modal.subscribeAccount((account) => {
+          console.log("🔄 Account event:", account);
 
-      // ✅ DIRECTLY read connected account from AppKit
-      const account = this.modal.getAccount();
+          if (account?.address) {
+            this.account = account.address;
+            this.isConnected = true;
 
-      if (!account || !account.address) {
-        throw new Error("Wallet not connected");
-      }
+            unsubscribe(); // 🔥 VERY IMPORTANT
 
-      this.account = account.address;
-      this.isConnected = true;
+            resolve({
+              success: true,
+              account: account.address,
+              network: account.chainId,
+              method: "reown",
+            });
+          }
+        });
 
-      return {
-        success: true,
-        account: this.account,
-        network: account.chainId,
-        method: "reown",
-      };
+        // 🔥 THEN open modal
+        await this.modal.open({ view: "Connect" });
+
+        // Safety timeout
+        setTimeout(() => {
+          unsubscribe();
+          reject(new Error("Wallet not connected"));
+        }, 30000);
+      });
     } catch (error) {
       console.error("❌ Wallet connect error:", error);
       return {
