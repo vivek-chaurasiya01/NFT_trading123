@@ -40,41 +40,56 @@ const WalletStatus = () => {
     try {
       setLoading(true);
       
-      Swal.fire({
-        title: 'Connecting Wallet...',
-        text: 'Please select your wallet from the popup',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
+      // DIRECT eth_requestAccounts call
+      console.log('🚀 Direct MetaMask call...');
+      
+      if (!window.ethereum) {
+        throw new Error('MetaMask not installed');
+      }
+
+      // Direct popup trigger
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
       });
 
-      // Try direct MetaMask first (faster)
-      let result = await directWalletService.connectWallet();
-      
-      // If direct fails, try Reown
-      if (!result.success) {
-        console.log('Direct failed, trying Reown...');
-        result = await realWalletService.connectWallet();
-      }
-      
-      if (result.success) {
-        await checkWalletStatus();
+      console.log('✅ Accounts received:', accounts);
+
+      if (accounts.length > 0) {
+        const address = accounts[0];
+        
+        setWalletInfo({
+          connected: true,
+          address,
+          balance: '0.0000',
+          network: 'Ethereum Network'
+        });
         
         Swal.fire({
           icon: "success",
-          title: "🎉 Wallet Connected!",
-          text: `Connected: ${result.account.substring(0, 6)}...${result.account.substring(38)}`,
+          title: "🎉 Connected!",
+          text: `${address.substring(0, 6)}...${address.substring(38)}`,
           confirmButtonColor: "#0f7a4a",
         });
-      } else {
-        throw new Error(result.error || 'Failed to connect wallet');
+        
+        // Get balance
+        setTimeout(() => {
+          if (window.ethereum && address) {
+            window.ethereum.request({
+              method: 'eth_getBalance',
+              params: [address, 'latest']
+            }).then(balance => {
+              const balanceInEth = parseInt(balance, 16) / Math.pow(10, 18);
+              setWalletInfo(prev => ({ ...prev, balance: balanceInEth.toFixed(4) }));
+            });
+          }
+        }, 1000);
       }
     } catch (error) {
+      console.error('❌ Connection failed:', error);
       Swal.fire({
         icon: "error",
-        title: "Connection Failed",
-        text: error.message || "Failed to connect wallet. Please try again.",
+        title: "Failed",
+        text: error.message,
         confirmButtonColor: "#0f7a4a",
       });
     } finally {
