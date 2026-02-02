@@ -18,7 +18,8 @@ import fallbackWalletConnection from "../utils/fallbackWallet";
 /* CONFIG - Environment-based configuration */
 /* ------------------------------------------------------------------ */
 
-const { projectId, companyWallet, isProduction, tokenPriceUSD, walletSettings, appMetadata } = envConfig;
+const { projectId, companyWallet, isProduction, walletSettings, appMetadata } = envConfig;
+const tokenPriceUSD = envConfig.tokenPriceUSD;
 const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
 
 // Network configuration based on environment and network type
@@ -209,6 +210,33 @@ class RealWalletService {
               this.account = account.address;
               this.isConnected = true;
               this.chainId = account.chainId;
+
+              // Force switch to BSC if network type is BNB
+              if (networkType === 'bnb' && account.chainId !== 56) {
+                setTimeout(async () => {
+                  try {
+                    await window.ethereum.request({
+                      method: 'wallet_switchEthereumChain',
+                      params: [{ chainId: '0x38' }] // BSC Mainnet
+                    });
+                    this.chainId = 56;
+                  } catch (switchError) {
+                    if (switchError.code === 4902) {
+                      await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                          chainId: '0x38',
+                          chainName: 'BSC Mainnet',
+                          rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                          blockExplorerUrls: ['https://bscscan.com'],
+                          nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }
+                        }]
+                      });
+                      this.chainId = 56;
+                    }
+                  }
+                }, 500);
+              }
 
               // Ensure chain ID is properly set
               if (!this.chainId) {

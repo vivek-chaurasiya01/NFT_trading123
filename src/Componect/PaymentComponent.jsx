@@ -54,15 +54,7 @@ const PaymentComponent = ({ onPaymentSuccess }) => {
       // Show payment confirmation
       const confirmResult = await Swal.fire({
         title: 'Confirm Payment',
-        html: `
-          <div class="text-left">
-            <p><strong>Amount:</strong> $${amount} USD</p>
-            <p><strong>Purpose:</strong> ${paymentPurposes.find(p => p.value === paymentData.purpose)?.label}</p>
-            <p><strong>From:</strong> ${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}</p>
-            ${paymentData.description ? `<p><strong>Description:</strong> ${paymentData.description}</p>` : ''}
-            <p class="text-sm text-gray-600 mt-2">This will send ETH equivalent to company wallet</p>
-          </div>
-        `,
+        text: `Send $${amount} USD payment?`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#0f7a4a',
@@ -122,14 +114,6 @@ const PaymentComponent = ({ onPaymentSuccess }) => {
           Swal.fire({
             icon: "success",
             title: "Payment Successful! 🎉",
-            html: `
-              <div class="text-left">
-                <p><strong>Transaction Hash:</strong></p>
-                <p class="text-xs break-all">${paymentResult.txHash}</p>
-                <p class="mt-2"><strong>Amount:</strong> ${paymentResult.amount} ETH ($${paymentResult.amountUSD})</p>
-                <p><strong>Status:</strong> Confirmed ✅</p>
-              </div>
-            `,
             confirmButtonColor: "#0f7a4a",
           });
 
