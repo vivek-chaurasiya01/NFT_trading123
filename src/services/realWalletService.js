@@ -139,7 +139,7 @@ class RealWalletService {
       const result = await this.connectionPromise;
       
       // If Reown connection fails, try fallback
-      if (!result.success && (fallbackWalletConnection.isMetaMaskAvailable() || fallbackWalletConnection.isTrustWalletAvailable())) {
+      if (!result.success && fallbackWalletConnection.isAnyWalletAvailable()) {
         console.log('🔄 Trying fallback wallet connection...');
         const fallbackResult = await this._tryFallbackConnection();
         return fallbackResult;

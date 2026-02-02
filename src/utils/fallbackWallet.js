@@ -1,6 +1,25 @@
-// Fallback Wallet Connection - Direct MetaMask connection
+// Fallback Wallet Connection - Direct wallet connections
 export const fallbackWalletConnection = {
   
+  // Simple wallet availability check
+  isAnyWalletAvailable() {
+    return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
+  },
+
+  // Check if MetaMask is available
+  isMetaMaskAvailable() {
+    return typeof window !== 'undefined' && 
+           typeof window.ethereum !== 'undefined' && 
+           window.ethereum.isMetaMask;
+  },
+
+  // Check if Trust Wallet is available
+  isTrustWalletAvailable() {
+    return typeof window !== 'undefined' && 
+           typeof window.ethereum !== 'undefined' && 
+           (window.ethereum.isTrust || window.ethereum.isTrustWallet || window.trustwallet);
+  },
+
   // Direct MetaMask connection
   async connectMetaMask() {
     try {
@@ -10,7 +29,6 @@ export const fallbackWalletConnection = {
 
       console.log('🔄 Attempting direct MetaMask connection...');
       
-      // Request account access
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
       });
@@ -20,8 +38,6 @@ export const fallbackWalletConnection = {
       }
 
       const address = accounts[0];
-      
-      // Get chain ID
       const chainId = await window.ethereum.request({
         method: 'eth_chainId'
       });
@@ -46,34 +62,6 @@ export const fallbackWalletConnection = {
     }
   },
 
-  // Get balance using direct MetaMask
-  async getBalance(address) {
-    try {
-      if (!window.ethereum || !address) {
-        throw new Error('MetaMask not available or address missing');
-      }
-
-      const balance = await window.ethereum.request({
-        method: 'eth_getBalance',
-        params: [address, 'latest']
-      });
-
-      const balanceInEth = parseInt(balance, 16) / Math.pow(10, 18);
-      
-      return {
-        success: true,
-        balance: balanceInEth.toFixed(4),
-        balanceWei: balance
-      };
-    } catch (error) {
-      console.error('❌ Balance fetch failed:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to fetch balance'
-      };
-    }
-  },
-
   // Direct Trust Wallet connection
   async connectTrustWallet() {
     try {
@@ -81,14 +69,8 @@ export const fallbackWalletConnection = {
         throw new Error('Trust Wallet not available');
       }
 
-      // Check if it's Trust Wallet
-      const isTrustWallet = window.ethereum.isTrust || 
-                           window.ethereum.isTrustWallet ||
-                           window.trustwallet;
-
-      console.log('🔄 Attempting Trust Wallet connection...', { isTrustWallet });
+      console.log('🔄 Attempting Trust Wallet connection...');
       
-      // Request account access
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
       });
@@ -98,8 +80,6 @@ export const fallbackWalletConnection = {
       }
 
       const address = accounts[0];
-      
-      // Get chain ID
       const chainId = await window.ethereum.request({
         method: 'eth_chainId'
       });
@@ -122,13 +102,6 @@ export const fallbackWalletConnection = {
         error: error.message || 'Failed to connect Trust Wallet'
       };
     }
-  },
-
-  // Check if MetaMask is available
-  isMetaMaskAvailable() {
-    return typeof window !== 'undefined' && 
-           typeof window.ethereum !== 'undefined' && 
-           window.ethereum.isMetaMask;
   },
 
   // Auto-detect and connect appropriate wallet
@@ -178,11 +151,39 @@ export const fallbackWalletConnection = {
     }
   },
 
+  // Get balance using direct wallet
+  async getBalance(address) {
+    try {
+      if (!window.ethereum || !address) {
+        throw new Error('Wallet not available or address missing');
+      }
+
+      const balance = await window.ethereum.request({
+        method: 'eth_getBalance',
+        params: [address, 'latest']
+      });
+
+      const balanceInEth = parseInt(balance, 16) / Math.pow(10, 18);
+      
+      return {
+        success: true,
+        balance: balanceInEth.toFixed(4),
+        balanceWei: balance
+      };
+    } catch (error) {
+      console.error('❌ Balance fetch failed:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch balance'
+      };
+    }
+  },
+
   // Switch to correct network
   async switchToNetwork(chainId) {
     try {
       if (!window.ethereum) {
-        throw new Error('MetaMask not available');
+        throw new Error('Wallet not available');
       }
 
       const chainIdHex = '0x' + chainId.toString(16);
