@@ -6,7 +6,7 @@ import { authAPI, walletAPI } from "../services/api";
 import realWalletService from "../services/realWalletService";
 import walletDebug from "../utils/walletDebug";
 import networkChecker from "../utils/networkChecker";
-import '../styles/modal-fix.css';
+import "../styles/modal-fix.css";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -42,135 +42,145 @@ const Signup = () => {
   const connectWallet = async () => {
     try {
       setLoading(true);
-      
+
       // Log debug info before connection attempt
-      console.log('🔄 Starting wallet connection from signup...');
+      console.log("🔄 Starting wallet connection from signup...");
       const debugInfo = await walletDebug.logDebugInfo();
-      
+
       // Check browser compatibility first
       if (!walletDebug.isWalletInstalled()) {
         const browserInfo = walletDebug.getBrowserInfo();
-        
+
         Swal.fire({
           icon: "warning",
           title: "No Wallet Found",
           html: `
             <div class="text-left">
-              <p>No cryptocurrency wallet detected on your ${browserInfo.isMobile ? 'mobile device' : 'browser'}.</p>
+              <p>No cryptocurrency wallet detected on your ${browserInfo.isMobile ? "mobile device" : "browser"}.</p>
               <div class="mt-3 p-3 bg-blue-50 rounded">
-                <p><strong>For ${browserInfo.isMobile ? 'Mobile' : 'Desktop'} Users:</strong></p>
+                <p><strong>For ${browserInfo.isMobile ? "Mobile" : "Desktop"} Users:</strong></p>
                 <ul class="mt-2 space-y-1">
-                  ${browserInfo.isMobile ? `
+                  ${
+                    browserInfo.isMobile
+                      ? `
                     <li>• <a href="https://metamask.app.link/dapp/${window.location.host}" target="_blank" class="text-blue-600 underline">Open in MetaMask App</a></li>
                     <li>• <a href="https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(window.location.href)}" target="_blank" class="text-blue-600 underline">Open in Trust Wallet</a></li>
                     <li>• <a href="https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(window.location.href)}" target="_blank" class="text-blue-600 underline">Open in Coinbase Wallet</a></li>
-                  ` : `
+                  `
+                      : `
                     <li>• <a href="https://metamask.io/download/" target="_blank" class="text-blue-600 underline">Install MetaMask</a> (Recommended)</li>
                     <li>• <a href="https://trustwallet.com/browser-extension" target="_blank" class="text-blue-600 underline">Install Trust Wallet</a></li>
                     <li>• <a href="https://wallet.coinbase.com/" target="_blank" class="text-blue-600 underline">Install Coinbase Wallet</a></li>
-                  `}
+                  `
+                  }
                 </ul>
-                <p class="mt-2 text-sm text-gray-600">${browserInfo.isMobile ? 'Use the wallet app\'s built-in browser to access this site.' : 'After installation, refresh this page and try again.'}</p>
+                <p class="mt-2 text-sm text-gray-600">${browserInfo.isMobile ? "Use the wallet app's built-in browser to access this site." : "After installation, refresh this page and try again."}</p>
               </div>
             </div>
           `,
           confirmButtonColor: "#0f7a4a",
-          confirmButtonText: browserInfo.isMobile ? "I'll use wallet app" : "I'll install a wallet"
+          confirmButtonText: browserInfo.isMobile
+            ? "I'll use wallet app"
+            : "I'll install a wallet",
         });
         setLoading(false);
         return;
       }
-      
+
       // Show connection progress with environment info
-      const isProduction = import.meta.env.VITE_APP_ENV === 'production';
+      const isProduction = import.meta.env.VITE_APP_ENV === "production";
       Swal.fire({
-        title: 'Connecting Wallet...',
+        title: "Connecting Wallet...",
         html: `
           <div class="text-left">
-            <p><strong>Environment:</strong> ${isProduction ? 'Production' : 'Development'}</p>
-            <p><strong>Network:</strong> ${isProduction ? 'Ethereum Mainnet' : 'Sepolia Testnet'}</p>
+            <p><strong>Environment:</strong> ${isProduction ? "Production" : "Development"}</p>
+            <p><strong>Network:</strong> BSC Mainnet</p>
             <hr class="my-3">
             <p>Please follow these steps:</p>
             <ol class="mt-2 space-y-1">
               <li>1. Select your wallet from the popup</li>
               <li>2. Approve the connection request</li>
-              <li>3. ${isProduction ? 'Ensure you\'re on Ethereum Mainnet' : 'Switch to Sepolia testnet if needed'}</li>
+              <li>3. Switch to BSC Mainnet if needed</li>
               <li>4. Wait for confirmation</li>
             </ol>
             <p class="mt-3 text-sm text-gray-600">If popup doesn't appear, check if it's blocked by your browser</p>
-            ${!isProduction ? '<p class="mt-2 text-sm text-orange-600"><strong>Note:</strong> You\'ll need Sepolia testnet ETH. Get it from <a href="https://sepoliafaucet.com" target="_blank" class="underline">Sepolia Faucet</a></p>' : ''}
           </div>
         `,
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
-        }
+        },
       });
 
       // Try to connect wallet with enhanced error handling
       const result = await realWalletService.connectWallet();
-      
+
       if (result.success) {
         setConnectedWallet(result.account);
-        
+
         // Get balance and network info
         const balanceResult = await realWalletService.getBalance();
         const networkInfo = realWalletService.getNetworkInfo();
-        
+
         Swal.fire({
           icon: "success",
           title: "🎉 Wallet Connected!",
-          html: `
-            <div class="text-left">
-              <p><strong>Address:</strong> ${result.account.substring(0, 6)}...${result.account.substring(38)}</p>
-              <p><strong>Network:</strong> ${networkInfo.networkName}</p>
-              <p><strong>Balance:</strong> ${balanceResult.success ? balanceResult.balance + ' ETH' : 'Unable to fetch'}</p>
-              <p><strong>Chain ID:</strong> ${result.network || 'Unknown'}</p>
-            </div>
-          `,
           confirmButtonColor: "#0f7a4a",
         });
       } else {
-        throw new Error(result.error || 'Failed to connect wallet');
+        throw new Error(result.error || "Failed to connect wallet");
       }
     } catch (error) {
-      console.error('Wallet connection error:', error);
-      
-      let errorMessage = error.message || "Failed to connect wallet. Please try again.";
+      console.error("Wallet connection error:", error);
+
+      let errorMessage =
+        error.message || "Failed to connect wallet. Please try again.";
       let troubleshootingTips = [
         "• Install MetaMask, Trust Wallet, or Coinbase Wallet",
-        "• Allow popups in your browser", 
+        "• Allow popups in your browser",
         "• Refresh the page and try again",
         "• Check if wallet is unlocked",
-        "• Try switching networks if needed"
+        "• Try switching networks if needed",
       ];
-      
+
       // Specific error handling
-      if (error.message.includes('timeout') || error.message.includes('Connection timeout')) {
-        errorMessage = "Connection timed out. Please ensure your wallet is installed and unlocked.";
+      if (
+        error.message.includes("timeout") ||
+        error.message.includes("Connection timeout")
+      ) {
+        errorMessage =
+          "Connection timed out. Please ensure your wallet is installed and unlocked.";
         troubleshootingTips = [
           "• Make sure MetaMask/Trust Wallet is installed and unlocked",
           "• Allow popups for this site",
           "• Try refreshing the page",
-          "• Check your internet connection"
+          "• Check your internet connection",
         ];
-      } else if (error.message.includes('modal') || error.message.includes('Modal')) {
-        errorMessage = "Wallet modal failed to open. This might be a popup blocker issue.";
+      } else if (
+        error.message.includes("modal") ||
+        error.message.includes("Modal")
+      ) {
+        errorMessage =
+          "Wallet modal failed to open. This might be a popup blocker issue.";
         troubleshootingTips = [
           "• Disable popup blocker for this site",
           "• Try using a different browser",
           "• Clear browser cache and cookies",
-          "• Disable browser extensions temporarily"
+          "• Disable browser extensions temporarily",
         ];
-      } else if (error.message.includes('User rejected') || error.message.includes('rejected')) {
-        errorMessage = "Connection was cancelled. Please try again and approve the connection.";
+      } else if (
+        error.message.includes("User rejected") ||
+        error.message.includes("rejected")
+      ) {
+        errorMessage =
+          "Connection was cancelled. Please try again and approve the connection.";
         troubleshootingTips = [
           "• Click 'Connect' when prompted by your wallet",
           "• Make sure you approve the connection request",
-          "• Check if the correct account is selected"
+          "• Check if the correct account is selected",
         ];
       }
-      
+
       Swal.fire({
         icon: "error",
         title: "Connection Failed",
@@ -180,7 +190,7 @@ const Signup = () => {
             <div class="p-2 bg-blue-50 rounded text-sm">
               <p><strong>Troubleshooting:</strong></p>
               <ul class="mt-1 space-y-1">
-                ${troubleshootingTips.map(tip => `<li>${tip}</li>`).join('')}
+                ${troubleshootingTips.map((tip) => `<li>${tip}</li>`).join("")}
               </ul>
             </div>
             <div class="mt-3 p-2 bg-gray-50 rounded text-xs">
@@ -191,7 +201,7 @@ const Signup = () => {
           </div>
         `,
         confirmButtonColor: "#0f7a4a",
-        confirmButtonText: "Try Again"
+        confirmButtonText: "Try Again",
       });
     } finally {
       setLoading(false);
@@ -245,27 +255,26 @@ const Signup = () => {
         password: formData.password,
         walletAddress: connectedWallet,
         referralCode: formData.referralCode || undefined,
-        planType: formData.selectedPlan
+        planType: formData.selectedPlan,
       });
 
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
 
       // Show registration success and start payment
-      const planAmount = formData.selectedPlan === 'premium' ? 20 : 10;
+      const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
       Swal.fire({
         icon: "success",
         title: "Registration Successful!",
         text: `Now processing $${planAmount} payment to activate your ${formData.selectedPlan} account...`,
         timer: 2000,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
 
       // Step 2: Automatically start payment process after 2 seconds
       setTimeout(async () => {
         await handlePayment();
       }, 2000);
-      
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -279,7 +288,7 @@ const Signup = () => {
   const handlePayment = async () => {
     try {
       setLoading(true);
-      
+
       if (!connectedWallet || !realWalletService.isWalletConnected()) {
         Swal.fire({
           icon: "error",
@@ -291,33 +300,20 @@ const Signup = () => {
         return;
       }
 
-      const planAmount = formData.selectedPlan === 'premium' ? 20 : 10;
+      const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
       const networkInfo = networkChecker.getCurrentNetwork();
       const paymentWarning = networkChecker.showPaymentWarning();
-      
-      // Show payment confirmation with network details
+
+      // Show payment confirmation
       const confirmResult = await Swal.fire({
-        title: 'Confirm Payment',
-        html: `
-          <div class="text-left">
-            <p><strong>Plan:</strong> ${formData.selectedPlan.toUpperCase()}</p>
-            <p><strong>Amount:</strong> $${planAmount} USD</p>
-            <p><strong>From:</strong> ${connectedWallet.substring(0, 6)}...${connectedWallet.substring(38)}</p>
-            <hr class="my-3">
-            <div class="p-3 ${networkInfo.isRealMoney ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'} border rounded">
-              <p><strong>🌍 Network:</strong> ${networkInfo.primaryNetwork}</p>
-              <p><strong>💳 Company Wallet:</strong> ${networkInfo.companyWallet.substring(0, 6)}...${networkInfo.companyWallet.substring(38)}</p>
-              <p><strong>💰 Money Type:</strong> ${networkInfo.networkType}</p>
-              ${networkInfo.isRealMoney ? '<p class="text-red-600 font-bold mt-2">⚠️ THIS IS REAL MONEY!</p>' : '<p class="text-blue-600 mt-2">ℹ️ This is test money (safe)</p>'}
-            </div>
-          </div>
-        `,
-        icon: networkInfo.isRealMoney ? 'warning' : 'question',
+        title: "Confirm Payment",
+        text: `Send $${planAmount} USD payment in BNB?`,
+        icon: "question",
         showCancelButton: true,
-        confirmButtonColor: networkInfo.isRealMoney ? '#dc2626' : '#0f7a4a',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: networkInfo.isRealMoney ? 'Send REAL Payment' : 'Send Test Payment',
-        cancelButtonText: 'Cancel'
+        confirmButtonColor: "#0f7a4a",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Send BNB Payment",
+        cancelButtonText: "Cancel",
       });
 
       if (!confirmResult.isConfirmed) {
@@ -327,68 +323,62 @@ const Signup = () => {
 
       // Show processing
       Swal.fire({
-        title: 'Processing Payment...',
-        text: 'Please confirm the transaction in your wallet',
+        title: "Processing Payment...",
+        text: "Please confirm the transaction in your wallet",
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
-        }
+        },
       });
 
       // Send real payment
       const paymentResult = await realWalletService.sendPayment(planAmount);
-      
+
       if (paymentResult.success) {
         // Show transaction pending
         Swal.fire({
-          title: 'Transaction Sent!',
-          text: 'Waiting for blockchain confirmation...',
+          title: "Transaction Sent!",
+          text: "Waiting for blockchain confirmation...",
           allowOutsideClick: false,
           didOpen: () => {
             Swal.showLoading();
-          }
+          },
         });
 
         // Validate transaction
-        const validationResult = await realWalletService.validateTransaction(paymentResult.txHash);
-        
-        if (validationResult.success && validationResult.status === 'confirmed') {
+        const validationResult = await realWalletService.validateTransaction(
+          paymentResult.txHash,
+        );
+
+        if (
+          validationResult.success &&
+          validationResult.status === "confirmed"
+        ) {
           // Activate wallet on backend
           await walletAPI.activate({
             txHash: paymentResult.txHash,
             walletAddress: connectedWallet,
             amount: paymentResult.amount,
-            amountUSD: paymentResult.amountUSD
+            amountUSD: paymentResult.amountUSD,
           });
 
           Swal.fire({
             icon: "success",
             title: "Payment Successful! 🎉",
-            html: `
-              <div class="text-left">
-                <p><strong>Transaction Hash:</strong></p>
-                <p class="text-xs break-all">${paymentResult.txHash}</p>
-                <p class="mt-2"><strong>Amount:</strong> ${paymentResult.amount} ETH ($${paymentResult.amountUSD})</p>
-                <p><strong>Network:</strong> ${networkInfo.primaryNetwork}</p>
-                <p><strong>Status:</strong> Confirmed ✅</p>
-                <hr class="my-2">
-                <p class="text-sm"><strong>View on Explorer:</strong></p>
-                <a href="${networkChecker.getExplorerUrl(paymentResult.txHash)}" target="_blank" class="text-blue-600 underline text-xs">Open Transaction</a>
-              </div>
-            `,
+            text: `Payment of $${paymentResult.amountUSD} completed successfully!`,
             confirmButtonColor: "#0f7a4a",
             confirmButtonText: "Go to Dashboard",
           }).then(() => {
             navigate("/dashbord");
           });
         } else {
-          throw new Error('Transaction failed or not confirmed');
+          throw new Error("Transaction failed or not confirmed");
         }
       } else {
-        throw new Error(paymentResult.error || 'Payment failed');
+        throw new Error(paymentResult.error || "Payment failed");
       }
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error("Payment error:", error);
       Swal.fire({
         icon: "error",
         title: "Payment Failed",
@@ -470,7 +460,7 @@ const Signup = () => {
                     onChange={handleChange}
                     required
                     className="w-full mt-2 px-4 py-[14px] rounded-md bg-[#eef6f1] border h-[50px] overflow-y-auto"
-                    style={{ maxHeight: '200px' }}
+                    style={{ maxHeight: "200px" }}
                   >
                     <option value="">Select your country</option>
                     <option value="Afghanistan">Afghanistan</option>
@@ -478,7 +468,9 @@ const Signup = () => {
                     <option value="Algeria">Algeria</option>
                     <option value="Andorra">Andorra</option>
                     <option value="Angola">Angola</option>
-                    <option value="Antigua and Barbuda">Antigua and Barbuda</option>
+                    <option value="Antigua and Barbuda">
+                      Antigua and Barbuda
+                    </option>
                     <option value="Argentina">Argentina</option>
                     <option value="Armenia">Armenia</option>
                     <option value="Australia">Australia</option>
@@ -494,7 +486,9 @@ const Signup = () => {
                     <option value="Benin">Benin</option>
                     <option value="Bhutan">Bhutan</option>
                     <option value="Bolivia">Bolivia</option>
-                    <option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
+                    <option value="Bosnia and Herzegovina">
+                      Bosnia and Herzegovina
+                    </option>
                     <option value="Botswana">Botswana</option>
                     <option value="Brazil">Brazil</option>
                     <option value="Brunei">Brunei</option>
@@ -505,7 +499,9 @@ const Signup = () => {
                     <option value="Cambodia">Cambodia</option>
                     <option value="Cameroon">Cameroon</option>
                     <option value="Canada">Canada</option>
-                    <option value="Central African Republic">Central African Republic</option>
+                    <option value="Central African Republic">
+                      Central African Republic
+                    </option>
                     <option value="Chad">Chad</option>
                     <option value="Chile">Chile</option>
                     <option value="China">China</option>
@@ -520,7 +516,9 @@ const Signup = () => {
                     <option value="Denmark">Denmark</option>
                     <option value="Djibouti">Djibouti</option>
                     <option value="Dominica">Dominica</option>
-                    <option value="Dominican Republic">Dominican Republic</option>
+                    <option value="Dominican Republic">
+                      Dominican Republic
+                    </option>
                     <option value="Ecuador">Ecuador</option>
                     <option value="Egypt">Egypt</option>
                     <option value="El Salvador">El Salvador</option>
@@ -615,12 +613,18 @@ const Signup = () => {
                     <option value="Romania">Romania</option>
                     <option value="Russia">Russia</option>
                     <option value="Rwanda">Rwanda</option>
-                    <option value="Saint Kitts and Nevis">Saint Kitts and Nevis</option>
+                    <option value="Saint Kitts and Nevis">
+                      Saint Kitts and Nevis
+                    </option>
                     <option value="Saint Lucia">Saint Lucia</option>
-                    <option value="Saint Vincent and the Grenadines">Saint Vincent and the Grenadines</option>
+                    <option value="Saint Vincent and the Grenadines">
+                      Saint Vincent and the Grenadines
+                    </option>
                     <option value="Samoa">Samoa</option>
                     <option value="San Marino">San Marino</option>
-                    <option value="Sao Tome and Principe">Sao Tome and Principe</option>
+                    <option value="Sao Tome and Principe">
+                      Sao Tome and Principe
+                    </option>
                     <option value="Saudi Arabia">Saudi Arabia</option>
                     <option value="Senegal">Senegal</option>
                     <option value="Serbia">Serbia</option>
@@ -648,14 +652,18 @@ const Signup = () => {
                     <option value="Timor-Leste">Timor-Leste</option>
                     <option value="Togo">Togo</option>
                     <option value="Tonga">Tonga</option>
-                    <option value="Trinidad and Tobago">Trinidad and Tobago</option>
+                    <option value="Trinidad and Tobago">
+                      Trinidad and Tobago
+                    </option>
                     <option value="Tunisia">Tunisia</option>
                     <option value="Turkey">Turkey</option>
                     <option value="Turkmenistan">Turkmenistan</option>
                     <option value="Tuvalu">Tuvalu</option>
                     <option value="Uganda">Uganda</option>
                     <option value="Ukraine">Ukraine</option>
-                    <option value="United Arab Emirates">United Arab Emirates</option>
+                    <option value="United Arab Emirates">
+                      United Arab Emirates
+                    </option>
                     <option value="United Kingdom">United Kingdom</option>
                     <option value="United States">United States</option>
                     <option value="Uruguay">Uruguay</option>
@@ -671,7 +679,9 @@ const Signup = () => {
                 </div>
 
                 <div className="mt-4">
-                  <label className="text-sm font-semibold">Referral Code (Optional)</label>
+                  <label className="text-sm font-semibold">
+                    Referral Code (Optional)
+                  </label>
                   <input
                     type="text"
                     name="referralCode"
@@ -687,59 +697,79 @@ const Signup = () => {
               <div className="mt-4">
                 <label className="text-sm font-semibold">Select Plan</label>
                 <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div 
-                    onClick={() => setFormData(prev => ({...prev, selectedPlan: 'basic'}))}
+                  <div
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        selectedPlan: "basic",
+                      }))
+                    }
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      formData.selectedPlan === 'basic' 
-                        ? 'border-[#0f7a4a] bg-green-50' 
-                        : 'border-gray-200 hover:border-gray-300'
+                      formData.selectedPlan === "basic"
+                        ? "border-[#0f7a4a] bg-green-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-bold text-gray-800">BASIC</h3>
-                      <div className={`w-4 h-4 rounded-full border-2 ${
-                        formData.selectedPlan === 'basic' 
-                          ? 'border-[#0f7a4a] bg-[#0f7a4a]' 
-                          : 'border-gray-300'
-                      }`}>
-                        {formData.selectedPlan === 'basic' && (
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 ${
+                          formData.selectedPlan === "basic"
+                            ? "border-[#0f7a4a] bg-[#0f7a4a]"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {formData.selectedPlan === "basic" && (
                           <div className="w-full h-full rounded-full bg-white scale-50"></div>
                         )}
                       </div>
                     </div>
-                    <div className="text-2xl font-bold text-[#0f7a4a] mb-2">$10</div>
+                    <div className="text-2xl font-bold text-[#0f7a4a] mb-2">
+                      $10
+                    </div>
                     <div className="text-sm text-gray-600">
-                      • $500 purchase limit<br/>
-                      • Basic features<br/>
-                      • Standard support
+                      • $500 purchase limit
+                      <br />
+                      • Basic features
+                      <br />• Standard support
                     </div>
                   </div>
 
-                  <div 
-                    onClick={() => setFormData(prev => ({...prev, selectedPlan: 'premium'}))}
+                  <div
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        selectedPlan: "premium",
+                      }))
+                    }
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      formData.selectedPlan === 'premium' 
-                        ? 'border-[#0f7a4a] bg-green-50' 
-                        : 'border-gray-200 hover:border-gray-300'
+                      formData.selectedPlan === "premium"
+                        ? "border-[#0f7a4a] bg-green-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-bold text-gray-800">PREMIUM</h3>
-                      <div className={`w-4 h-4 rounded-full border-2 ${
-                        formData.selectedPlan === 'premium' 
-                          ? 'border-[#0f7a4a] bg-[#0f7a4a]' 
-                          : 'border-gray-300'
-                      }`}>
-                        {formData.selectedPlan === 'premium' && (
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 ${
+                          formData.selectedPlan === "premium"
+                            ? "border-[#0f7a4a] bg-[#0f7a4a]"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {formData.selectedPlan === "premium" && (
                           <div className="w-full h-full rounded-full bg-white scale-50"></div>
                         )}
                       </div>
                     </div>
-                    <div className="text-2xl font-bold text-[#0f7a4a] mb-2">$20</div>
+                    <div className="text-2xl font-bold text-[#0f7a4a] mb-2">
+                      $20
+                    </div>
                     <div className="text-sm text-gray-600">
-                      • Unlimited purchases<br/>
-                      • All premium features<br/>
-                      • Priority support
+                      • Unlimited purchases
+                      <br />
+                      • All premium features
+                      <br />• Priority support
                     </div>
                   </div>
                 </div>
@@ -747,7 +777,9 @@ const Signup = () => {
 
               {/* WALLET CONNECTION */}
               <div className="mt-4">
-                <label className="text-sm font-semibold">Crypto Wallet Address</label>
+                <label className="text-sm font-semibold">
+                  Crypto Wallet Address
+                </label>
                 <div className="mt-2">
                   {!connectedWallet ? (
                     <div className="space-y-3">
@@ -759,13 +791,13 @@ const Signup = () => {
                         className="w-full bg-[#0f7a4a] text-white py-3 px-4 rounded-md font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <FaWallet />
-                        {loading ? 'Connecting...' : 'Connect Real Wallet'}
+                        {loading ? "Connecting..." : "Connect Real Wallet"}
                       </button>
-                      
+
                       <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
-                          <FaEthereum className="text-blue-600" />
-                          <span>MetaMask</span>
+                          <FaEthereum className="text-orange-500" />
+                          <span>BNB Network</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <FaMobile className="text-blue-500" />
@@ -805,7 +837,9 @@ const Signup = () => {
                   />
                 </div>
                 <div className="mt-4 md:mt-0">
-                  <label className="text-sm font-semibold">Confirm Password</label>
+                  <label className="text-sm font-semibold">
+                    Confirm Password
+                  </label>
                   <input
                     type="password"
                     name="confirmPassword"
@@ -818,7 +852,12 @@ const Signup = () => {
               </div>
 
               <div className="mt-5 p-3 bg-[#eef6f1] border rounded-md text-sm">
-                💳 <b>${formData.selectedPlan === 'premium' ? '20' : '10'} One-Time Payment</b> required to activate your {formData.selectedPlan} account
+                💳{" "}
+                <b>
+                  ${formData.selectedPlan === "premium" ? "20" : "10"} One-Time
+                  Payment
+                </b>{" "}
+                required to activate your {formData.selectedPlan} account
               </div>
 
               <button
@@ -826,7 +865,9 @@ const Signup = () => {
                 disabled={loading}
                 className="w-full bg-[#0f7a4a] text-white py-4 rounded-md font-bold mt-6 disabled:opacity-50"
               >
-                {loading ? "Processing Registration & Payment..." : `Register & Pay $${formData.selectedPlan === 'premium' ? '20' : '10'}`}
+                {loading
+                  ? "Processing Registration & Payment..."
+                  : `Register & Pay $${formData.selectedPlan === "premium" ? "20" : "10"}`}
               </button>
 
               <p className="text-center text-sm my-5">
@@ -841,15 +882,36 @@ const Signup = () => {
 
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm">
                 <p className="text-blue-800">
-                  💳 <b>Real Wallet Integration:</b>
+                  💳 <b>Real BNB Wallet Integration:</b>
                 </p>
                 <ul className="text-blue-700 mt-2 space-y-1">
-                  <li>• <b>MetaMask:</b> Browser extension & mobile</li>
-                  <li>• <b>Trust Wallet:</b> Mobile app with WalletConnect</li>
-                  <li>• <b>Coinbase Wallet:</b> Mobile & browser support</li>
-                  <li>• <b>300+ Wallets:</b> via WalletConnect protocol</li>
-                  <li>• <b>Real Payments:</b> ETH sent to company wallet</li>
-                  <li>• Get test ETH: <a href="https://sepoliafaucet.com" target="_blank" className="text-[#0f7a4a] underline">Sepolia Faucet</a></li>
+                  <li>
+                    • <b>MetaMask:</b> Browser extension & mobile
+                  </li>
+                  <li>
+                    • <b>Trust Wallet:</b> Mobile app with WalletConnect
+                  </li>
+                  <li>
+                    • <b>Coinbase Wallet:</b> Mobile & browser support
+                  </li>
+                  <li>
+                    • <b>300+ Wallets:</b> via WalletConnect protocol
+                  </li>
+                  <li>
+                    • <b>Network:</b> BSC Mainnet (BNB payments only)
+                  </li>
+                    • <b>Real Payments:</b> ETH sent to company wallet
+                  </li>
+                  <li>
+                    • Get test ETH:{" "}
+                    <a
+                      href="https://sepoliafaucet.com"
+                      target="_blank"
+                      className="text-[#0f7a4a] underline"
+                    >
+                      Sepolia Faucet
+                    </a>
+                  </li>
                 </ul>
               </div>
             </form>
