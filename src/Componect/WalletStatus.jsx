@@ -180,45 +180,34 @@ const WalletStatus = () => {
       const result = await realWalletService.connectWallet();
       
       if (result.success) {
-        const address = result.account;
-        
-        // Auto-switch to BSC after connection
-        await autoSwitchToBSC();
-        
-        // Get balance and network info after potential switch
-        const balanceResult = await realWalletService.getBalance();
-        let chainId = realWalletService.getChainId();
-        if (!chainId && window.ethereum) {
-          const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-          chainId = parseInt(chainIdHex, 16);
+        // Force switch to BSC immediately after connection
+        if (import.meta.env.VITE_NETWORK_TYPE === 'bnb') {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x38' }] // BSC Mainnet
+            });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x38',
+                  chainName: 'BSC Mainnet',
+                  rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                  blockExplorerUrls: ['https://bscscan.com'],
+                  nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }
+                }]
+              });
+            }
+          }
         }
         
-        const getNetworkName = (chainId) => {
-          const networks = {
-            1: 'Ethereum Mainnet',
-            11155111: 'Sepolia Testnet',
-            56: 'BSC Mainnet',
-            97: 'BSC Testnet',
-            137: 'Polygon Mainnet',
-            80001: 'Polygon Mumbai'
-          };
-          return networks[chainId] || `Unknown Network (${chainId})`;
-        };
+        // Wait a moment for network switch
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        const getTokenSymbol = (chainId) => {
-          if (chainId === 56 || chainId === 97) return 'BNB';
-          if (chainId === 137 || chainId === 80001) return 'MATIC';
-          return 'ETH';
-        };
-        
-        setWalletInfo({
-          connected: true,
-          address,
-          balance: balanceResult.success ? balanceResult.balance : '0.0000',
-          network: getNetworkName(chainId),
-          chainId: chainId || 'Unknown',
-          tokenSymbol: getTokenSymbol(chainId)
-        });
+        // Update wallet status after network switch
+        await checkWalletStatus();
         
         Swal.fire({
           icon: "success",
