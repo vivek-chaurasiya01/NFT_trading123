@@ -9,7 +9,8 @@ const WalletStatus = () => {
     connected: false,
     address: null,
     balance: '0.0000',
-    network: 'Unknown'
+    network: 'Unknown',
+    chainId: null
   });
   const [loading, setLoading] = useState(false);
 
@@ -23,12 +24,14 @@ const WalletStatus = () => {
         const address = realWalletService.getAccount();
         const balanceResult = await realWalletService.getBalance();
         const networkInfo = realWalletService.getNetworkInfo();
+        const chainId = realWalletService.getChainId();
         
         setWalletInfo({
           connected: true,
           address,
           balance: balanceResult.success ? balanceResult.balance : '0.0000',
-          network: networkInfo.networkName
+          network: networkInfo.networkName,
+          chainId: chainId || 'Unknown'
         });
       }
     } catch (error) {
@@ -77,12 +80,14 @@ const WalletStatus = () => {
         // Get balance and network info
         const balanceResult = await realWalletService.getBalance();
         const networkInfo = realWalletService.getNetworkInfo();
+        const chainId = realWalletService.getChainId();
         
         setWalletInfo({
           connected: true,
           address,
           balance: balanceResult.success ? balanceResult.balance : '0.0000',
-          network: networkInfo.networkName
+          network: networkInfo.networkName,
+          chainId: chainId || 'Unknown'
         });
         
         Swal.fire({
@@ -168,7 +173,8 @@ const WalletStatus = () => {
           connected: false,
           address: null,
           balance: '0.0000',
-          network: 'Unknown'
+          network: 'Unknown',
+          chainId: null
         });
         
         Swal.fire({
@@ -329,6 +335,9 @@ const WalletStatus = () => {
           <label className="text-sm font-medium text-gray-600">Network</label>
           <div className="bg-gray-50 px-3 py-2 rounded-md mt-1">
             <span className="text-sm text-gray-800">{walletInfo.network}</span>
+            {walletInfo.chainId && walletInfo.chainId !== 'Unknown' && (
+              <span className="text-xs text-gray-500 ml-2">(Chain ID: {walletInfo.chainId})</span>
+            )}
           </div>
         </div>
 

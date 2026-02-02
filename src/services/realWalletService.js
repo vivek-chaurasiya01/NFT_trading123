@@ -198,6 +198,11 @@ class RealWalletService {
               this.isConnected = true;
               this.chainId = account.chainId;
 
+              // Ensure chain ID is properly set
+              if (!this.chainId) {
+                this.chainId = this.getCurrentChainId();
+              }
+
               console.log('✅ Wallet connected successfully:', {
                 address: this.account,
                 chainId: this.chainId
@@ -450,12 +455,32 @@ class RealWalletService {
     const networks = {
       1: { networkId: 1, networkName: "Ethereum Mainnet" },
       11155111: { networkId: 11155111, networkName: "Sepolia Testnet" },
+      137: { networkId: 137, networkName: "Polygon Mainnet" },
+      80001: { networkId: 80001, networkName: "Polygon Mumbai" },
+      56: { networkId: 56, networkName: "BSC Mainnet" },
+      97: { networkId: 97, networkName: "BSC Testnet" },
     };
     
-    return networks[this.chainId] || {
-      networkId: this.chainId || defaultChainId,
-      networkName: "Unknown Network",
+    // Get current chain ID from wallet or fallback
+    const currentChainId = this.chainId || this.getCurrentChainId();
+    
+    return networks[currentChainId] || {
+      networkId: currentChainId || 'Unknown',
+      networkName: currentChainId ? `Chain ID: ${currentChainId}` : "Unknown Network",
     };
+  }
+
+  // Get current chain ID from MetaMask directly
+  getCurrentChainId() {
+    try {
+      if (window.ethereum && window.ethereum.chainId) {
+        return parseInt(window.ethereum.chainId, 16);
+      }
+      return null;
+    } catch (error) {
+      console.warn('Failed to get chain ID:', error);
+      return null;
+    }
   }
 
   // Get modal instance for external use
@@ -483,6 +508,11 @@ class RealWalletService {
         this.account = result.account;
         this.isConnected = true;
         this.chainId = result.chainId;
+        
+        // Update chain ID if not set
+        if (!this.chainId) {
+          this.chainId = this.getCurrentChainId();
+        }
         
         console.log('✅ Fallback connection successful:', {
           address: this.account,
