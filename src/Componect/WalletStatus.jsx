@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaWallet, FaEthereum, FaCopy, FaExternalLinkAlt, FaMobile } from 'react-icons/fa';
 import realWalletService from '../services/realWalletService';
+import directWalletService from '../services/directWalletService';
 import Swal from 'sweetalert2';
 
 const WalletStatus = () => {
@@ -48,7 +49,14 @@ const WalletStatus = () => {
         }
       });
 
-      const result = await realWalletService.connectWallet();
+      // Try direct MetaMask first (faster)
+      let result = await directWalletService.connectWallet();
+      
+      // If direct fails, try Reown
+      if (!result.success) {
+        console.log('Direct failed, trying Reown...');
+        result = await realWalletService.connectWallet();
+      }
       
       if (result.success) {
         await checkWalletStatus();

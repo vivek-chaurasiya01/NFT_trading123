@@ -58,12 +58,34 @@ class RealWalletService {
     this.account = null;
     this.isConnected = false;
     this.provider = null;
+    this.isInitialized = false;
+  }
+
+  // Initialize service once
+  init() {
+    if (this.isInitialized) return;
+    this.isInitialized = true;
+    
+    // Listen for account changes
+    this.modal.subscribeAccount((account) => {
+      console.log('🔄 Account changed:', account);
+      if (account.address) {
+        this.account = account.address;
+        this.isConnected = true;
+      } else {
+        this.account = null;
+        this.isConnected = false;
+      }
+    });
   }
 
   // Connect wallet with real integration
   async connectWallet() {
     try {
       console.log("🔄 Starting wallet connection...");
+      
+      // Initialize service
+      this.init();
       
       // Check if running in browser environment
       if (!networkUtils.isBrowser()) {
@@ -89,50 +111,37 @@ class RealWalletService {
         };
       }
 
-      // Direct modal open without network checks
+      // Open modal and wait for connection
       console.log("🚀 Opening wallet modal...");
       await this.modal.open({ view: "Connect" });
 
+      // Wait for connection with proper event handling
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           console.log("⏰ Connection timeout");
-          reject(new Error("Connection timeout - Please try again"));
-        }, 45000); // 45 seconds
+          reject(new Error("Connection timeout - Please connect your wallet"));
+        }, 30000);
 
-        let attempts = 0;
-        const maxAttempts = 45;
-
-        const checkConnection = () => {
-          attempts++;
+        // Check connection status every 500ms
+        const checkInterval = setInterval(() => {
           const account = getAccount(wagmiAdapter.wagmiConfig);
-          console.log(`🔍 Check ${attempts}:`, account?.address ? 'Connected' : 'Not connected');
-
+          
           if (account.address && account.isConnected) {
+            clearTimeout(timeout);
+            clearInterval(checkInterval);
+            
             this.account = account.address;
             this.isConnected = true;
-            clearTimeout(timeout);
+            
             console.log("✅ Wallet connected successfully!");
-
             resolve({
               success: true,
               account: this.account,
               network: account.chainId,
               method: "reown",
             });
-            return true;
           }
-          return false;
-        };
-
-        // Check immediately
-        if (checkConnection()) return;
-
-        // Poll every 1 second
-        const pollInterval = setInterval(() => {
-          if (checkConnection() || attempts >= maxAttempts) {
-            clearInterval(pollInterval);
-          }
-        }, 1000);
+        }, 500);
       });
     } catch (error) {
       console.error("❌ Wallet connection error:", error);
