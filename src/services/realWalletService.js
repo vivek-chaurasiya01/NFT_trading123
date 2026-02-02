@@ -16,7 +16,8 @@ import networkUtils from "../utils/networkUtils";
 /* ------------------------------------------------------------------ */
 
 const projectId =
-  import.meta.env.VITE_REOWN_PROJECT_ID || "5af094431cbc89a0153658536ff59fcc";
+  import.meta.env.VITE_REOWN_PROJECT_ID ||
+  "5af094431cbc89a0153658536ff59fcc";
 
 const COMPANY_WALLET = "0x24d77352bf8cc9165cdd1eb781eca3fae75a778f";
 
