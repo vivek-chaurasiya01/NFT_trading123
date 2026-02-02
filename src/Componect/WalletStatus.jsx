@@ -24,15 +24,40 @@ const WalletStatus = () => {
       if (realWalletService.isWalletConnected()) {
         const address = realWalletService.getAccount();
         const balanceResult = await realWalletService.getBalance();
-        const networkInfo = realWalletService.getNetworkInfo();
-        const chainId = realWalletService.getChainId();
+        
+        // Get actual chain ID from wallet
+        let chainId = realWalletService.getChainId();
+        if (!chainId && window.ethereum) {
+          const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
+          chainId = parseInt(chainIdHex, 16);
+        }
+        
+        // Get actual network name and token symbol based on chain ID
+        const getNetworkName = (chainId) => {
+          const networks = {
+            1: 'Ethereum Mainnet',
+            11155111: 'Sepolia Testnet',
+            56: 'BSC Mainnet',
+            97: 'BSC Testnet',
+            137: 'Polygon Mainnet',
+            80001: 'Polygon Mumbai'
+          };
+          return networks[chainId] || `Unknown Network (${chainId})`;
+        };
+        
+        const getTokenSymbol = (chainId) => {
+          if (chainId === 56 || chainId === 97) return 'BNB';
+          if (chainId === 137 || chainId === 80001) return 'MATIC';
+          return 'ETH';
+        };
         
         setWalletInfo({
           connected: true,
           address,
           balance: balanceResult.success ? balanceResult.balance : '0.0000',
-          network: networkInfo.networkName,
-          chainId: chainId || 'Unknown'
+          network: getNetworkName(chainId),
+          chainId: chainId || 'Unknown',
+          tokenSymbol: getTokenSymbol(chainId)
         });
       }
     } catch (error) {
