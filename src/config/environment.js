@@ -73,20 +73,9 @@ export const envConfig = {
         };
   },
   
-  // BNB Price Configuration
-  get bnbPriceUSD() {
-    return this.isProduction ? 600 : 500; // Different rates for mainnet/testnet
-  },
-  
   // ETH Price Configuration
   get ethPriceUSD() {
     return this.isProduction ? 2500 : 2000; // Different rates for mainnet/testnet
-  },
-  
-  // Get current token price based on network
-  get tokenPriceUSD() {
-    const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
-    return networkType === 'bnb' ? this.bnbPriceUSD : this.ethPriceUSD;
   },
   
   // Wallet Connection Settings

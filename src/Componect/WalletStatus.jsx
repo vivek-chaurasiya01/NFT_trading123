@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaWallet, FaEthereum, FaCopy, FaExternalLinkAlt, FaMobile } from 'react-icons/fa';
 import realWalletService from '../services/realWalletService';
 import networkSwitcher from '../utils/networkSwitcher';
+import bnbTokenUtils from '../utils/bnbTokenUtils';
 import Swal from 'sweetalert2';
 
 const WalletStatus = () => {
@@ -17,8 +18,27 @@ const WalletStatus = () => {
 
   useEffect(() => {
     checkWalletStatus();
-    // Auto-switch to BSC if connected to wrong network
-    autoSwitchToBSC();
+    
+    // Listen for account and network changes
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        console.log('Account changed:', accounts);
+        checkWalletStatus();
+      });
+      
+      window.ethereum.on('chainChanged', (chainId) => {
+        console.log('Network changed:', chainId);
+        checkWalletStatus();
+      });
+    }
+    
+    // Cleanup listeners
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeAllListeners('accountsChanged');
+        window.ethereum.removeAllListeners('chainChanged');
+      }
+    };
   }, []);
 
   const autoSwitchToBSC = async () => {
@@ -43,44 +63,81 @@ const WalletStatus = () => {
 
   const checkWalletStatus = async () => {
     try {
-      if (realWalletService.isWalletConnected()) {
-        const address = realWalletService.getAccount();
-        const balanceResult = await realWalletService.getBalance();
+      // Direct wallet check instead of service
+      if (window.ethereum) {
+        // Get current accounts directly from MetaMask/TrustWallet
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         
-        // Get actual chain ID from wallet
-        let chainId = realWalletService.getChainId();
-        if (!chainId && window.ethereum) {
+        if (accounts.length > 0) {
+          const address = accounts[0];
+          
+          // Get current chain ID directly
           const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-          chainId = parseInt(chainIdHex, 16);
-        }
-        
-        // Get actual network name and token symbol based on chain ID
-        const getNetworkName = (chainId) => {
-          const networks = {
-            1: 'Ethereum Mainnet',
-            11155111: 'Sepolia Testnet',
-            56: 'BSC Mainnet',
-            97: 'BSC Testnet',
-            137: 'Polygon Mainnet',
-            80001: 'Polygon Mumbai'
+          const chainId = parseInt(chainIdHex, 16);
+          
+          // Get balance - BNB token on Ethereum or native token on other networks
+          let balanceInEth, tokenSymbol;
+          
+          if (import.meta.env.VITE_NETWORK_TYPE === 'bnb' && (chainId === 1 || chainId === 11155111)) {
+            // Get BNB token balance on Ethereum networks
+            const bnbBalance = await bnbTokenUtils.getBNBBalance(address);
+            balanceInEth = bnbBalance.success ? parseFloat(bnbBalance.balance) : 0;
+            tokenSymbol = 'BNB';
+          } else {
+            // Get native token balance
+            const balanceHex = await window.ethereum.request({
+              method: 'eth_getBalance',
+              params: [address, 'latest']
+            });
+            balanceInEth = parseInt(balanceHex, 16) / Math.pow(10, 18);
+            
+            // Determine token symbol based on network type setting
+            if (import.meta.env.VITE_NETWORK_TYPE === 'bnb') {
+              tokenSymbol = 'BNB';
+            } else {
+              tokenSymbol = chainId === 56 || chainId === 97 ? 'BNB' : 
+                          chainId === 137 || chainId === 80001 ? 'MATIC' : 'ETH';
+            }
+          }
+          
+          // Get network name and token symbol based on actual chain ID
+          const getNetworkName = (chainId) => {
+            const networks = {
+              1: 'Ethereum Mainnet',
+              11155111: 'Sepolia Testnet',
+              56: 'BSC Mainnet',
+              97: 'BSC Testnet',
+              137: 'Polygon Mainnet',
+              80001: 'Polygon Mumbai'
+            };
+            return networks[chainId] || `Unknown Network (${chainId})`;
           };
-          return networks[chainId] || `Unknown Network (${chainId})`;
-        };
-        
-        const getTokenSymbol = (chainId) => {
-          if (chainId === 56 || chainId === 97) return 'BNB';
-          if (chainId === 137 || chainId === 80001) return 'MATIC';
-          return 'ETH';
-        };
-        
-        setWalletInfo({
-          connected: true,
-          address,
-          balance: balanceResult.success ? balanceResult.balance : '0.0000',
-          network: getNetworkName(chainId),
-          chainId: chainId || 'Unknown',
-          tokenSymbol: getTokenSymbol(chainId)
-        });
+          
+          const getTokenSymbol = (chainId) => {
+            // Always show BNB when VITE_NETWORK_TYPE is bnb
+            if (import.meta.env.VITE_NETWORK_TYPE === 'bnb') {
+              return 'BNB';
+            }
+            // Default behavior for other network types
+            if (chainId === 56 || chainId === 97) return 'BNB';
+            if (chainId === 137 || chainId === 80001) return 'MATIC';
+            return 'ETH';
+          };
+          
+          setWalletInfo({
+            connected: true,
+            address,
+            balance: balanceInEth.toFixed(4),
+            network: getNetworkName(chainId),
+            chainId: chainId,
+            tokenSymbol: tokenSymbol
+          });
+          
+          // Update real wallet service state
+          realWalletService.account = address;
+          realWalletService.isConnected = true;
+          realWalletService.chainId = chainId;
+        }
       }
     } catch (error) {
       console.error('Error checking wallet status:', error);
@@ -298,7 +355,7 @@ const WalletStatus = () => {
       Swal.fire({
         icon: 'success',
         title: 'Balance Updated',
-        text: `Current balance: ${walletInfo.balance} ETH`,
+        text: `Current balance: ${walletInfo.balance} ${walletInfo.tokenSymbol}`,
         timer: 2000,
         showConfirmButton: false
       });
@@ -412,8 +469,8 @@ const WalletStatus = () => {
               <span className="text-xs text-gray-500 ml-2">(Chain ID: {walletInfo.chainId})</span>
             )}
             {import.meta.env.VITE_NETWORK_TYPE === 'bnb' && walletInfo.chainId !== 56 && walletInfo.chainId !== 97 && (
-              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
-                <span className="text-yellow-800">⚠️ Please switch to BSC network for payments</span>
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs">
+                <span className="text-red-800">🚨 WRONG NETWORK! Click "Switch to BSC" button below</span>
               </div>
             )}
           </div>
@@ -421,24 +478,57 @@ const WalletStatus = () => {
 
         {/* Actions */}
         <div className="flex gap-2 pt-2">
-          <button
-            onClick={async () => {
-              const result = await networkSwitcher.switchToTargetNetwork();
-              if (result.success) {
-                await checkWalletStatus();
-                Swal.fire({
-                  icon: 'success',
-                  title: 'Network Switched!',
-                  text: `Switched to ${result.network.name}`,
-                  timer: 2000,
-                  showConfirmButton: false
-                });
-              }
-            }}
-            className="flex-1 bg-blue-500 text-white py-2 rounded-md font-medium hover:bg-blue-600 transition-colors"
-          >
-            Switch to BSC
-          </button>
+          {walletInfo.chainId !== 56 && walletInfo.chainId !== 97 ? (
+            <button
+              onClick={async () => {
+                try {
+                  // Force switch to BSC Mainnet
+                  await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x38' }] // BSC Mainnet
+                  });
+                  
+                  // If network doesn't exist, add it
+                } catch (switchError) {
+                  if (switchError.code === 4902) {
+                    try {
+                      await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                          chainId: '0x38',
+                          chainName: 'BSC Mainnet',
+                          rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                          blockExplorerUrls: ['https://bscscan.com'],
+                          nativeCurrency: {
+                            name: 'BNB',
+                            symbol: 'BNB',
+                            decimals: 18
+                          }
+                        }]
+                      });
+                    } catch (addError) {
+                      console.error('Failed to add BSC network:', addError);
+                    }
+                  }
+                }
+                
+                // Refresh status after switch
+                setTimeout(() => {
+                  checkWalletStatus();
+                }, 1000);
+              }}
+              className="flex-1 bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition-colors animate-pulse"
+            >
+              🚨 SWITCH TO BSC NOW
+            </button>
+          ) : (
+            <button
+              disabled
+              className="flex-1 bg-green-500 text-white py-2 rounded-md font-medium"
+            >
+              ✅ On BSC Network
+            </button>
+          )}
           <button
             onClick={disconnectWallet}
             className="flex-1 bg-red-500 text-white py-2 rounded-md font-medium hover:bg-red-600 transition-colors"

@@ -151,7 +151,7 @@ export const fallbackWalletConnection = {
     }
   },
 
-  // Get balance using direct wallet - Enhanced for BNB
+  // Get balance using direct wallet
   async getBalance(address) {
     try {
       if (!window.ethereum || !address) {
@@ -164,14 +164,11 @@ export const fallbackWalletConnection = {
       });
 
       const balanceInEth = parseInt(balance, 16) / Math.pow(10, 18);
-      const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
-      const tokenSymbol = networkType === 'bnb' ? 'BNB' : 'ETH';
       
       return {
         success: true,
         balance: balanceInEth.toFixed(4),
-        balanceWei: balance,
-        tokenSymbol
+        balanceWei: balance
       };
     } catch (error) {
       console.error('❌ Balance fetch failed:', error);
