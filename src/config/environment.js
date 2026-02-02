@@ -13,6 +13,38 @@ export const envConfig = {
   
   // Network Configuration
   get networks() {
+    const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
+    
+    if (networkType === 'bnb') {
+      return this.isProduction 
+        ? {
+            primary: {
+              chainId: 56,
+              name: 'BSC Mainnet',
+              rpcUrl: 'https://bsc-dataseed.binance.org/',
+              blockExplorer: 'https://bscscan.com',
+              nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }
+            },
+            fallback: {
+              chainId: 97,
+              name: 'BSC Testnet',
+              rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+              blockExplorer: 'https://testnet.bscscan.com',
+              nativeCurrency: { name: 'Test BNB', symbol: 'tBNB', decimals: 18 }
+            }
+          }
+        : {
+            primary: {
+              chainId: 97,
+              name: 'BSC Testnet',
+              rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+              blockExplorer: 'https://testnet.bscscan.com',
+              nativeCurrency: { name: 'Test BNB', symbol: 'tBNB', decimals: 18 }
+            }
+          };
+    }
+    
+    // Default Ethereum networks
     return this.isProduction 
       ? {
           primary: {
@@ -41,9 +73,20 @@ export const envConfig = {
         };
   },
   
+  // BNB Price Configuration
+  get bnbPriceUSD() {
+    return this.isProduction ? 600 : 500; // Different rates for mainnet/testnet
+  },
+  
   // ETH Price Configuration
   get ethPriceUSD() {
     return this.isProduction ? 2500 : 2000; // Different rates for mainnet/testnet
+  },
+  
+  // Get current token price based on network
+  get tokenPriceUSD() {
+    const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
+    return networkType === 'bnb' ? this.bnbPriceUSD : this.ethPriceUSD;
   },
   
   // Wallet Connection Settings

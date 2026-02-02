@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { authAPI, walletAPI } from "../services/api";
 import realWalletService from "../services/realWalletService";
 import walletDebug from "../utils/walletDebug";
+import networkChecker from "../utils/networkChecker";
 import '../styles/modal-fix.css';
 
 const Signup = () => {
@@ -26,6 +27,7 @@ const Signup = () => {
   // Debug wallet on component mount
   useEffect(() => {
     walletDebug.logDebugInfo();
+    networkChecker.logNetworkInfo(); // Show network info
   }, []);
 
   const handleChange = (e) => {
@@ -290,8 +292,10 @@ const Signup = () => {
       }
 
       const planAmount = formData.selectedPlan === 'premium' ? 20 : 10;
+      const networkInfo = networkChecker.getCurrentNetwork();
+      const paymentWarning = networkChecker.showPaymentWarning();
       
-      // Show payment confirmation
+      // Show payment confirmation with network details
       const confirmResult = await Swal.fire({
         title: 'Confirm Payment',
         html: `
@@ -299,14 +303,20 @@ const Signup = () => {
             <p><strong>Plan:</strong> ${formData.selectedPlan.toUpperCase()}</p>
             <p><strong>Amount:</strong> $${planAmount} USD</p>
             <p><strong>From:</strong> ${connectedWallet.substring(0, 6)}...${connectedWallet.substring(38)}</p>
-            <p class="text-sm text-gray-600 mt-2">This will send ETH equivalent to company wallet</p>
+            <hr class="my-3">
+            <div class="p-3 ${networkInfo.isRealMoney ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'} border rounded">
+              <p><strong>🌍 Network:</strong> ${networkInfo.primaryNetwork}</p>
+              <p><strong>💳 Company Wallet:</strong> ${networkInfo.companyWallet.substring(0, 6)}...${networkInfo.companyWallet.substring(38)}</p>
+              <p><strong>💰 Money Type:</strong> ${networkInfo.networkType}</p>
+              ${networkInfo.isRealMoney ? '<p class="text-red-600 font-bold mt-2">⚠️ THIS IS REAL MONEY!</p>' : '<p class="text-blue-600 mt-2">ℹ️ This is test money (safe)</p>'}
+            </div>
           </div>
         `,
-        icon: 'question',
+        icon: networkInfo.isRealMoney ? 'warning' : 'question',
         showCancelButton: true,
-        confirmButtonColor: '#0f7a4a',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Send Payment',
+        confirmButtonColor: networkInfo.isRealMoney ? '#dc2626' : '#0f7a4a',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: networkInfo.isRealMoney ? 'Send REAL Payment' : 'Send Test Payment',
         cancelButtonText: 'Cancel'
       });
 
@@ -359,7 +369,11 @@ const Signup = () => {
                 <p><strong>Transaction Hash:</strong></p>
                 <p class="text-xs break-all">${paymentResult.txHash}</p>
                 <p class="mt-2"><strong>Amount:</strong> ${paymentResult.amount} ETH ($${paymentResult.amountUSD})</p>
+                <p><strong>Network:</strong> ${networkInfo.primaryNetwork}</p>
                 <p><strong>Status:</strong> Confirmed ✅</p>
+                <hr class="my-2">
+                <p class="text-sm"><strong>View on Explorer:</strong></p>
+                <a href="${networkChecker.getExplorerUrl(paymentResult.txHash)}" target="_blank" class="text-blue-600 underline text-xs">Open Transaction</a>
               </div>
             `,
             confirmButtonColor: "#0f7a4a",

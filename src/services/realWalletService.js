@@ -1,7 +1,7 @@
 // RealWalletService.js - Fixed for both localhost and production
 import { createAppKit } from "@reown/appkit";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
-import { sepolia, mainnet } from "viem/chains";
+import { sepolia, mainnet, bsc, bscTestnet } from "viem/chains";
 import { parseEther, formatEther } from "viem";
 import {
   getBalance,
@@ -18,11 +18,23 @@ import fallbackWalletConnection from "../utils/fallbackWallet";
 /* CONFIG - Environment-based configuration */
 /* ------------------------------------------------------------------ */
 
-const { projectId, companyWallet, isProduction, ethPriceUSD, walletSettings, appMetadata } = envConfig;
+const { projectId, companyWallet, isProduction, tokenPriceUSD, walletSettings, appMetadata } = envConfig;
+const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
 
-// Network configuration based on environment
-const networks = isProduction ? [mainnet, sepolia] : [sepolia];
-const defaultChainId = isProduction ? 1 : 11155111; // Mainnet : Sepolia
+// Network configuration based on environment and network type
+const networks = (() => {
+  if (networkType === 'bnb') {
+    return isProduction ? [bsc, bscTestnet] : [bscTestnet];
+  }
+  return isProduction ? [mainnet, sepolia] : [sepolia];
+})();
+
+const defaultChainId = (() => {
+  if (networkType === 'bnb') {
+    return isProduction ? 56 : 97; // BSC Mainnet : BSC Testnet
+  }
+  return isProduction ? 1 : 11155111; // Ethereum Mainnet : Sepolia
+})();
 
 /* ------------------------------------------------------------------ */
 /* SINGLETON WALLET KIT - Fixed initialization */
@@ -333,11 +345,12 @@ class RealWalletService {
         throw new Error("Wagmi config not available");
       }
 
-      // Get current ETH price (simplified - in production use real API)
-      const ethAmount = (amountInUSD / ethPriceUSD).toFixed(6);
+      // Get current token price (BNB or ETH based on network)
+      const ethAmount = (amountInUSD / tokenPriceUSD).toFixed(6);
       const value = parseEther(ethAmount);
 
-      console.log(`💰 Sending payment: $${amountInUSD} = ${ethAmount} ETH`);
+      const tokenSymbol = networkType === 'bnb' ? 'BNB' : 'ETH';
+      console.log(`💰 Sending payment: $${amountInUSD} = ${ethAmount} ${tokenSymbol}`);
 
       const hash = await sendTransaction(this.wagmiConfig, {
         to: companyWallet,
@@ -352,6 +365,7 @@ class RealWalletService {
         txHash: hash,
         amount: ethAmount,
         amountUSD: amountInUSD,
+        tokenSymbol,
         to: companyWallet,
         from: this.account,
         chainId: this.chainId,
@@ -455,10 +469,10 @@ class RealWalletService {
     const networks = {
       1: { networkId: 1, networkName: "Ethereum Mainnet" },
       11155111: { networkId: 11155111, networkName: "Sepolia Testnet" },
-      137: { networkId: 137, networkName: "Polygon Mainnet" },
-      80001: { networkId: 80001, networkName: "Polygon Mumbai" },
       56: { networkId: 56, networkName: "BSC Mainnet" },
       97: { networkId: 97, networkName: "BSC Testnet" },
+      137: { networkId: 137, networkName: "Polygon Mainnet" },
+      80001: { networkId: 80001, networkName: "Polygon Mumbai" },
     };
     
     // Get current chain ID from wallet or fallback
