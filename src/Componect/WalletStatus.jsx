@@ -17,7 +17,29 @@ const WalletStatus = () => {
 
   useEffect(() => {
     checkWalletStatus();
+    // Auto-switch to BSC if connected to wrong network
+    autoSwitchToBSC();
   }, []);
+
+  const autoSwitchToBSC = async () => {
+    try {
+      if (realWalletService.isWalletConnected() && window.ethereum) {
+        const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
+        const chainId = parseInt(chainIdHex, 16);
+        
+        // If not on BSC network, auto-switch
+        if (chainId !== 56 && chainId !== 97) {
+          console.log('🔄 Auto-switching to BSC network...');
+          const result = await networkSwitcher.switchToTargetNetwork();
+          if (result.success) {
+            await checkWalletStatus();
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Auto-switch failed:', error);
+    }
+  };
 
   const checkWalletStatus = async () => {
     try {
@@ -103,20 +125,42 @@ const WalletStatus = () => {
       if (result.success) {
         const address = result.account;
         
-        // Get balance and network info
+        // Auto-switch to BSC after connection
+        await autoSwitchToBSC();
+        
+        // Get balance and network info after potential switch
         const balanceResult = await realWalletService.getBalance();
-        const networkInfo = realWalletService.getNetworkInfo();
-        const chainId = realWalletService.getChainId();
-        const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
-        const tokenSymbol = networkType === 'bnb' ? 'BNB' : 'ETH';
+        let chainId = realWalletService.getChainId();
+        if (!chainId && window.ethereum) {
+          const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
+          chainId = parseInt(chainIdHex, 16);
+        }
+        
+        const getNetworkName = (chainId) => {
+          const networks = {
+            1: 'Ethereum Mainnet',
+            11155111: 'Sepolia Testnet',
+            56: 'BSC Mainnet',
+            97: 'BSC Testnet',
+            137: 'Polygon Mainnet',
+            80001: 'Polygon Mumbai'
+          };
+          return networks[chainId] || `Unknown Network (${chainId})`;
+        };
+        
+        const getTokenSymbol = (chainId) => {
+          if (chainId === 56 || chainId === 97) return 'BNB';
+          if (chainId === 137 || chainId === 80001) return 'MATIC';
+          return 'ETH';
+        };
         
         setWalletInfo({
           connected: true,
           address,
           balance: balanceResult.success ? balanceResult.balance : '0.0000',
-          network: networkInfo.networkName,
+          network: getNetworkName(chainId),
           chainId: chainId || 'Unknown',
-          tokenSymbol
+          tokenSymbol: getTokenSymbol(chainId)
         });
         
         Swal.fire({
@@ -125,8 +169,8 @@ const WalletStatus = () => {
           html: `
             <div class="text-left">
               <p><strong>Address:</strong> ${address.substring(0, 6)}...${address.substring(38)}</p>
-              <p><strong>Network:</strong> ${networkInfo.networkName}</p>
-              <p><strong>Balance:</strong> ${balanceResult.success ? balanceResult.balance + ' ETH' : 'Unable to fetch'}</p>
+              <p><strong>Network:</strong> ${getNetworkName(chainId)}</p>
+              <p><strong>Balance:</strong> ${balanceResult.success ? balanceResult.balance + ' ' + getTokenSymbol(chainId) : 'Unable to fetch'}</p>
             </div>
           `,
           confirmButtonColor: "#0f7a4a",
@@ -367,6 +411,11 @@ const WalletStatus = () => {
             {walletInfo.chainId && walletInfo.chainId !== 'Unknown' && (
               <span className="text-xs text-gray-500 ml-2">(Chain ID: {walletInfo.chainId})</span>
             )}
+            {import.meta.env.VITE_NETWORK_TYPE === 'bnb' && walletInfo.chainId !== 56 && walletInfo.chainId !== 97 && (
+              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                <span className="text-yellow-800">⚠️ Please switch to BSC network for payments</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -374,14 +423,21 @@ const WalletStatus = () => {
         <div className="flex gap-2 pt-2">
           <button
             onClick={async () => {
-              const result = await networkSwitcher.autoSwitchWithConfirm();
+              const result = await networkSwitcher.switchToTargetNetwork();
               if (result.success) {
                 await checkWalletStatus();
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Network Switched!',
+                  text: `Switched to ${result.network.name}`,
+                  timer: 2000,
+                  showConfirmButton: false
+                });
               }
             }}
             className="flex-1 bg-blue-500 text-white py-2 rounded-md font-medium hover:bg-blue-600 transition-colors"
           >
-            Switch Network
+            Switch to BSC
           </button>
           <button
             onClick={disconnectWallet}
