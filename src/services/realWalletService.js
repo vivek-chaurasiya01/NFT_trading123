@@ -24,14 +24,14 @@ const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
 // Network configuration based on environment and network type
 const networks = (() => {
   if (networkType === 'bnb') {
-    return isProduction ? [bsc, bscTestnet] : [bscTestnet];
+    return [bsc]; // Always use BSC Mainnet for BNB network type
   }
   return isProduction ? [mainnet, sepolia] : [sepolia];
 })();
 
 const defaultChainId = (() => {
   if (networkType === 'bnb') {
-    return isProduction ? 56 : 97; // BSC Mainnet : BSC Testnet
+    return 56; // Always BSC Mainnet for BNB network type
   }
   return isProduction ? 1 : 11155111; // Ethereum Mainnet : Sepolia
 })();

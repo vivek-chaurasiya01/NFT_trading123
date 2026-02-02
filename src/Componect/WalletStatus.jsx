@@ -223,13 +223,6 @@ const WalletStatus = () => {
         Swal.fire({
           icon: "success",
           title: "🎉 Connected!",
-          html: `
-            <div class="text-left">
-              <p><strong>Address:</strong> ${address.substring(0, 6)}...${address.substring(38)}</p>
-              <p><strong>Network:</strong> ${getNetworkName(chainId)}</p>
-              <p><strong>Balance:</strong> ${balanceResult.success ? balanceResult.balance + ' ' + getTokenSymbol(chainId) : 'Unable to fetch'}</p>
-            </div>
-          `,
           confirmButtonColor: "#0f7a4a",
         });
       } else {

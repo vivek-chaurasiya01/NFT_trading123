@@ -16,32 +16,16 @@ export const envConfig = {
     const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
     
     if (networkType === 'bnb') {
-      return this.isProduction 
-        ? {
-            primary: {
-              chainId: 56,
-              name: 'BSC Mainnet',
-              rpcUrl: 'https://bsc-dataseed.binance.org/',
-              blockExplorer: 'https://bscscan.com',
-              nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }
-            },
-            fallback: {
-              chainId: 97,
-              name: 'BSC Testnet',
-              rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
-              blockExplorer: 'https://testnet.bscscan.com',
-              nativeCurrency: { name: 'Test BNB', symbol: 'tBNB', decimals: 18 }
-            }
-          }
-        : {
-            primary: {
-              chainId: 97,
-              name: 'BSC Testnet',
-              rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
-              blockExplorer: 'https://testnet.bscscan.com',
-              nativeCurrency: { name: 'Test BNB', symbol: 'tBNB', decimals: 18 }
-            }
-          };
+      // Always use BSC Mainnet for BNB network type
+      return {
+        primary: {
+          chainId: 56,
+          name: 'BSC Mainnet',
+          rpcUrl: 'https://bsc-dataseed.binance.org/',
+          blockExplorer: 'https://bscscan.com',
+          nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }
+        }
+      };
     }
     
     // Default Ethereum networks
@@ -73,9 +57,13 @@ export const envConfig = {
         };
   },
   
-  // ETH Price Configuration
-  get ethPriceUSD() {
-    return this.isProduction ? 2500 : 2000; // Different rates for mainnet/testnet
+  // Token Price Configuration
+  get tokenPriceUSD() {
+    const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
+    if (networkType === 'bnb') {
+      return 600; // BNB price in USD
+    }
+    return this.isProduction ? 2500 : 2000; // ETH price
   },
   
   // Wallet Connection Settings
