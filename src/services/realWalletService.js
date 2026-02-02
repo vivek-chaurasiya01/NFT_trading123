@@ -63,7 +63,7 @@ class RealWalletService {
   // Connect wallet with real integration
   async connectWallet() {
     try {
-      console.log("Checking wallet connection...");
+      console.log("🔄 Starting wallet connection...");
       
       // Check if running in browser environment
       if (!networkUtils.isBrowser()) {
@@ -75,17 +75,9 @@ class RealWalletService {
       
       // First check if already connected
       const account = getAccount(wagmiAdapter.wagmiConfig);
-      console.log("Account from wagmi:", account);
+      console.log("✅ Account check:", account);
 
       if (account.address && account.isConnected) {
-        // Check if on Sepolia network (Chain ID: 11155111)
-        if (account.chainId !== 11155111) {
-          return {
-            success: false,
-            error: "Please switch to Sepolia Testnet in your wallet"
-          };
-        }
-        
         this.account = account.address;
         this.isConnected = true;
 
@@ -97,22 +89,29 @@ class RealWalletService {
         };
       }
 
-      // If not connected, open modal
+      // Direct modal open without network checks
+      console.log("🚀 Opening wallet modal...");
       await this.modal.open({ view: "Connect" });
 
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
+          console.log("⏰ Connection timeout");
           reject(new Error("Connection timeout - Please try again"));
-        }, 30000); // 30 seconds timeout
+        }, 45000); // 45 seconds
 
-        // Listen for account changes
+        let attempts = 0;
+        const maxAttempts = 45;
+
         const checkConnection = () => {
+          attempts++;
           const account = getAccount(wagmiAdapter.wagmiConfig);
+          console.log(`🔍 Check ${attempts}:`, account?.address ? 'Connected' : 'Not connected');
 
           if (account.address && account.isConnected) {
             this.account = account.address;
             this.isConnected = true;
             clearTimeout(timeout);
+            console.log("✅ Wallet connected successfully!");
 
             resolve({
               success: true,
@@ -128,32 +127,19 @@ class RealWalletService {
         // Check immediately
         if (checkConnection()) return;
 
-        // Poll every 1 second for connection
+        // Poll every 1 second
         const pollInterval = setInterval(() => {
-          if (checkConnection()) {
+          if (checkConnection() || attempts >= maxAttempts) {
             clearInterval(pollInterval);
           }
         }, 1000);
-
-        // Clear interval on timeout
-        setTimeout(() => {
-          clearInterval(pollInterval);
-        }, 30000);
       });
     } catch (error) {
-      console.error("Wallet connection error:", error);
-      
-      // Provide more specific error messages
-      let errorMessage = error.message;
-      if (error.message.includes('Failed to fetch')) {
-        errorMessage = "Network connection failed. Please check your internet connection and try again.";
-      } else if (error.message.includes('User rejected')) {
-        errorMessage = "Connection cancelled by user. Please try again and approve the connection.";
-      }
+      console.error("❌ Wallet connection error:", error);
       
       return {
         success: false,
-        error: errorMessage,
+        error: error.message || "Failed to connect wallet",
       };
     }
   }
