@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaWallet, FaEthereum, FaCopy, FaExternalLinkAlt, FaMobile } from 'react-icons/fa';
 import realWalletService from '../services/realWalletService';
-import directWalletService from '../services/directWalletService';
+import networkSwitcher from '../utils/networkSwitcher';
 import Swal from 'sweetalert2';
 
 const WalletStatus = () => {
@@ -10,7 +10,8 @@ const WalletStatus = () => {
     address: null,
     balance: '0.0000',
     network: 'Unknown',
-    chainId: null
+    chainId: null,
+    tokenSymbol: 'ETH'
   });
   const [loading, setLoading] = useState(false);
 
@@ -81,13 +82,16 @@ const WalletStatus = () => {
         const balanceResult = await realWalletService.getBalance();
         const networkInfo = realWalletService.getNetworkInfo();
         const chainId = realWalletService.getChainId();
+        const networkType = import.meta.env.VITE_NETWORK_TYPE || 'eth';
+        const tokenSymbol = networkType === 'bnb' ? 'BNB' : 'ETH';
         
         setWalletInfo({
           connected: true,
           address,
           balance: balanceResult.success ? balanceResult.balance : '0.0000',
           network: networkInfo.networkName,
-          chainId: chainId || 'Unknown'
+          chainId: chainId || 'Unknown',
+          tokenSymbol
         });
         
         Swal.fire({
@@ -318,7 +322,7 @@ const WalletStatus = () => {
           <label className="text-sm font-medium text-gray-600">Balance</label>
           <div className="flex items-center gap-2 mt-1">
             <div className="flex-1 bg-gray-50 px-3 py-2 rounded-md">
-              <span className="text-lg font-semibold text-gray-800">{walletInfo.balance} ETH</span>
+              <span className="text-lg font-semibold text-gray-800">{walletInfo.balance} {walletInfo.tokenSymbol}</span>
             </div>
             <button
               onClick={refreshBalance}
@@ -343,6 +347,17 @@ const WalletStatus = () => {
 
         {/* Actions */}
         <div className="flex gap-2 pt-2">
+          <button
+            onClick={async () => {
+              const result = await networkSwitcher.autoSwitchWithConfirm();
+              if (result.success) {
+                await checkWalletStatus();
+              }
+            }}
+            className="flex-1 bg-blue-500 text-white py-2 rounded-md font-medium hover:bg-blue-600 transition-colors"
+          >
+            Switch Network
+          </button>
           <button
             onClick={disconnectWallet}
             className="flex-1 bg-red-500 text-white py-2 rounded-md font-medium hover:bg-red-600 transition-colors"
