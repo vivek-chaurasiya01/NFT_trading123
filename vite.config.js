@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(),tailwindcss()],
+  plugins: [react(), tailwindcss()],
   build: {
     rollupOptions: {
       output: {
@@ -16,13 +16,18 @@ export default defineConfig({
   server: {
     https: false,
     host: true,
-    port: 5173
+    port: 5173,
+    cors: true
   },
   preview: {
     host: true,
-    port: 4173
+    port: 4173,
+    cors: true
   },
   define: {
     global: 'globalThis'
+  },
+  optimizeDeps: {
+    include: ['@reown/appkit', '@reown/appkit-adapter-wagmi', 'viem', 'wagmi']
   }
 })

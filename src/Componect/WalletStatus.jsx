@@ -40,56 +40,108 @@ const WalletStatus = () => {
     try {
       setLoading(true);
       
-      // DIRECT eth_requestAccounts call
-      console.log('🚀 Direct MetaMask call...');
+      // Enhanced connection with better error handling
+      console.log('🚀 Starting wallet connection from WalletStatus...');
       
+      // Check if wallet is available
       if (!window.ethereum) {
-        throw new Error('MetaMask not installed');
+        Swal.fire({
+          icon: "warning",
+          title: "No Wallet Found",
+          html: `
+            <div class="text-left">
+              <p>No cryptocurrency wallet detected.</p>
+              <div class="mt-3 p-3 bg-blue-50 rounded">
+                <p><strong>Please install a wallet:</strong></p>
+                <ul class="mt-2 space-y-1">
+                  <li>• <a href="https://metamask.io/download/" target="_blank" class="text-blue-600 underline">MetaMask</a> (Recommended)</li>
+                  <li>• <a href="https://trustwallet.com/browser-extension" target="_blank" class="text-blue-600 underline">Trust Wallet</a></li>
+                  <li>• <a href="https://wallet.coinbase.com/" target="_blank" class="text-blue-600 underline">Coinbase Wallet</a></li>
+                </ul>
+                <p class="mt-2 text-sm text-gray-600">After installation, refresh this page and try again.</p>
+              </div>
+            </div>
+          `,
+          confirmButtonColor: "#0f7a4a",
+        });
+        setLoading(false);
+        return;
       }
 
-      // Direct popup trigger
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts'
-      });
-
-      console.log('✅ Accounts received:', accounts);
-
-      if (accounts.length > 0) {
-        const address = accounts[0];
+      // Use the enhanced wallet service instead of direct calls
+      const result = await realWalletService.connectWallet();
+      
+      if (result.success) {
+        const address = result.account;
+        
+        // Get balance and network info
+        const balanceResult = await realWalletService.getBalance();
+        const networkInfo = realWalletService.getNetworkInfo();
         
         setWalletInfo({
           connected: true,
           address,
-          balance: '0.0000',
-          network: 'Ethereum Network'
+          balance: balanceResult.success ? balanceResult.balance : '0.0000',
+          network: networkInfo.networkName
         });
         
         Swal.fire({
           icon: "success",
           title: "🎉 Connected!",
-          text: `${address.substring(0, 6)}...${address.substring(38)}`,
+          html: `
+            <div class="text-left">
+              <p><strong>Address:</strong> ${address.substring(0, 6)}...${address.substring(38)}</p>
+              <p><strong>Network:</strong> ${networkInfo.networkName}</p>
+              <p><strong>Balance:</strong> ${balanceResult.success ? balanceResult.balance + ' ETH' : 'Unable to fetch'}</p>
+            </div>
+          `,
           confirmButtonColor: "#0f7a4a",
         });
-        
-        // Get balance
-        setTimeout(() => {
-          if (window.ethereum && address) {
-            window.ethereum.request({
-              method: 'eth_getBalance',
-              params: [address, 'latest']
-            }).then(balance => {
-              const balanceInEth = parseInt(balance, 16) / Math.pow(10, 18);
-              setWalletInfo(prev => ({ ...prev, balance: balanceInEth.toFixed(4) }));
-            });
-          }
-        }, 1000);
+      } else {
+        throw new Error(result.error || 'Failed to connect wallet');
       }
     } catch (error) {
       console.error('❌ Connection failed:', error);
+      
+      let errorMessage = error.message || "Failed to connect wallet. Please try again.";
+      let troubleshootingTips = [
+        "• Make sure your wallet is installed and unlocked",
+        "• Allow popups for this site",
+        "• Try refreshing the page",
+        "• Check your internet connection"
+      ];
+      
+      // Specific error handling
+      if (error.message.includes('User rejected') || error.message.includes('rejected')) {
+        errorMessage = "Connection was cancelled. Please approve the connection request.";
+        troubleshootingTips = [
+          "• Click 'Connect' when prompted by your wallet",
+          "• Make sure you approve the connection request",
+          "• Try connecting again"
+        ];
+      } else if (error.message.includes('timeout')) {
+        errorMessage = "Connection timed out. Please try again.";
+        troubleshootingTips = [
+          "• Make sure your wallet is unlocked",
+          "• Check your internet connection",
+          "• Try refreshing the page"
+        ];
+      }
+      
       Swal.fire({
         icon: "error",
-        title: "Failed",
-        text: error.message,
+        title: "Connection Failed",
+        html: `
+          <div class="text-left">
+            <p class="mb-3">${errorMessage}</p>
+            <div class="p-2 bg-blue-50 rounded text-sm">
+              <p><strong>Troubleshooting:</strong></p>
+              <ul class="mt-1 space-y-1">
+                ${troubleshootingTips.map(tip => `<li>${tip}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        `,
         confirmButtonColor: "#0f7a4a",
       });
     } finally {

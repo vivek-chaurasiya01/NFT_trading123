@@ -36,51 +36,67 @@ const Signup = () => {
     }));
   };
 
-  // Connect real wallet (MetaMask, TrustWallet, etc.)
+  // Connect real wallet (MetaMask, TrustWallet, etc.) - Enhanced
   const connectWallet = async () => {
     try {
       setLoading(true);
       
       // Log debug info before connection attempt
-      console.log('🔄 Starting wallet connection...');
-      await walletDebug.logDebugInfo();
+      console.log('🔄 Starting wallet connection from signup...');
+      const debugInfo = await walletDebug.logDebugInfo();
       
-      // Check if wallet is installed
+      // Check browser compatibility first
       if (!walletDebug.isWalletInstalled()) {
+        const browserInfo = walletDebug.getBrowserInfo();
+        
         Swal.fire({
           icon: "warning",
           title: "No Wallet Found",
           html: `
             <div class="text-left">
-              <p>No cryptocurrency wallet detected.</p>
+              <p>No cryptocurrency wallet detected on your ${browserInfo.isMobile ? 'mobile device' : 'browser'}.</p>
               <div class="mt-3 p-3 bg-blue-50 rounded">
-                <p><strong>Please install one of these wallets:</strong></p>
+                <p><strong>For ${browserInfo.isMobile ? 'Mobile' : 'Desktop'} Users:</strong></p>
                 <ul class="mt-2 space-y-1">
-                  <li>• <a href="https://metamask.io" target="_blank" class="text-blue-600 underline">MetaMask</a> (Recommended)</li>
-                  <li>• <a href="https://trustwallet.com" target="_blank" class="text-blue-600 underline">Trust Wallet</a></li>
-                  <li>• <a href="https://wallet.coinbase.com" target="_blank" class="text-blue-600 underline">Coinbase Wallet</a></li>
+                  ${browserInfo.isMobile ? `
+                    <li>• <a href="https://metamask.app.link/dapp/${window.location.host}" target="_blank" class="text-blue-600 underline">Open in MetaMask App</a></li>
+                    <li>• <a href="https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(window.location.href)}" target="_blank" class="text-blue-600 underline">Open in Trust Wallet</a></li>
+                    <li>• <a href="https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(window.location.href)}" target="_blank" class="text-blue-600 underline">Open in Coinbase Wallet</a></li>
+                  ` : `
+                    <li>• <a href="https://metamask.io/download/" target="_blank" class="text-blue-600 underline">Install MetaMask</a> (Recommended)</li>
+                    <li>• <a href="https://trustwallet.com/browser-extension" target="_blank" class="text-blue-600 underline">Install Trust Wallet</a></li>
+                    <li>• <a href="https://wallet.coinbase.com/" target="_blank" class="text-blue-600 underline">Install Coinbase Wallet</a></li>
+                  `}
                 </ul>
-                <p class="mt-2 text-sm text-gray-600">After installation, refresh this page and try again.</p>
+                <p class="mt-2 text-sm text-gray-600">${browserInfo.isMobile ? 'Use the wallet app\'s built-in browser to access this site.' : 'After installation, refresh this page and try again.'}</p>
               </div>
             </div>
           `,
           confirmButtonColor: "#0f7a4a",
+          confirmButtonText: browserInfo.isMobile ? "I'll use wallet app" : "I'll install a wallet"
         });
         setLoading(false);
         return;
       }
       
+      // Show connection progress with environment info
+      const isProduction = import.meta.env.VITE_APP_ENV === 'production';
       Swal.fire({
         title: 'Connecting Wallet...',
         html: `
           <div class="text-left">
+            <p><strong>Environment:</strong> ${isProduction ? 'Production' : 'Development'}</p>
+            <p><strong>Network:</strong> ${isProduction ? 'Ethereum Mainnet' : 'Sepolia Testnet'}</p>
+            <hr class="my-3">
             <p>Please follow these steps:</p>
             <ol class="mt-2 space-y-1">
               <li>1. Select your wallet from the popup</li>
               <li>2. Approve the connection request</li>
-              <li>3. Wait for confirmation</li>
+              <li>3. ${isProduction ? 'Ensure you\'re on Ethereum Mainnet' : 'Switch to Sepolia testnet if needed'}</li>
+              <li>4. Wait for confirmation</li>
             </ol>
             <p class="mt-3 text-sm text-gray-600">If popup doesn't appear, check if it's blocked by your browser</p>
+            ${!isProduction ? '<p class="mt-2 text-sm text-orange-600"><strong>Note:</strong> You\'ll need Sepolia testnet ETH. Get it from <a href="https://sepoliafaucet.com" target="_blank" class="underline">Sepolia Faucet</a></p>' : ''}
           </div>
         `,
         allowOutsideClick: false,
@@ -89,12 +105,13 @@ const Signup = () => {
         }
       });
 
+      // Try to connect wallet with enhanced error handling
       const result = await realWalletService.connectWallet();
       
       if (result.success) {
         setConnectedWallet(result.account);
         
-        // Get balance
+        // Get balance and network info
         const balanceResult = await realWalletService.getBalance();
         const networkInfo = realWalletService.getNetworkInfo();
         
@@ -106,6 +123,7 @@ const Signup = () => {
               <p><strong>Address:</strong> ${result.account.substring(0, 6)}...${result.account.substring(38)}</p>
               <p><strong>Network:</strong> ${networkInfo.networkName}</p>
               <p><strong>Balance:</strong> ${balanceResult.success ? balanceResult.balance + ' ETH' : 'Unable to fetch'}</p>
+              <p><strong>Chain ID:</strong> ${result.network || 'Unknown'}</p>
             </div>
           `,
           confirmButtonColor: "#0f7a4a",
@@ -117,9 +135,38 @@ const Signup = () => {
       console.error('Wallet connection error:', error);
       
       let errorMessage = error.message || "Failed to connect wallet. Please try again.";
+      let troubleshootingTips = [
+        "• Install MetaMask, Trust Wallet, or Coinbase Wallet",
+        "• Allow popups in your browser", 
+        "• Refresh the page and try again",
+        "• Check if wallet is unlocked",
+        "• Try switching networks if needed"
+      ];
       
-      if (error.message.includes('timeout')) {
-        errorMessage = "Connection timed out. Please ensure your wallet is installed and try again.";
+      // Specific error handling
+      if (error.message.includes('timeout') || error.message.includes('Connection timeout')) {
+        errorMessage = "Connection timed out. Please ensure your wallet is installed and unlocked.";
+        troubleshootingTips = [
+          "• Make sure MetaMask/Trust Wallet is installed and unlocked",
+          "• Allow popups for this site",
+          "• Try refreshing the page",
+          "• Check your internet connection"
+        ];
+      } else if (error.message.includes('modal') || error.message.includes('Modal')) {
+        errorMessage = "Wallet modal failed to open. This might be a popup blocker issue.";
+        troubleshootingTips = [
+          "• Disable popup blocker for this site",
+          "• Try using a different browser",
+          "• Clear browser cache and cookies",
+          "• Disable browser extensions temporarily"
+        ];
+      } else if (error.message.includes('User rejected') || error.message.includes('rejected')) {
+        errorMessage = "Connection was cancelled. Please try again and approve the connection.";
+        troubleshootingTips = [
+          "• Click 'Connect' when prompted by your wallet",
+          "• Make sure you approve the connection request",
+          "• Check if the correct account is selected"
+        ];
       }
       
       Swal.fire({
@@ -127,20 +174,22 @@ const Signup = () => {
         title: "Connection Failed",
         html: `
           <div class="text-left">
-            <p>${errorMessage}</p>
-            <div class="mt-3 p-2 bg-blue-50 rounded text-sm">
+            <p class="mb-3">${errorMessage}</p>
+            <div class="p-2 bg-blue-50 rounded text-sm">
               <p><strong>Troubleshooting:</strong></p>
               <ul class="mt-1 space-y-1">
-                <li>• Install MetaMask or Trust Wallet</li>
-                <li>• Allow popups in your browser</li>
-                <li>• Refresh the page and try again</li>
-                <li>• Check if wallet is unlocked</li>
-                <li>• Try switching to Sepolia testnet</li>
+                ${troubleshootingTips.map(tip => `<li>${tip}</li>`).join('')}
               </ul>
+            </div>
+            <div class="mt-3 p-2 bg-gray-50 rounded text-xs">
+              <p><strong>Technical Details:</strong></p>
+              <p>Error: ${error.message}</p>
+              <p>Time: ${new Date().toLocaleTimeString()}</p>
             </div>
           </div>
         `,
         confirmButtonColor: "#0f7a4a",
+        confirmButtonText: "Try Again"
       });
     } finally {
       setLoading(false);
@@ -693,7 +742,7 @@ const Signup = () => {
                         onClick={connectWallet}
                         disabled={loading}
                         aria-label="Connect cryptocurrency wallet"
-                        className="w-full bg-[#0f7a4a] text-white py-3 px-4 rounded-md font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors disabled:opacity-50"
+                        className="w-full bg-[#0f7a4a] text-white py-3 px-4 rounded-md font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <FaWallet />
                         {loading ? 'Connecting...' : 'Connect Real Wallet'}

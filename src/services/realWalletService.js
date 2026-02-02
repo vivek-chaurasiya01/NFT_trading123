@@ -1,133 +1,290 @@
-// RealWalletService.js
+// RealWalletService.js - Fixed for both localhost and production
 import { createAppKit } from "@reown/appkit";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
-import { sepolia } from "viem/chains";
+import { sepolia, mainnet } from "viem/chains";
 import { parseEther, formatEther } from "viem";
-// import {
-//   getBalance,
-//   sendTransaction,
-//   waitForTransactionReceipt,
-//   watchAccount,
-// } from "@wagmi/core";
+import {
+  getBalance,
+  sendTransaction,
+  waitForTransactionReceipt,
+  getAccount,
+  getChainId,
+} from "@wagmi/core";
 import networkUtils from "../utils/networkUtils";
+import envConfig from "../config/environment";
+import fallbackWalletConnection from "../utils/fallbackWallet";
 
 /* ------------------------------------------------------------------ */
-/* CONFIG */
+/* CONFIG - Environment-based configuration */
 /* ------------------------------------------------------------------ */
 
-const projectId =
-  import.meta.env.VITE_REOWN_PROJECT_ID || "5af094431cbc89a0153658536ff59fcc";
+const { projectId, companyWallet, isProduction, ethPriceUSD, walletSettings, appMetadata } = envConfig;
 
-const COMPANY_WALLET = "0x24d77352bf8cc9165cdd1eb781eca3fae75a778f";
+// Network configuration based on environment
+const networks = isProduction ? [mainnet, sepolia] : [sepolia];
+const defaultChainId = isProduction ? 1 : 11155111; // Mainnet : Sepolia
 
 /* ------------------------------------------------------------------ */
-/* SINGLETON WALLET KIT (VERY IMPORTANT) */
+/* SINGLETON WALLET KIT - Fixed initialization */
 /* ------------------------------------------------------------------ */
 
 let modalInstance = null;
 let wagmiAdapterInstance = null;
+let isInitialized = false;
 
-function getWalletKit() {
-  if (!wagmiAdapterInstance) {
+function initializeWalletKit() {
+  if (isInitialized) {
+    return {
+      modal: modalInstance,
+      wagmiConfig: wagmiAdapterInstance?.wagmiConfig,
+    };
+  }
+
+  try {
+    console.log('🔄 Initializing WalletKit with Project ID:', projectId);
+    
+    // Create Wagmi adapter
     wagmiAdapterInstance = new WagmiAdapter({
       projectId,
-      networks: [sepolia],
+      networks,
     });
-  }
 
-  if (!modalInstance) {
+    // Create AppKit modal
     modalInstance = createAppKit({
       adapters: [wagmiAdapterInstance],
-      networks: [sepolia],
+      networks,
       projectId,
-      metadata: {
-        name: "GrowTradeNFT",
-        description: "NFT Trading Platform",
-        url:
-          typeof window !== "undefined"
-            ? window.location.origin
-            : "https://gtnworld.live",
-        icons: ["https://avatars.githubusercontent.com/u/37784886"],
-      },
-      enableAnalytics: false,
-      enableOnramp: false,
+      metadata: appMetadata,
+      enableAnalytics: walletSettings.enableAnalytics,
+      enableOnramp: walletSettings.enableOnramp,
       enableInjected: true,
       allWallets: "SHOW",
-      themeMode: "light",
+      themeMode: walletSettings.themeMode,
+      featuredWalletIds: walletSettings.featuredWallets,
     });
-  }
 
-  return {
-    modal: modalInstance,
-    wagmiConfig: wagmiAdapterInstance.wagmiConfig,
-  };
+    isInitialized = true;
+    console.log('✅ WalletKit initialized successfully');
+    
+    return {
+      modal: modalInstance,
+      wagmiConfig: wagmiAdapterInstance.wagmiConfig,
+    };
+  } catch (error) {
+    console.error('❌ WalletKit initialization failed:', error);
+    throw error;
+  }
 }
 
 /* ------------------------------------------------------------------ */
-/* SERVICE */
+/* SERVICE CLASS */
 /* ------------------------------------------------------------------ */
 
 class RealWalletService {
   constructor() {
-    const { modal, wagmiConfig } = getWalletKit();
-
-    this.modal = modal;
-    this.wagmiConfig = wagmiConfig;
-
     this.account = null;
     this.isConnected = false;
-    this.unsubscribe = null;
+    this.chainId = null;
+    this.modal = null;
+    this.wagmiConfig = null;
+    this.connectionPromise = null;
+    
+    // Initialize on construction
+    this.initialize();
   }
 
-  /* -------------------- CONNECT WALLET -------------------- */
+  initialize() {
+    try {
+      const { modal, wagmiConfig } = initializeWalletKit();
+      this.modal = modal;
+      this.wagmiConfig = wagmiConfig;
+      
+      // Check if already connected
+      this.checkExistingConnection();
+    } catch (error) {
+      console.error('❌ Service initialization failed:', error);
+    }
+  }
+
+  async checkExistingConnection() {
+    try {
+      if (!this.wagmiConfig) return;
+      
+      const account = getAccount(this.wagmiConfig);
+      const chainId = getChainId(this.wagmiConfig);
+      
+      if (account?.address) {
+        this.account = account.address;
+        this.isConnected = true;
+        this.chainId = chainId;
+        console.log('✅ Existing connection found:', this.account);
+      }
+    } catch (error) {
+      console.log('ℹ️ No existing connection found');
+    }
+  }
+
+  /* -------------------- CONNECT WALLET - Fixed -------------------- */
 
   async connectWallet() {
+    // Prevent multiple simultaneous connection attempts
+    if (this.connectionPromise) {
+      console.log('🔄 Connection already in progress...');
+      return this.connectionPromise;
+    }
+
+    this.connectionPromise = this._performConnection();
+    
+    try {
+      const result = await this.connectionPromise;
+      
+      // If Reown connection fails, try fallback
+      if (!result.success && fallbackWalletConnection.isMetaMaskAvailable()) {
+        console.log('🔄 Trying fallback MetaMask connection...');
+        const fallbackResult = await this._tryFallbackConnection();
+        return fallbackResult;
+      }
+      
+      return result;
+    } finally {
+      this.connectionPromise = null;
+    }
+  }
+
+  async _performConnection() {
     try {
       console.log("🔄 Starting wallet connection...");
 
       if (!networkUtils.isBrowser()) {
-        return { success: false, error: "Not in browser" };
+        throw new Error("Not in browser environment");
       }
 
-      return await new Promise(async (resolve, reject) => {
-        // 🔥 Listen FIRST
-        const unsubscribe = this.modal.subscribeAccount((account) => {
-          console.log("🔄 Account event:", account);
+      // Ensure modal is initialized
+      if (!this.modal || !this.wagmiConfig) {
+        console.log('🔄 Reinitializing wallet kit...');
+        this.initialize();
+        
+        if (!this.modal) {
+          throw new Error("Wallet modal failed to initialize");
+        }
+      }
 
-          if (account?.address) {
-            this.account = account.address;
-            this.isConnected = true;
+      // Check if already connected
+      if (this.isConnected && this.account) {
+        console.log('✅ Already connected to:', this.account);
+        return {
+          success: true,
+          account: this.account,
+          network: this.chainId,
+          method: "existing",
+        };
+      }
 
-            unsubscribe(); // 🔥 VERY IMPORTANT
+      return await new Promise((resolve, reject) => {
+        let resolved = false;
+        let timeoutId;
+        let unsubscribeFunction;
+        
+        // Set up account subscription with proper error handling
+        try {
+          unsubscribeFunction = this.modal.subscribeAccount((account) => {
+            console.log("🔄 Account subscription event:", account);
 
-            resolve({
-              success: true,
-              account: account.address,
-              network: account.chainId,
-              method: "reown",
-            });
+            if (account?.address && account.isConnected && !resolved) {
+              resolved = true;
+              clearTimeout(timeoutId);
+              
+              this.account = account.address;
+              this.isConnected = true;
+              this.chainId = account.chainId;
+
+              console.log('✅ Wallet connected successfully:', {
+                address: this.account,
+                chainId: this.chainId
+              });
+
+              // Close modal after successful connection
+              setTimeout(() => {
+                if (this.modal) {
+                  try {
+                    this.modal.close();
+                  } catch (closeError) {
+                    console.warn('Modal close warning:', closeError);
+                  }
+                }
+              }, 1000);
+
+              // Safe unsubscribe
+              if (typeof unsubscribeFunction === 'function') {
+                try {
+                  unsubscribeFunction();
+                } catch (unsubError) {
+                  console.warn('Unsubscribe warning:', unsubError);
+                }
+              }
+              
+              resolve({
+                success: true,
+                account: this.account,
+                network: this.chainId,
+                method: "reown",
+              });
+            }
+          });
+        } catch (subscribeError) {
+          console.error('Subscription error:', subscribeError);
+          reject(new Error(`Failed to set up wallet subscription: ${subscribeError.message}`));
+          return;
+        }
+
+        // Set up timeout
+        timeoutId = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            // Safe unsubscribe on timeout
+            if (typeof unsubscribeFunction === 'function') {
+              try {
+                unsubscribeFunction();
+              } catch (unsubError) {
+                console.warn('Timeout unsubscribe warning:', unsubError);
+              }
+            }
+            reject(new Error("Connection timeout - Please try again"));
           }
-        });
+        }, walletSettings.timeout); // Use environment-based timeout
 
-        // 🔥 THEN open modal
-        await this.modal.open({ view: "Connect" });
-
-        // Safety timeout
-        setTimeout(() => {
-          unsubscribe();
-          reject(new Error("Wallet not connected"));
-        }, 30000);
+        // Open modal with error handling
+        this.modal.open({ view: "Connect" })
+          .then(() => {
+            console.log("✅ Modal opened successfully");
+          })
+          .catch((modalError) => {
+            console.error("❌ Modal open error:", modalError);
+            if (!resolved) {
+              resolved = true;
+              clearTimeout(timeoutId);
+              // Safe unsubscribe on modal error
+              if (typeof unsubscribeFunction === 'function') {
+                try {
+                  unsubscribeFunction();
+                } catch (unsubError) {
+                  console.warn('Modal error unsubscribe warning:', unsubError);
+                }
+              }
+              reject(new Error(`Failed to open wallet modal: ${modalError.message}`));
+            }
+          });
       });
     } catch (error) {
       console.error("❌ Wallet connect error:", error);
       return {
         success: false,
-        error: error.message,
+        error: error.message || "Failed to connect wallet",
       };
     }
   }
 
-  /* -------------------- BALANCE -------------------- */
+  /* -------------------- BALANCE - Fixed -------------------- */
 
   async getBalance() {
     try {
@@ -135,21 +292,31 @@ class RealWalletService {
         throw new Error("Wallet not connected");
       }
 
+      if (!this.wagmiConfig) {
+        throw new Error("Wagmi config not available");
+      }
+
       const balance = await getBalance(this.wagmiConfig, {
         address: this.account,
       });
 
+      const balanceInEth = Number(formatEther(balance.value)).toFixed(4);
+      
       return {
         success: true,
-        balance: Number(formatEther(balance.value)).toFixed(4),
+        balance: balanceInEth,
         balanceWei: balance.value.toString(),
       };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('❌ Balance fetch error:', error);
+      return { 
+        success: false, 
+        error: error.message || "Failed to fetch balance" 
+      };
     }
   }
 
-  /* -------------------- SEND PAYMENT -------------------- */
+  /* -------------------- SEND PAYMENT - Fixed -------------------- */
 
   async sendPayment(amountInUSD) {
     try {
@@ -157,80 +324,189 @@ class RealWalletService {
         throw new Error("Wallet not connected");
       }
 
-      const ethAmount = (amountInUSD / 2000).toFixed(6);
+      if (!this.wagmiConfig) {
+        throw new Error("Wagmi config not available");
+      }
+
+      // Get current ETH price (simplified - in production use real API)
+      const ethAmount = (amountInUSD / ethPriceUSD).toFixed(6);
       const value = parseEther(ethAmount);
 
+      console.log(`💰 Sending payment: $${amountInUSD} = ${ethAmount} ETH`);
+
       const hash = await sendTransaction(this.wagmiConfig, {
-        to: COMPANY_WALLET,
+        to: companyWallet,
         value,
-        chainId: 11155111,
+        chainId: this.chainId || defaultChainId,
       });
+
+      console.log('✅ Transaction sent:', hash);
 
       return {
         success: true,
         txHash: hash,
-        amountETH: ethAmount,
+        amount: ethAmount,
         amountUSD: amountInUSD,
+        to: companyWallet,
+        from: this.account,
+        chainId: this.chainId,
       };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error("❌ Payment error:", error);
+      return { 
+        success: false, 
+        error: error.message || "Payment failed" 
+      };
     }
   }
 
-  /* -------------------- TX CONFIRM -------------------- */
+  /* -------------------- TX VALIDATION - Fixed -------------------- */
 
   async validateTransaction(txHash) {
     try {
+      if (!txHash) {
+        throw new Error("Transaction hash is required");
+      }
+
+      if (!this.wagmiConfig) {
+        throw new Error("Wagmi config not available");
+      }
+
+      console.log("🔄 Validating transaction:", txHash);
+      
       const receipt = await waitForTransactionReceipt(this.wagmiConfig, {
         hash: txHash,
+        timeout: 120000, // 2 minutes timeout
       });
+
+      console.log('✅ Transaction confirmed:', receipt);
 
       return {
         success: true,
-        status: receipt.status,
+        status: receipt.status === "success" ? "confirmed" : "failed",
         receipt,
+        blockNumber: receipt.blockNumber?.toString(),
+        gasUsed: receipt.gasUsed?.toString(),
       };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error("❌ Transaction validation error:", error);
+      return { 
+        success: false, 
+        error: error.message || "Transaction validation failed" 
+      };
     }
   }
 
-  /* -------------------- DISCONNECT -------------------- */
+  /* -------------------- DISCONNECT - Fixed -------------------- */
 
   async disconnect() {
     try {
-      if (this.unsubscribe) {
-        this.unsubscribe();
-        this.unsubscribe = null;
+      console.log("🔄 Disconnecting wallet...");
+      
+      // Close modal if open
+      if (this.modal) {
+        try {
+          await this.modal.close();
+        } catch (error) {
+          console.warn('Modal close warning:', error);
+        }
       }
 
-      await this.modal.close();
-
+      // Reset state
       this.account = null;
       this.isConnected = false;
+      this.chainId = null;
 
+      console.log("✅ Wallet disconnected successfully");
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error("❌ Disconnect error:", error);
+      // Force reset state even on error
+      this.account = null;
+      this.isConnected = false;
+      this.chainId = null;
+      return { 
+        success: false, 
+        error: error.message || "Disconnect failed" 
+      };
     }
   }
 
-  /* -------------------- HELPERS -------------------- */
+  /* -------------------- HELPERS - Enhanced -------------------- */
 
   isWalletConnected() {
-    return this.isConnected;
+    return this.isConnected && !!this.account;
   }
 
   getAccount() {
     return this.account;
   }
 
+  getChainId() {
+    return this.chainId;
+  }
+
   getNetworkInfo() {
-    return {
-      networkId: 11155111,
-      networkName: "Sepolia Testnet",
+    const networks = {
+      1: { networkId: 1, networkName: "Ethereum Mainnet" },
+      11155111: { networkId: 11155111, networkName: "Sepolia Testnet" },
     };
+    
+    return networks[this.chainId] || {
+      networkId: this.chainId || defaultChainId,
+      networkName: "Unknown Network",
+    };
+  }
+
+  // Get modal instance for external use
+  getModal() {
+    return this.modal;
+  }
+
+  // Force reinitialize if needed
+  async reinitialize() {
+    console.log('🔄 Force reinitializing wallet service...');
+    isInitialized = false;
+    modalInstance = null;
+    wagmiAdapterInstance = null;
+    this.initialize();
+  }
+
+  // Fallback connection method
+  async _tryFallbackConnection() {
+    try {
+      console.log('🔄 Attempting fallback connection...');
+      
+      const result = await fallbackWalletConnection.connectMetaMask();
+      
+      if (result.success) {
+        this.account = result.account;
+        this.isConnected = true;
+        this.chainId = result.chainId;
+        
+        console.log('✅ Fallback connection successful:', {
+          address: this.account,
+          chainId: this.chainId
+        });
+        
+        return {
+          success: true,
+          account: this.account,
+          network: this.chainId,
+          method: "fallback_metamask",
+        };
+      } else {
+        throw new Error(result.error || 'Fallback connection failed');
+      }
+    } catch (error) {
+      console.error('❌ Fallback connection failed:', error);
+      return {
+        success: false,
+        error: error.message || "All connection methods failed",
+      };
+    }
   }
 }
 
+// Export singleton instance
 export default new RealWalletService();

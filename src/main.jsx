@@ -7,13 +7,22 @@ import "./index.css";
 import App from "./App.jsx";
 import realWalletService from "./services/realWalletService.js";
 
-// ✅ IMPORT SAME wagmiConfig FROM SERVICE
-// import walletService from "./services/RealWalletService";
+// Create QueryClient with optimized settings
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-const queryClient = new QueryClient();
+// Initialize wallet service
+console.log('🚀 Initializing wallet service...');
+realWalletService.initialize();
 
 createRoot(document.getElementById("root")).render(
-  // ❌ StrictMode hata diya (DEV me)
   <WagmiProvider config={realWalletService.wagmiConfig}>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
