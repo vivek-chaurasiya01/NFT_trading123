@@ -69,14 +69,14 @@ export const walletDebug = {
     }
   },
 
-  // Get detailed wallet info
+  // Enhanced wallet detection
   getWalletInfo() {
     if (typeof window === 'undefined') return null;
     
     const info = {
       hasEthereum: !!window.ethereum,
       isMetaMask: !!(window.ethereum && window.ethereum.isMetaMask),
-      isTrust: !!(window.ethereum && window.ethereum.isTrust),
+      isTrust: !!(window.ethereum && (window.ethereum.isTrust || window.ethereum.isTrustWallet)),
       isCoinbase: !!(window.ethereum && (window.ethereum.isCoinbaseWallet || window.ethereum.isWalletLink)),
       isRabby: !!(window.ethereum && window.ethereum.isRabby),
       providers: [],
@@ -89,7 +89,7 @@ export const walletDebug = {
         info.injectedProviders = window.ethereum.providers.length;
         info.providers = window.ethereum.providers.map(p => ({
           isMetaMask: !!p.isMetaMask,
-          isTrust: !!p.isTrust,
+          isTrust: !!(p.isTrust || p.isTrustWallet),
           isCoinbaseWallet: !!(p.isCoinbaseWallet || p.isWalletLink),
           isRabby: !!p.isRabby,
           name: this.getProviderName(p)
@@ -98,7 +98,7 @@ export const walletDebug = {
         info.injectedProviders = 1;
         info.providers.push({
           isMetaMask: !!window.ethereum.isMetaMask,
-          isTrust: !!window.ethereum.isTrust,
+          isTrust: !!(window.ethereum.isTrust || window.ethereum.isTrustWallet),
           isCoinbaseWallet: !!(window.ethereum.isCoinbaseWallet || window.ethereum.isWalletLink),
           isRabby: !!window.ethereum.isRabby,
           name: this.getProviderName(window.ethereum)
@@ -112,7 +112,7 @@ export const walletDebug = {
   // Get provider name
   getProviderName(provider) {
     if (provider.isMetaMask) return 'MetaMask';
-    if (provider.isTrust) return 'Trust Wallet';
+    if (provider.isTrust || provider.isTrustWallet) return 'Trust Wallet';
     if (provider.isCoinbaseWallet || provider.isWalletLink) return 'Coinbase Wallet';
     if (provider.isRabby) return 'Rabby Wallet';
     return 'Unknown Wallet';

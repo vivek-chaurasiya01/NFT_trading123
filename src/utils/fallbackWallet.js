@@ -74,11 +74,108 @@ export const fallbackWalletConnection = {
     }
   },
 
+  // Direct Trust Wallet connection
+  async connectTrustWallet() {
+    try {
+      if (!window.ethereum) {
+        throw new Error('Trust Wallet not available');
+      }
+
+      // Check if it's Trust Wallet
+      const isTrustWallet = window.ethereum.isTrust || 
+                           window.ethereum.isTrustWallet ||
+                           window.trustwallet;
+
+      console.log('🔄 Attempting Trust Wallet connection...', { isTrustWallet });
+      
+      // Request account access
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      });
+
+      if (accounts.length === 0) {
+        throw new Error('No accounts found');
+      }
+
+      const address = accounts[0];
+      
+      // Get chain ID
+      const chainId = await window.ethereum.request({
+        method: 'eth_chainId'
+      });
+
+      console.log('✅ Trust Wallet connection successful:', {
+        address,
+        chainId: parseInt(chainId, 16)
+      });
+
+      return {
+        success: true,
+        account: address,
+        chainId: parseInt(chainId, 16),
+        method: 'direct_trustwallet'
+      };
+    } catch (error) {
+      console.error('❌ Trust Wallet connection failed:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to connect Trust Wallet'
+      };
+    }
+  },
+
   // Check if MetaMask is available
   isMetaMaskAvailable() {
     return typeof window !== 'undefined' && 
            typeof window.ethereum !== 'undefined' && 
            window.ethereum.isMetaMask;
+  },
+
+  // Auto-detect and connect appropriate wallet
+  async connectAnyWallet() {
+    try {
+      if (!window.ethereum) {
+        throw new Error('No wallet available');
+      }
+
+      console.log('🔄 Auto-detecting wallet type...');
+      
+      // Check wallet type and connect accordingly
+      if (this.isTrustWalletAvailable()) {
+        console.log('🔄 Trust Wallet detected');
+        return await this.connectTrustWallet();
+      } else if (this.isMetaMaskAvailable()) {
+        console.log('🔄 MetaMask detected');
+        return await this.connectMetaMask();
+      } else {
+        console.log('🔄 Generic wallet detected');
+        // Generic connection for other wallets
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts'
+        });
+        
+        if (accounts.length === 0) {
+          throw new Error('No accounts found');
+        }
+        
+        const chainId = await window.ethereum.request({
+          method: 'eth_chainId'
+        });
+        
+        return {
+          success: true,
+          account: accounts[0],
+          chainId: parseInt(chainId, 16),
+          method: 'direct_generic'
+        };
+      }
+    } catch (error) {
+      console.error('❌ Auto wallet connection failed:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to connect wallet'
+      };
+    }
   },
 
   // Switch to correct network

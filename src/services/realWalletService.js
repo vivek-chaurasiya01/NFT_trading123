@@ -139,8 +139,8 @@ class RealWalletService {
       const result = await this.connectionPromise;
       
       // If Reown connection fails, try fallback
-      if (!result.success && fallbackWalletConnection.isMetaMaskAvailable()) {
-        console.log('🔄 Trying fallback MetaMask connection...');
+      if (!result.success && (fallbackWalletConnection.isMetaMaskAvailable() || fallbackWalletConnection.isTrustWalletAvailable())) {
+        console.log('🔄 Trying fallback wallet connection...');
         const fallbackResult = await this._tryFallbackConnection();
         return fallbackResult;
       }
@@ -502,7 +502,8 @@ class RealWalletService {
     try {
       console.log('🔄 Attempting fallback connection...');
       
-      const result = await fallbackWalletConnection.connectMetaMask();
+      // Use auto-detect method for any wallet
+      const result = await fallbackWalletConnection.connectAnyWallet();
       
       if (result.success) {
         this.account = result.account;
@@ -516,14 +517,15 @@ class RealWalletService {
         
         console.log('✅ Fallback connection successful:', {
           address: this.account,
-          chainId: this.chainId
+          chainId: this.chainId,
+          method: result.method
         });
         
         return {
           success: true,
           account: this.account,
           network: this.chainId,
-          method: "fallback_metamask",
+          method: result.method,
         };
       } else {
         throw new Error(result.error || 'Fallback connection failed');
