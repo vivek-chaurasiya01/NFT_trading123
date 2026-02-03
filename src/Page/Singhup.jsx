@@ -7,9 +7,23 @@ import realWalletService from "../services/realWalletService";
 import walletDebug from "../utils/walletDebug";
 import networkChecker from "../utils/networkChecker";
 import "../styles/modal-fix.css";
+import { useLocation } from "react-router-dom";
 
 const Signup = () => {
   const navigate = useNavigate();
+
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const ref = params.get("ref");
+
+    if (ref) {
+      setFormData((prev) => ({
+        ...prev,
+        referralCode: ref,
+      }));
+    }
+  }, [location]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -29,6 +43,8 @@ const Signup = () => {
     walletDebug.logDebugInfo();
     networkChecker.logNetworkInfo(); // Show network info
   }, []);
+
+  // const location = useLocation();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -739,9 +755,10 @@ const Signup = () => {
                   <input
                     type="text"
                     name="referralCode"
-                    placeholder="Enter referral code if you have one"
+                    placeholder="Referral code"
                     value={formData.referralCode}
                     onChange={handleChange}
+                    readOnly={!!formData.referralCode} // 👈 important
                     className="w-full mt-2 px-4 py-[14px] rounded-md bg-[#eef6f1] border"
                     required
                   />
