@@ -735,9 +735,7 @@ const Signup = () => {
                 </div>
 
                 <div className="mt-4">
-                  <label className="text-sm font-semibold">
-                    Referral Code (Optional)
-                  </label>
+                  <label className="text-sm font-semibold">Referral Code</label>
                   <input
                     type="text"
                     name="referralCode"
