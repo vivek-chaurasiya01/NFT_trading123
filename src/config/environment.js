@@ -72,9 +72,27 @@ export const envConfig = {
   get tokenPriceUSD() {
     const networkType = import.meta.env.VITE_NETWORK_TYPE || "eth";
     if (networkType === "bnb") {
-      return 600; // BNB price in USD
+      return 774; // Updated BNB price in USD (current market price)
     }
     return this.isProduction ? 2500 : 2000; // ETH price
+  },
+
+  // Dynamic price fetching
+  async fetchCurrentBNBPrice() {
+    try {
+      const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT');
+      const data = await response.json();
+      return parseFloat(data.price);
+    } catch (error) {
+      console.warn('Failed to fetch current BNB price, using fallback:', error);
+      return 774; // Fallback price
+    }
+  },
+
+  // Calculate exact BNB amount for USD
+  async calculateBNBForUSD(usdAmount) {
+    const currentPrice = await this.fetchCurrentBNBPrice();
+    return (usdAmount / currentPrice).toFixed(6);
   },
 
   // Wallet Connection Settings
