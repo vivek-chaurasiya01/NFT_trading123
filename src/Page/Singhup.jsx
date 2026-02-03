@@ -288,40 +288,44 @@ const Signup = () => {
 
       // Force switch to BSC network first
       try {
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        });
         const currentChainId = parseInt(chainId, 16);
-        
+
         if (currentChainId !== 56) {
           // Switch to BSC Mainnet
           try {
             await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x38' }] // BSC Mainnet
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: "0x38" }], // BSC Mainnet
             });
           } catch (switchError) {
             if (switchError.code === 4902) {
               // Add BSC network if not exists
               await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0x38',
-                  chainName: 'BSC Mainnet',
-                  rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                  blockExplorerUrls: ['https://bscscan.com'],
-                  nativeCurrency: {
-                    name: 'BNB',
-                    symbol: 'BNB',
-                    decimals: 18
-                  }
-                }]
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: "0x38",
+                    chainName: "BSC Mainnet",
+                    rpcUrls: ["https://bsc-dataseed.binance.org/"],
+                    blockExplorerUrls: ["https://bscscan.com"],
+                    nativeCurrency: {
+                      name: "BNB",
+                      symbol: "BNB",
+                      decimals: 18,
+                    },
+                  },
+                ],
               });
             } else {
               throw switchError;
             }
           }
-          
+
           // Wait for network switch
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       } catch (networkError) {
         Swal.fire({
@@ -373,17 +377,19 @@ const Signup = () => {
       // Calculate BNB amount (BNB price = $774 - current market price)
       const bnbAmount = (planAmount / 774).toFixed(6);
       const valueInWei = (parseFloat(bnbAmount) * Math.pow(10, 18)).toString();
-      const valueHex = '0x' + parseInt(valueInWei).toString(16);
+      const valueHex = "0x" + parseInt(valueInWei).toString(16);
 
       // Send BNB transaction directly
       const txHash = await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: connectedWallet,
-          to: import.meta.env.VITE_COMPANY_WALLET,
-          value: valueHex,
-          chainId: '0x38' // BSC Mainnet
-        }],
+        method: "eth_sendTransaction",
+        params: [
+          {
+            from: connectedWallet,
+            to: import.meta.env.VITE_COMPANY_WALLET,
+            value: valueHex,
+            chainId: "0x38", // BSC Mainnet
+          },
+        ],
       });
 
       const paymentResult = {
@@ -391,7 +397,7 @@ const Signup = () => {
         txHash: txHash,
         amount: bnbAmount,
         amountUSD: planAmount,
-        tokenSymbol: 'BNB'
+        tokenSymbol: "BNB",
       };
 
       if (paymentResult.success) {
@@ -406,7 +412,7 @@ const Signup = () => {
         });
 
         // Simple validation - wait 3 seconds
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
 
         // Activate wallet on backend
         await walletAPI.activate({
@@ -428,7 +434,7 @@ const Signup = () => {
       }
     } catch (error) {
       console.error("Payment error:", error);
-      
+
       Swal.fire({
         icon: "error",
         title: "Payment Failed",
@@ -739,6 +745,7 @@ const Signup = () => {
                     value={formData.referralCode}
                     onChange={handleChange}
                     className="w-full mt-2 px-4 py-[14px] rounded-md bg-[#eef6f1] border"
+                    required
                   />
                 </div>
               </div>
