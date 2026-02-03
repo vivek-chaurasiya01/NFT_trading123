@@ -344,7 +344,7 @@ const Signup = () => {
             <p><strong>Amount:</strong> $${planAmount} USD</p>
             <p><strong>Network:</strong> BSC Mainnet</p>
             <p><strong>Currency:</strong> BNB</p>
-            <p><strong>Estimated BNB:</strong> ${(planAmount / 600).toFixed(4)} BNB</p>
+            <p><strong>Estimated BNB:</strong> ${(planAmount / 774).toFixed(4)} BNB</p>
           </div>
         `,
         icon: "question",
@@ -370,8 +370,8 @@ const Signup = () => {
         },
       });
 
-      // Calculate BNB amount (BNB price = $600)
-      const bnbAmount = (planAmount / 600).toFixed(6);
+      // Calculate BNB amount (BNB price = $774 - current market price)
+      const bnbAmount = (planAmount / 774).toFixed(6);
       const valueInWei = (parseFloat(bnbAmount) * Math.pow(10, 18)).toString();
       const valueHex = '0x' + parseInt(valueInWei).toString(16);
 
