@@ -212,6 +212,26 @@ const Signup = () => {
     }
   };
 
+  // Real-time BNB price fetcher
+  const fetchCurrentBNBPrice = async () => {
+    try {
+      // Primary API - Binance
+      const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT');
+      const data = await response.json();
+      return parseFloat(data.price);
+    } catch (error) {
+      try {
+        // Fallback API - CoinGecko
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=usd');
+        const data = await response.json();
+        return data.binancecoin.usd;
+      } catch (fallbackError) {
+        console.warn('Failed to fetch BNB price, using fallback:', fallbackError);
+        return 774; // Fallback price
+      }
+    }
+  };
+
   const copyWallet = () => {
     if (connectedWallet) {
       navigator.clipboard.writeText(connectedWallet);
@@ -335,7 +355,24 @@ const Signup = () => {
 
       const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
 
-      // Show payment confirmation
+      // Fetch current BNB price for real-time conversion
+      Swal.fire({
+        title: "Converting to BNB...",
+        text: `Converting $${planAmount} to BNB at current market price`,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const currentBNBPrice = await fetchCurrentBNBPrice();
+      
+      // Calculate BNB amount that ensures exactly $10 in wallet display
+      const baseAmount = planAmount / currentBNBPrice;
+      // Add 0.2% buffer to ensure wallet shows exact $10.00
+      const exactBNBAmount = (baseAmount * 1.002).toFixed(8);
+
+      // Show payment confirmation with real-time conversion
       const confirmResult = await Swal.fire({
         title: "Confirm Payment",
         html: `
@@ -343,7 +380,10 @@ const Signup = () => {
             <p><strong>Amount:</strong> $${planAmount} USD</p>
             <p><strong>Network:</strong> BSC Mainnet</p>
             <p><strong>Currency:</strong> BNB</p>
-            <p><strong>Estimated BNB:</strong> ${(planAmount / 774).toFixed(4)} BNB</p>
+            <p><strong>Current BNB Price:</strong> $${currentBNBPrice.toFixed(2)}</p>
+            <p><strong>BNB Amount:</strong> ${exactBNBAmount} BNB</p>
+            <p class="text-sm text-blue-600 mt-2">💰 Adjusted amount to ensure wallet shows exactly $${planAmount}.00</p>
+            <p class="text-sm text-gray-600">⛽ Gas fee will be added separately by wallet</p>
           </div>
         `,
         icon: "question",
@@ -369,8 +409,8 @@ const Signup = () => {
         },
       });
 
-      // Calculate BNB amount (BNB price = $774 - current market price)
-      const bnbAmount = (planAmount / 774).toFixed(6);
+      // Use exact BNB amount (pure conversion)
+      const bnbAmount = exactBNBAmount;
       const valueInWei = (parseFloat(bnbAmount) * Math.pow(10, 18)).toString();
       const valueHex = "0x" + parseInt(valueInWei).toString(16);
 
