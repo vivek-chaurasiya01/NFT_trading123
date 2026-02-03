@@ -29,7 +29,7 @@ const SimpleNFTTest = () => {
       setError(err.response?.data || err.message);
     }
   };
-
+//  hello vivek
   return (
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4">Simple NFT Test</h2>
@@ -38,7 +38,7 @@ const SimpleNFTTest = () => {
         onClick={testNFTAPI}
         className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
       >
-        Test NFT API
+        Test NFT API 
       </button>
 
       {data && (
