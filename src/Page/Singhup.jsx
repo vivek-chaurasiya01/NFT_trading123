@@ -216,17 +216,24 @@ const Signup = () => {
   const fetchCurrentBNBPrice = async () => {
     try {
       // Primary API - Binance
-      const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT');
+      const response = await fetch(
+        "https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT",
+      );
       const data = await response.json();
       return parseFloat(data.price);
     } catch (error) {
       try {
         // Fallback API - CoinGecko
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=usd');
+        const response = await fetch(
+          "https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=usd",
+        );
         const data = await response.json();
         return data.binancecoin.usd;
       } catch (fallbackError) {
-        console.warn('Failed to fetch BNB price, using fallback:', fallbackError);
+        console.warn(
+          "Failed to fetch BNB price, using fallback:",
+          fallbackError,
+        );
         return 774; // Fallback price
       }
     }
@@ -366,13 +373,14 @@ const Signup = () => {
       });
 
       const currentBNBPrice = await fetchCurrentBNBPrice();
-      
+
       // Fixed BNB amounts for consistent payments
       const fixedBNBAmounts = {
-        basic: "0.014",    // Fixed 0.014 BNB for $10 plan
-        premium: "0.028"   // Fixed 0.028 BNB for $20 plan  
+        basic: "0.014", // Fixed 0.014 BNB for $10 plan
+        premium: "0.028", // Fixed 0.028 BNB for $20 plan
       };
-      const exactBNBAmount = fixedBNBAmounts[formData.selectedPlan] || fixedBNBAmounts.basic;
+      const exactBNBAmount =
+        fixedBNBAmounts[formData.selectedPlan] || fixedBNBAmounts.basic;
 
       // Show payment confirmation with real-time conversion
       const confirmResult = await Swal.fire({
@@ -383,9 +391,9 @@ const Signup = () => {
             <p><strong>Network:</strong> BSC Mainnet</p>
             <p><strong>Currency:</strong> BNB</p>
             <p><strong>Current BNB Price:</strong> $${currentBNBPrice.toFixed(2)}</p>
-            <p><strong>BNB Amount:</strong> ${exactBNBAmount} BNB (Fixed)</p>
-            <p class="text-sm text-blue-600 mt-2">💰 Fixed amount: Basic = 0.014 BNB, Premium = 0.028 BNB</p>
-            <p class="text-sm text-gray-600">⛽ Gas fee will be added separately by wallet</p>
+            <p><strong>BNB Amount:</strong> ${exactBNBAmount} BNB </p>
+          
+            
           </div>
         `,
         icon: "question",
