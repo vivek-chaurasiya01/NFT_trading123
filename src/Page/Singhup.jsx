@@ -246,44 +246,20 @@ const Signup = () => {
       return;
     }
 
-    try {
-      // Step 1: Register user
-      const response = await authAPI.register({
-        name: formData.name,
-        email: formData.email,
-        mobile: formData.mobile,
-        country: formData.country,
-        password: formData.password,
-        walletAddress: connectedWallet,
-        referralCode: formData.referralCode || undefined,
-        planType: formData.selectedPlan,
-      });
+    // Step 1: Start payment process first
+    const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
+    Swal.fire({
+      icon: "info",
+      title: "Payment Required",
+      text: `Please complete $${planAmount} payment first to register your ${formData.selectedPlan} account`,
+      timer: 2000,
+      showConfirmButton: false,
+    });
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-
-      // Show registration success and start payment
-      const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
-      Swal.fire({
-        icon: "success",
-        title: "Registration Successful!",
-        text: `Now processing $${planAmount} payment to activate your ${formData.selectedPlan} account...`,
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
-      // Step 2: Automatically start payment process after 2 seconds
-      setTimeout(async () => {
-        await handlePayment();
-      }, 2000);
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Registration Failed",
-        text: error.response?.data?.message || "Something went wrong",
-      });
-      setLoading(false);
-    }
+    // Step 2: Start payment process after 2 seconds
+    setTimeout(async () => {
+      await handlePayment();
+    }, 2000);
   };
 
   const handlePayment = async () => {
@@ -430,23 +406,48 @@ const Signup = () => {
         // Simple validation - wait 3 seconds
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
-        // Activate wallet on backend
-        await walletAPI.activate({
-          txHash: paymentResult.txHash,
-          walletAddress: connectedWallet,
-          amount: paymentResult.amount,
-          amountUSD: paymentResult.amountUSD,
-        });
+        // Step 3: Now register user after successful payment
+        try {
+          const response = await authAPI.register({
+            name: formData.name,
+            email: formData.email,
+            mobile: formData.mobile,
+            country: formData.country,
+            password: formData.password,
+            walletAddress: connectedWallet,
+            referralCode: formData.referralCode || undefined,
+            planType: formData.selectedPlan,
+          });
 
-        Swal.fire({
-          icon: "success",
-          title: "Payment Successful! 🎉",
-          text: `Payment of $${paymentResult.amountUSD} completed successfully!`,
-          confirmButtonColor: "#0f7a4a",
-          confirmButtonText: "Go to Dashboard",
-        }).then(() => {
-          navigate("/dashbord");
-        });
+          localStorage.setItem("token", response.data.token);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+
+          // Activate wallet on backend
+          await walletAPI.activate({
+            txHash: paymentResult.txHash,
+            walletAddress: connectedWallet,
+            amount: paymentResult.amount,
+            amountUSD: paymentResult.amountUSD,
+          });
+
+          Swal.fire({
+            icon: "success",
+            title: "Registration & Payment Successful! 🎉",
+            text: `Payment of $${paymentResult.amountUSD} completed and account created successfully!`,
+            confirmButtonColor: "#0f7a4a",
+            confirmButtonText: "Go to Dashboard",
+          }).then(() => {
+            navigate("/dashbord");
+          });
+        } catch (registrationError) {
+          console.error("Registration error after payment:", registrationError);
+          Swal.fire({
+            icon: "error",
+            title: "Registration Failed",
+            text: "Payment successful but registration failed. Please contact support.",
+            confirmButtonColor: "#0f7a4a",
+          });
+        }
       }
     } catch (error) {
       console.error("Payment error:", error);

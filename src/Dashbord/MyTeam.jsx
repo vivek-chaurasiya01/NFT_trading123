@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { FaUsers, FaUserPlus, FaCopy, FaShare, FaCalendarAlt, FaChartLine, FaGift, FaLink } from 'react-icons/fa';
-import Swal from 'sweetalert2';
-import { userAPI } from '../services/api';
+import React, { useState, useEffect } from "react";
+import {
+  FaUsers,
+  FaUserPlus,
+  FaCopy,
+  FaShare,
+  FaCalendarAlt,
+  FaChartLine,
+  FaGift,
+  FaLink,
+} from "react-icons/fa";
+import Swal from "sweetalert2";
+import { userAPI } from "../services/api";
 
 const MyTeam = () => {
+  const [openMember, setOpenMember] = useState(null);
   const [team, setTeam] = useState([]);
-  const [referralCode, setReferralCode] = useState('');
+  const [referralCode, setReferralCode] = useState("");
   const [stats, setStats] = useState({ total: 0, active: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -17,23 +27,23 @@ const MyTeam = () => {
   const fetchTeam = async () => {
     try {
       const response = await userAPI.getTeam();
-      console.log('✅ Team API Response:', response.data);
-      
+      console.log("✅ Team API Response:", response.data);
+
       // API returns teamMembers array
       const teamData = response.data.teamMembers || [];
       setTeam(teamData);
       setStats({
         total: teamData.length,
-        active: teamData.filter(m => m.isActive).length
+        active: teamData.filter((m) => m.isActive).length,
       });
-      
-      console.log('✅ Team Stats:', {
+
+      console.log("✅ Team Stats:", {
         total: teamData.length,
-        active: teamData.filter(m => m.isActive).length,
-        members: teamData
+        active: teamData.filter((m) => m.isActive).length,
+        members: teamData,
       });
     } catch (error) {
-      console.error('❌ Error fetching team:', error);
+      console.error("❌ Error fetching team:", error);
       setTeam([]);
       setStats({ total: 0, active: 0 });
     }
@@ -43,23 +53,23 @@ const MyTeam = () => {
   const fetchProfile = async () => {
     try {
       const response = await userAPI.getProfile();
-      const userReferralCode = response.data.user.referralCode || 'LOADING';
+      const userReferralCode = response.data.user.referralCode || "LOADING";
       setReferralCode(userReferralCode);
-      console.log('✅ Referral Code:', userReferralCode);
+      console.log("✅ Referral Code:", userReferralCode);
     } catch (error) {
-      console.error('❌ Error fetching profile:', error);
-      setReferralCode('ERROR');
+      console.error("❌ Error fetching profile:", error);
+      setReferralCode("ERROR");
     }
   };
 
   const copyReferralCode = () => {
     navigator.clipboard.writeText(referralCode);
     Swal.fire({
-      icon: 'success',
-      title: 'Copied!',
-      text: 'Referral code copied to clipboard',
+      icon: "success",
+      title: "Copied!",
+      text: "Referral code copied to clipboard",
       timer: 1500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   };
 
@@ -67,23 +77,23 @@ const MyTeam = () => {
     const link = `${window.location.origin}/SingUp?ref=${referralCode}`;
     navigator.clipboard.writeText(link);
     Swal.fire({
-      icon: 'success',
-      title: 'Link Copied!',
-      text: 'Referral link copied to clipboard',
+      icon: "success",
+      title: "Link Copied!",
+      text: "Referral link copied to clipboard",
       timer: 1500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   };
 
   const shareReferralLink = async () => {
     const link = `${window.location.origin}/SingUp?ref=${referralCode}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Join our NFT Trading Platform',
-          text: 'Start earning with NFT trading! Use my referral link to get started.',
-          url: link
+          title: "Join our NFT Trading Platform",
+          text: "Start earning with NFT trading! Use my referral link to get started.",
+          url: link,
         });
       } catch (error) {
         copyReferralLink();
@@ -106,14 +116,18 @@ const MyTeam = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">My Team</h2>
-          <p className="text-gray-500 text-sm">Manage and track your team members</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            My Team
+          </h2>
+          <p className="text-gray-500 text-sm">
+            Manage and track your team members
+          </p>
         </div>
         <div className="bg-[#0f7a4a] p-3 rounded-full">
           <FaUsers className="text-white" size={20} />
         </div>
       </div>
-      
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-300">
@@ -130,7 +144,7 @@ const MyTeam = () => {
             <p className="text-3xl font-bold text-blue-600">{stats.total}</p>
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -152,7 +166,7 @@ const MyTeam = () => {
         {/* Background Effects */}
         <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12 blur-lg"></div>
         <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-10 -translate-x-10 blur-md"></div>
-        
+
         <div className="relative z-10">
           {/* Compact Header */}
           <div className="flex items-center justify-between mb-4">
@@ -171,12 +185,14 @@ const MyTeam = () => {
               <span className="text-xs font-bold">10 Levels</span>
             </div>
           </div>
-          
+
           {/* Compact Referral Code */}
           <div className="bg-white/15 backdrop-blur-sm p-4 rounded-xl mb-4 border border-white/20">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-white/90">Your Code</span>
-              <button 
+              <span className="text-xs font-medium text-white/90">
+                Your Code
+              </span>
+              <button
                 onClick={copyReferralCode}
                 className="bg-white/20 px-3 py-1 rounded-lg text-xs hover:bg-white/30 transition-all flex items-center gap-1 font-medium"
               >
@@ -190,17 +206,17 @@ const MyTeam = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Compact Action Buttons */}
           <div className="grid grid-cols-2 gap-3">
-            <button 
+            <button
               onClick={copyReferralLink}
               className="bg-white/15 backdrop-blur-sm px-4 py-3 rounded-xl hover:bg-white/25 transition-all flex items-center justify-center gap-2 font-medium border border-white/20 text-sm"
             >
               <FaLink size={12} />
               Copy Link
             </button>
-            <button 
+            <button
               onClick={shareReferralLink}
               className="bg-white/15 backdrop-blur-sm px-4 py-3 rounded-xl hover:bg-white/25 transition-all flex items-center justify-center gap-2 font-medium border border-white/20 text-sm"
             >
@@ -221,60 +237,101 @@ const MyTeam = () => {
             Team Members ({stats.total})
           </h3>
           {stats.total > 0 && (
-            <div className="text-sm text-gray-500">
-              {stats.active} active
-            </div>
+            <div className="text-sm text-gray-500">{stats.active} active</div>
           )}
         </div>
-        
+
         {team.length > 0 ? (
-          <div className="space-y-3">
-            {team.map((member, index) => (
-              <div key={member._id || index} className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all duration-200 border border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-[#0f7a4a] to-green-600 rounded-full flex items-center justify-center text-white font-bold">
-                      {member.name?.charAt(0).toUpperCase() || member.email?.charAt(0).toUpperCase() || 'U'}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {team.map((member, index) => {
+              const isOpen = openMember === (member._id || index);
+
+              return (
+                <div
+                  key={member._id || index}
+                  onClick={() =>
+                    setOpenMember(isOpen ? null : member._id || index)
+                  }
+                  className="cursor-pointer bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300"
+                >
+                  {/* HEADER */}
+                  <div className="p-4 flex items-center gap-4">
+                    {/* Avatar */}
+                    <div className="w-14 h-14 shrink-0 bg-gradient-to-br from-[#0f7a4a] to-emerald-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                      {member.name?.charAt(0).toUpperCase() ||
+                        member.email?.charAt(0).toUpperCase() ||
+                        "U"}
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-800">{member.name || 'Team Member'}</h4>
-                      <p className="text-sm text-gray-500 truncate">{member.email}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-                          Level {member.level || 1}
-                        </span>
-                        {member.createdAt && (
-                          <div className="flex items-center gap-1">
-                            <FaCalendarAlt className="text-xs text-gray-400" />
-                            <span className="text-xs text-gray-500">
-                              {new Date(member.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-800 truncate">
+                        {member.name || "Team Member"}
+                      </h4>
+                      <p className="text-sm text-gray-500 truncate">
+                        {member.email}
+                      </p>
+                    </div>
+
+                    {/* Status */}
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        member.isActive
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {member.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+
+                  {/* EXPANDABLE SECTION */}
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${
+                      isOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
+                    }`}
+                  >
+                    <div className="px-4 pb-4 text-sm text-gray-600 space-y-2">
+                      <div className="flex justify-between">
+                        <span className="font-medium">Level</span>
+                        <span>Level {member.level || 1}</span>
+                      </div>
+
+                      {member.createdAt && (
+                        <div className="flex justify-between">
+                          <span className="font-medium">Joined</span>
+                          <span>
+                            {new Date(member.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+
+                      {member.teamSize && (
+                        <div className="flex justify-between">
+                          <span className="font-medium">Team Size</span>
+                          <span>{member.teamSize}</span>
+                        </div>
+                      )}
+
+                      {/* Future fields ready */}
+                      <div className="flex justify-between">
+                        <span className="font-medium">Status</span>
+                        <span>{member.isActive ? "Active" : "Inactive"}</span>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="text-right">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      member.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {member.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                    {member.teamSize && (
-                      <p className="text-xs text-gray-500 mt-1">Team: {member.teamSize}</p>
-                    )}
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="bg-gray-50 rounded-2xl p-8">
-              <FaUserPlus className="mx-auto text-gray-400 mb-4" size={48} />
-              <h4 className="font-bold text-gray-800 mb-2 text-lg">Build Your Team</h4>
-              <p className="text-gray-600 mb-4">
+          <div className="text-center py-16">
+            <div className="max-w-md mx-auto bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
+              <FaUserPlus className="mx-auto text-gray-400 mb-4" size={52} />
+              <h4 className="font-bold text-gray-800 mb-2 text-xl">
+                Build Your Team
+              </h4>
+              <p className="text-gray-600 mb-5 text-sm">
                 Share your referral code to invite new members and start earning
               </p>
               <div className="bg-blue-50 p-4 rounded-xl text-sm text-blue-800">
