@@ -367,10 +367,12 @@ const Signup = () => {
 
       const currentBNBPrice = await fetchCurrentBNBPrice();
       
-      // Calculate BNB amount that ensures exactly $10 in wallet display
-      const baseAmount = planAmount / currentBNBPrice;
-      // Add 0.2% buffer to ensure wallet shows exact $10.00
-      const exactBNBAmount = (baseAmount * 1.002).toFixed(8);
+      // Fixed BNB amounts for consistent payments
+      const fixedBNBAmounts = {
+        basic: "0.014",    // Fixed 0.014 BNB for $10 plan
+        premium: "0.028"   // Fixed 0.028 BNB for $20 plan  
+      };
+      const exactBNBAmount = fixedBNBAmounts[formData.selectedPlan] || fixedBNBAmounts.basic;
 
       // Show payment confirmation with real-time conversion
       const confirmResult = await Swal.fire({
@@ -381,8 +383,8 @@ const Signup = () => {
             <p><strong>Network:</strong> BSC Mainnet</p>
             <p><strong>Currency:</strong> BNB</p>
             <p><strong>Current BNB Price:</strong> $${currentBNBPrice.toFixed(2)}</p>
-            <p><strong>BNB Amount:</strong> ${exactBNBAmount} BNB</p>
-            <p class="text-sm text-blue-600 mt-2">💰 Adjusted amount to ensure wallet shows exactly $${planAmount}.00</p>
+            <p><strong>BNB Amount:</strong> ${exactBNBAmount} BNB (Fixed)</p>
+            <p class="text-sm text-blue-600 mt-2">💰 Fixed amount: Basic = 0.014 BNB, Premium = 0.028 BNB</p>
             <p class="text-sm text-gray-600">⛽ Gas fee will be added separately by wallet</p>
           </div>
         `,
