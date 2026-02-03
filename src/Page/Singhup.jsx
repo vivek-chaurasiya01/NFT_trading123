@@ -10,6 +10,8 @@ import "../styles/modal-fix.css";
 import { useLocation } from "react-router-dom";
 
 const Signup = () => {
+  const [isReferralLocked, setIsReferralLocked] = useState(false);
+
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -22,6 +24,7 @@ const Signup = () => {
         ...prev,
         referralCode: ref,
       }));
+      setIsReferralLocked(true);
     }
   }, [location]);
 
@@ -756,12 +759,15 @@ const Signup = () => {
                   <input
                     type="text"
                     name="referralCode"
-                    placeholder="Referral code"
+                    placeholder="Referral code (optional)"
                     value={formData.referralCode}
                     onChange={handleChange}
-                    readOnly={!!formData.referralCode} // 👈 important
-                    className="w-full mt-2 px-4 py-[14px] rounded-md bg-[#eef6f1] border"
-                    required
+                    readOnly={isReferralLocked}
+                    className={`w-full mt-2 px-4 py-[14px] rounded-md border ${
+                      isReferralLocked
+                        ? "bg-gray-100 cursor-not-allowed"
+                        : "bg-[#eef6f1]"
+                    }`}
                   />
                 </div>
               </div>
