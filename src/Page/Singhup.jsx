@@ -43,6 +43,7 @@ const Signup = () => {
   const [connectedWallet, setConnectedWallet] = useState(null);
   const [loading, setLoading] = useState(false);
   const [emailStatus, setEmailStatus] = useState({ checking: false, exists: false, message: "" });
+  const [mobileError, setMobileError] = useState("");
 
   // Debug wallet on component mount
   useEffect(() => {
@@ -87,10 +88,32 @@ const Signup = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    
+    // Mobile number validation
+    if (name === 'mobile') {
+      const numericValue = value.replace(/\D/g, ''); // Remove non-digits
+      
+      if (numericValue.length > 10) {
+        setMobileError("Mobile number cannot exceed 10 digits");
+        return; // Don't update if more than 10 digits
+      } else if (numericValue.length < 10 && numericValue.length > 0) {
+        setMobileError("Mobile number must be exactly 10 digits");
+      } else if (numericValue.length === 10) {
+        setMobileError("");
+      } else {
+        setMobileError("");
+      }
+      
+      setFormData((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   // Connect real wallet (MetaMask, TrustWallet, etc.) - Enhanced
@@ -307,6 +330,16 @@ const Signup = () => {
         icon: "error",
         title: "Email Already Exists",
         text: "This email is already registered. Please use a different email.",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (formData.mobile.length !== 10) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Mobile Number",
+        text: "Mobile number must be exactly 10 digits.",
       });
       setLoading(false);
       return;
@@ -722,12 +755,25 @@ const Signup = () => {
                   <input
                     type="tel"
                     name="mobile"
-                    placeholder="Enter your mobile number"
+                    placeholder="Enter your 10-digit mobile number"
                     value={formData.mobile}
                     onChange={handleChange}
+                    maxLength="10"
                     required
-                    className="w-full mt-2 px-4 py-[14px] rounded-md bg-[#eef6f1] border"
+                    className={`w-full mt-2 px-4 py-[14px] rounded-md border ${
+                      mobileError ? "bg-red-50 border-red-300" : "bg-[#eef6f1] border-gray-300"
+                    }`}
                   />
+                  {mobileError && (
+                    <p className="text-xs mt-1 text-red-600">
+                      {mobileError}
+                    </p>
+                  )}
+                  {formData.mobile.length === 10 && !mobileError && (
+                    <p className="text-xs mt-1 text-green-600">
+                      ✓ Valid mobile number
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-4">
