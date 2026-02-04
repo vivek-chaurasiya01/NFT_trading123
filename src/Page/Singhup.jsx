@@ -280,9 +280,9 @@ const Signup = () => {
 
     // Step 1: Payment method selection
     const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
-    
+
     const paymentChoice = await Swal.fire({
-      title: 'Select Payment Method',
+      title: "Select Payment Method",
       html: `
         <div class="text-left space-y-3">
           <p><strong>Amount:</strong> $${planAmount} USD</p>
@@ -294,14 +294,14 @@ const Signup = () => {
                 <input type="radio" name="payment" value="usdt" checked class="mr-3">
                 <div>
                   <div class="font-semibold">$${planAmount} USDT (Recommended)</div>
-                  <div class="text-sm text-gray-600">Direct USDT payment on BSC</div>
+                 
                 </div>
               </label>
               <label class="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
                 <input type="radio" name="payment" value="bnb" class="mr-3">
                 <div>
                   <div class="font-semibold">BNB Payment</div>
-                  <div class="text-sm text-gray-600">Pay with BNB (variable amount)</div>
+                  
                 </div>
               </label>
             </div>
@@ -309,13 +309,15 @@ const Signup = () => {
         </div>
       `,
       showCancelButton: true,
-      confirmButtonText: 'Continue Payment',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#0f7a4a',
+      confirmButtonText: "Continue Payment",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#0f7a4a",
       preConfirm: () => {
-        const selected = document.querySelector('input[name="payment"]:checked');
-        return selected ? selected.value : 'usdt';
-      }
+        const selected = document.querySelector(
+          'input[name="payment"]:checked',
+        );
+        return selected ? selected.value : "usdt";
+      },
     });
 
     if (!paymentChoice.isConfirmed) {
@@ -328,7 +330,7 @@ const Signup = () => {
     }, 500);
   };
 
-  const handlePayment = async (paymentMethod = 'usdt') => {
+  const handlePayment = async (paymentMethod = "usdt") => {
     try {
       setLoading(true);
 
@@ -399,7 +401,7 @@ const Signup = () => {
       const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
       let paymentResult;
 
-      if (paymentMethod === 'usdt') {
+      if (paymentMethod === "usdt") {
         // USDT Payment Method
         const confirmResult = await Swal.fire({
           title: "Confirm USDT Payment",
@@ -454,7 +456,8 @@ const Signup = () => {
           basic: "0.014",
           premium: "0.028",
         };
-        const exactBNBAmount = fixedBNBAmounts[formData.selectedPlan] || fixedBNBAmounts.basic;
+        const exactBNBAmount =
+          fixedBNBAmounts[formData.selectedPlan] || fixedBNBAmounts.basic;
 
         const confirmResult = await Swal.fire({
           title: "Confirm BNB Payment",
@@ -528,7 +531,7 @@ const Signup = () => {
             walletAddress: connectedWallet,
             amount: paymentResult.amount,
             amountUSD: paymentResult.amountUSD,
-            paymentType: paymentResult.paymentType || 'bnb',
+            paymentType: paymentResult.paymentType || "bnb",
             tokenSymbol: paymentResult.tokenSymbol,
           });
 
@@ -868,7 +871,7 @@ const Signup = () => {
                   <input
                     type="text"
                     name="referralCode"
-                    placeholder="Referral code (optional)"
+                    placeholder="Referral code "
                     value={formData.referralCode}
                     onChange={handleChange}
                     readOnly={isReferralLocked}
@@ -993,7 +996,7 @@ const Signup = () => {
                         </div>
                         <span>+ More</span>
                       </div>
-                      
+
                       {/* Trust Wallet Helper */}
                       {/* <div className="mt-4">
                         <TrustWalletHelper onConnectionSuccess={(result) => {
@@ -1049,9 +1052,11 @@ const Signup = () => {
               <div className="mt-5 p-3 bg-[#eef6f1] border rounded-md text-sm">
                 💳{" "}
                 <b>
-                  ${formData.selectedPlan === "premium" ? "20" : "10"} Payment Options
+                  ${formData.selectedPlan === "premium" ? "20" : "10"} Payment
+                  Options
                 </b>{" "}
-                - Choose USDT or BNB payment to activate your {formData.selectedPlan} account
+                - Choose USDT or BNB payment to activate your{" "}
+                {formData.selectedPlan} account
               </div>
 
               <button
