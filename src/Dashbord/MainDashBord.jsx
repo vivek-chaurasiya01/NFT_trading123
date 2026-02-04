@@ -36,13 +36,29 @@ export default function MainDashBord() {
   ];
 
   const menuItems = [
-    { to: "/dashbord/nft-dashboard", label: "NFT Dashboard", icon: <FaChartBar /> },
-    { to: "/dashbord/nft-marketplace", label: "NFT Marketplace", icon: <FaImage /> },
+    {
+      to: "/dashbord/nft-dashboard",
+      label: "NFT Dashboard",
+      icon: <FaChartBar />,
+    },
+    {
+      to: "/dashbord/nft-marketplace",
+      label: "NFT Marketplace",
+      icon: <FaImage />,
+    },
     { to: "/dashbord/my-nfts", label: "My NFTs", icon: <FaImage /> },
-    { to: "/dashbord/nft-management", label: "NFT Management", icon: <FaCog /> },
+    {
+      to: "/dashbord/nft-management",
+      label: "NFT Management",
+      icon: <FaCog />,
+    },
     // { to: "/dashbord/nft-status", label: "NFT Status", icon: <FaCog /> },
-    { to: "/dashbord/mlm-tree", label: "MLM TEAM", icon: <FaUsers /> },
-    { to: "/dashbord/package-upgrade", label: "Package Upgrade", icon: <FaChartBar /> },
+    { to: "/dashbord/mlm-tree", label: "MY TEAM", icon: <FaUsers /> },
+    {
+      to: "/dashbord/package-upgrade",
+      label: "Package Upgrade",
+      icon: <FaChartBar />,
+    },
     { to: "/dashbord/nft-history", label: "NFT History", icon: <FaImage /> },
     { to: "/dashbord/contact-us", label: "Contact Us", icon: <FaEnvelope /> },
   ];
@@ -61,8 +77,8 @@ export default function MainDashBord() {
           <h1 className="font-semibold text-lg text-gray-800">Dashboard</h1>
         </div>
 
-        <div 
-          onClick={() => navigate('/dashbord/profile')}
+        <div
+          onClick={() => navigate("/dashbord/profile")}
           className="w-9 h-9 rounded-full bg-[#0f7a4a] text-white flex items-center justify-center font-bold cursor-pointer hover:bg-[#0d6b3f] transition-colors"
         >
           A

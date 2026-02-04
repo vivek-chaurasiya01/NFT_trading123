@@ -201,7 +201,7 @@ const MLMTree = () => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-800">MLM Network</h2>
+        <h2 className="text-xl font-bold text-gray-800">MY Team</h2>
         <FaUsers className="text-[#0f7a4a]" size={20} />
       </div>
 
