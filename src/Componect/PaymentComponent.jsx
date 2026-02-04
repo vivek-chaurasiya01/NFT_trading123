@@ -4,10 +4,10 @@ import realWalletService from '../services/realWalletService';
 import { walletAPI } from '../services/api';
 import Swal from 'sweetalert2';
 
-const PaymentComponent = ({ onPaymentSuccess }) => {
+const PaymentComponent = ({ onPaymentSuccess, defaultAmount = '', defaultPurpose = 'package_upgrade', quickMode = false }) => {
   const [paymentData, setPaymentData] = useState({
-    amount: '',
-    purpose: 'package_upgrade',
+    amount: defaultAmount.toString(),
+    purpose: defaultPurpose,
     description: ''
   });
   const [loading, setLoading] = useState(false);
@@ -15,6 +15,7 @@ const PaymentComponent = ({ onPaymentSuccess }) => {
   const paymentPurposes = [
     { value: 'package_upgrade', label: 'Package Upgrade', amounts: [10, 20, 50] },
     { value: 'nft_purchase', label: 'NFT Purchase', amounts: [5, 10, 25, 50] },
+    { value: 'usdt_payment', label: '$10 USDT Payment', amounts: [10] },
     { value: 'custom', label: 'Custom Payment', amounts: [] }
   ];
 
@@ -78,8 +79,13 @@ const PaymentComponent = ({ onPaymentSuccess }) => {
         }
       });
 
-      // Send payment
-      const paymentResult = await realWalletService.sendPayment(amount);
+      // Send payment - Check if USDT payment or regular payment
+      let paymentResult;
+      if (paymentData.purpose === 'usdt_payment') {
+        paymentResult = await realWalletService.sendUSDTPayment(amount);
+      } else {
+        paymentResult = await realWalletService.sendPayment(amount);
+      }
       
       if (paymentResult.success) {
         // Show transaction pending
@@ -158,25 +164,27 @@ const PaymentComponent = ({ onPaymentSuccess }) => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Purpose Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Payment Purpose
-          </label>
-          <select
-            value={paymentData.purpose}
-            onChange={(e) => setPaymentData(prev => ({ ...prev, purpose: e.target.value, amount: '' }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0f7a4a]"
-          >
-            {paymentPurposes.map(purpose => (
-              <option key={purpose.value} value={purpose.value}>
-                {purpose.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!quickMode && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Payment Purpose
+            </label>
+            <select
+              value={paymentData.purpose}
+              onChange={(e) => setPaymentData(prev => ({ ...prev, purpose: e.target.value, amount: defaultAmount.toString() || '' }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0f7a4a]"
+            >
+              {paymentPurposes.map(purpose => (
+                <option key={purpose.value} value={purpose.value}>
+                  {purpose.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Quick Amount Selection */}
-        {selectedPurpose?.amounts.length > 0 && (
+        {selectedPurpose?.amounts.length > 0 && !quickMode && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Quick Select Amount
@@ -203,7 +211,7 @@ const PaymentComponent = ({ onPaymentSuccess }) => {
         {/* Amount Input */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Amount (USD)
+            Amount (USD) {quickMode && '- Fixed $10 USDT'}
           </label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
@@ -215,9 +223,15 @@ const PaymentComponent = ({ onPaymentSuccess }) => {
               onChange={(e) => setPaymentData(prev => ({ ...prev, amount: e.target.value }))}
               className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0f7a4a]"
               placeholder="Enter amount"
+              disabled={quickMode}
               required
             />
           </div>
+          {quickMode && (
+            <p className="text-sm text-gray-600 mt-1">
+              💰 Fixed amount for quick USDT payment
+            </p>
+          )}
         </div>
 
         {/* Description */}

@@ -2,7 +2,7 @@
 import { createAppKit } from "@reown/appkit";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { sepolia, mainnet, bsc, bscTestnet } from "viem/chains";
-import { parseEther, formatEther } from "viem";
+import { parseEther, formatEther, encodeFunctionData } from "viem";
 import {
   getBalance,
   sendTransaction,
@@ -361,6 +361,73 @@ class RealWalletService {
     }
   }
 
+  /* -------------------- SEND USDT PAYMENT - New Method -------------------- */
+
+  async sendUSDTPayment(amountInUSD) {
+    try {
+      if (!this.isConnected || !this.account) {
+        throw new Error("Wallet not connected");
+      }
+
+      if (!this.wagmiConfig) {
+        throw new Error("Wagmi config not available");
+      }
+
+      // USDT Contract Address (BSC Mainnet)
+      const usdtContractAddress = "0x55d398326f99059fF775485246999027B3197955"; // USDT on BSC
+      
+      // For $10 USDT, we send exactly 10 USDT tokens
+      const usdtAmount = amountInUSD; // Direct USDT amount
+      const decimals = 18; // USDT has 18 decimals on BSC
+      const value = BigInt(usdtAmount * Math.pow(10, decimals));
+
+      console.log(`💰 Sending USDT payment: $${amountInUSD} USDT`);
+
+      // USDT Transfer function signature
+      const transferFunction = {
+        name: 'transfer',
+        type: 'function',
+        inputs: [
+          { name: 'to', type: 'address' },
+          { name: 'value', type: 'uint256' }
+        ]
+      };
+
+      // Encode transfer data
+      const transferData = encodeFunctionData({
+        abi: [transferFunction],
+        functionName: 'transfer',
+        args: [companyWallet, value]
+      });
+
+      const hash = await sendTransaction(this.wagmiConfig, {
+        to: usdtContractAddress,
+        data: transferData,
+        chainId: this.chainId || 56, // BSC Mainnet
+      });
+
+      console.log('✅ USDT Transaction sent:', hash);
+
+      return {
+        success: true,
+        txHash: hash,
+        amount: usdtAmount,
+        amountUSD: amountInUSD,
+        tokenSymbol: 'USDT',
+        to: companyWallet,
+        from: this.account,
+        chainId: this.chainId,
+        paymentType: 'usdt'
+      };
+    } catch (error) {
+      console.error("❌ USDT Payment error:", error);
+      return { 
+        success: false, 
+        error: error.message || "USDT Payment failed" 
+      };
+    }
+  }
+
   /* -------------------- SEND PAYMENT - Fixed -------------------- */
 
   async sendPayment(amountInUSD) {
@@ -539,12 +606,37 @@ class RealWalletService {
     this.initialize();
   }
 
-  // Fallback connection method
+  // Fallback connection method - Enhanced for Trust Wallet
   async _tryFallbackConnection() {
     try {
       console.log('🔄 Attempting fallback connection...');
       
-      // Use auto-detect method for any wallet
+      // Check if Trust Wallet is specifically available
+      if (fallbackWalletConnection.isTrustWalletAvailable()) {
+        console.log('🔄 Trust Wallet detected, using Trust Wallet connection...');
+        const result = await fallbackWalletConnection.connectTrustWallet();
+        
+        if (result.success) {
+          this.account = result.account;
+          this.isConnected = true;
+          this.chainId = result.chainId;
+          
+          console.log('✅ Trust Wallet fallback connection successful:', {
+            address: this.account,
+            chainId: this.chainId,
+            method: result.method
+          });
+          
+          return {
+            success: true,
+            account: this.account,
+            network: this.chainId,
+            method: result.method,
+          };
+        }
+      }
+      
+      // Use auto-detect method for other wallets
       const result = await fallbackWalletConnection.connectAnyWallet();
       
       if (result.success) {

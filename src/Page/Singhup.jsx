@@ -6,6 +6,7 @@ import { authAPI, walletAPI } from "../services/api";
 import realWalletService from "../services/realWalletService";
 import walletDebug from "../utils/walletDebug";
 import networkChecker from "../utils/networkChecker";
+import TrustWalletHelper from "../Componect/TrustWalletHelper";
 import "../styles/modal-fix.css";
 import { useLocation } from "react-router-dom";
 
@@ -37,6 +38,7 @@ const Signup = () => {
     confirmPassword: "",
     referralCode: "",
     selectedPlan: "basic",
+    paymentMethod: "usdt",
   });
   const [connectedWallet, setConnectedWallet] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -276,23 +278,57 @@ const Signup = () => {
       return;
     }
 
-    // Step 1: Start payment process first
+    // Step 1: Payment method selection
     const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
-    Swal.fire({
-      icon: "info",
-      title: "Payment Required",
-      text: `Please complete $${planAmount} payment first to register your ${formData.selectedPlan} account`,
-      timer: 2000,
-      showConfirmButton: false,
+    
+    const paymentChoice = await Swal.fire({
+      title: 'Select Payment Method',
+      html: `
+        <div class="text-left space-y-3">
+          <p><strong>Amount:</strong> $${planAmount} USD</p>
+          <p><strong>Plan:</strong> ${formData.selectedPlan.toUpperCase()}</p>
+          <div class="mt-4">
+            <label class="block text-sm font-medium mb-2">Choose Payment:</label>
+            <div class="space-y-2">
+              <label class="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
+                <input type="radio" name="payment" value="usdt" checked class="mr-3">
+                <div>
+                  <div class="font-semibold">$${planAmount} USDT (Recommended)</div>
+                  <div class="text-sm text-gray-600">Direct USDT payment on BSC</div>
+                </div>
+              </label>
+              <label class="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
+                <input type="radio" name="payment" value="bnb" class="mr-3">
+                <div>
+                  <div class="font-semibold">BNB Payment</div>
+                  <div class="text-sm text-gray-600">Pay with BNB (variable amount)</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Continue Payment',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#0f7a4a',
+      preConfirm: () => {
+        const selected = document.querySelector('input[name="payment"]:checked');
+        return selected ? selected.value : 'usdt';
+      }
     });
 
-    // Step 2: Start payment process after 2 seconds
+    if (!paymentChoice.isConfirmed) {
+      setLoading(false);
+      return;
+    }
+
     setTimeout(async () => {
-      await handlePayment();
-    }, 2000);
+      await handlePayment(paymentChoice.value);
+    }, 500);
   };
 
-  const handlePayment = async () => {
+  const handlePayment = async (paymentMethod = 'usdt') => {
     try {
       setLoading(true);
 
@@ -361,89 +397,100 @@ const Signup = () => {
       }
 
       const planAmount = formData.selectedPlan === "premium" ? 20 : 10;
+      let paymentResult;
 
-      // Fetch current BNB price for real-time conversion
-      Swal.fire({
-        title: "Converting to BNB...",
-        text: `Converting $${planAmount} to BNB at current market price`,
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
+      if (paymentMethod === 'usdt') {
+        // USDT Payment Method
+        const confirmResult = await Swal.fire({
+          title: "Confirm USDT Payment",
+          html: `
+            <div class="text-left">
+              <p><strong>Amount:</strong> $${planAmount} USDT</p>
+              <p><strong>Network:</strong> BSC Mainnet</p>
+              <p><strong>Token:</strong> USDT (BEP-20)</p>
+              <div class="mt-3 p-3 bg-yellow-50 rounded">
+                <p class="text-sm text-yellow-800">
+                  ⚠️ Make sure you have USDT tokens and BNB for gas fees
+                </p>
+              </div>
+            </div>
+          `,
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#0f7a4a",
+          cancelButtonColor: "#6b7280",
+          confirmButtonText: "Send USDT Payment",
+          cancelButtonText: "Cancel",
+        });
 
-      const currentBNBPrice = await fetchCurrentBNBPrice();
+        if (!confirmResult.isConfirmed) {
+          setLoading(false);
+          return;
+        }
 
-      // Fixed BNB amounts for consistent payments
-      const fixedBNBAmounts = {
-        basic: "0.014", // Fixed 0.014 BNB for $10 plan
-        premium: "0.028", // Fixed 0.028 BNB for $20 plan
-      };
-      const exactBNBAmount =
-        fixedBNBAmounts[formData.selectedPlan] || fixedBNBAmounts.basic;
-
-      // Show payment confirmation with real-time conversion
-      const confirmResult = await Swal.fire({
-        title: "Confirm Payment",
-        html: `
-          <div class="text-left">
-            <p><strong>Amount:</strong> $${planAmount} USD</p>
-            <p><strong>Network:</strong> BSC Mainnet</p>
-            <p><strong>Currency:</strong> BNB</p>
-            <p><strong>Current BNB Price:</strong> $${currentBNBPrice.toFixed(2)}</p>
-            <p><strong>BNB Amount:</strong> ${exactBNBAmount} BNB </p>
-          
-            
-          </div>
-        `,
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonColor: "#0f7a4a",
-        cancelButtonColor: "#6b7280",
-        confirmButtonText: "Send BNB Payment",
-        cancelButtonText: "Cancel",
-      });
-
-      if (!confirmResult.isConfirmed) {
-        setLoading(false);
-        return;
-      }
-
-      // Show processing
-      Swal.fire({
-        title: "Processing Payment...",
-        text: "Please confirm the BNB transaction in your wallet",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      // Use exact BNB amount (pure conversion)
-      const bnbAmount = exactBNBAmount;
-      const valueInWei = (parseFloat(bnbAmount) * Math.pow(10, 18)).toString();
-      const valueHex = "0x" + parseInt(valueInWei).toString(16);
-
-      // Send BNB transaction directly
-      const txHash = await window.ethereum.request({
-        method: "eth_sendTransaction",
-        params: [
-          {
-            from: connectedWallet,
-            to: import.meta.env.VITE_COMPANY_WALLET,
-            value: valueHex,
-            chainId: "0x38", // BSC Mainnet
+        Swal.fire({
+          title: "Processing USDT Payment...",
+          text: "Please confirm the USDT transaction in your wallet",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
           },
-        ],
-      });
+        });
 
-      const paymentResult = {
-        success: true,
-        txHash: txHash,
-        amount: bnbAmount,
-        amountUSD: planAmount,
-        tokenSymbol: "BNB",
-      };
+        paymentResult = await realWalletService.sendUSDTPayment(planAmount);
+      } else {
+        // BNB Payment Method
+        Swal.fire({
+          title: "Converting to BNB...",
+          text: `Converting $${planAmount} to BNB at current market price`,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        const currentBNBPrice = await fetchCurrentBNBPrice();
+        const fixedBNBAmounts = {
+          basic: "0.014",
+          premium: "0.028",
+        };
+        const exactBNBAmount = fixedBNBAmounts[formData.selectedPlan] || fixedBNBAmounts.basic;
+
+        const confirmResult = await Swal.fire({
+          title: "Confirm BNB Payment",
+          html: `
+            <div class="text-left">
+              <p><strong>Amount:</strong> $${planAmount} USD</p>
+              <p><strong>Network:</strong> BSC Mainnet</p>
+              <p><strong>Currency:</strong> BNB</p>
+              <p><strong>Current BNB Price:</strong> $${currentBNBPrice.toFixed(2)}</p>
+              <p><strong>BNB Amount:</strong> ${exactBNBAmount} BNB</p>
+            </div>
+          `,
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#0f7a4a",
+          cancelButtonColor: "#6b7280",
+          confirmButtonText: "Send BNB Payment",
+          cancelButtonText: "Cancel",
+        });
+
+        if (!confirmResult.isConfirmed) {
+          setLoading(false);
+          return;
+        }
+
+        Swal.fire({
+          title: "Processing BNB Payment...",
+          text: "Please confirm the BNB transaction in your wallet",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        paymentResult = await realWalletService.sendPayment(planAmount);
+      }
 
       if (paymentResult.success) {
         // Show transaction pending
@@ -481,12 +528,24 @@ const Signup = () => {
             walletAddress: connectedWallet,
             amount: paymentResult.amount,
             amountUSD: paymentResult.amountUSD,
+            paymentType: paymentResult.paymentType || 'bnb',
+            tokenSymbol: paymentResult.tokenSymbol,
           });
 
           Swal.fire({
             icon: "success",
             title: "Registration & Payment Successful! 🎉",
-            text: `Payment of $${paymentResult.amountUSD} completed and account created successfully!`,
+            html: `
+              <div class="text-center">
+                <p>Payment of $${paymentResult.amountUSD} ${paymentResult.tokenSymbol} completed!</p>
+                <p>Account created successfully!</p>
+                <div class="mt-3 p-3 bg-green-50 rounded">
+                  <p class="text-sm text-green-800">
+                    ✅ Transaction: ${paymentResult.txHash.slice(0, 10)}...
+                  </p>
+                </div>
+              </div>
+            `,
             confirmButtonColor: "#0f7a4a",
             confirmButtonText: "Go to Dashboard",
           }).then(() => {
@@ -926,13 +985,20 @@ const Signup = () => {
                       <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <FaEthereum className="text-orange-500" />
-                          <span>BNB Network</span>
+                          <span>BSC Network</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <FaMobile className="text-blue-500" />
                           <span>TrustWallet</span>
                         </div>
                         <span>+ More</span>
+                      </div>
+                      
+                      {/* Trust Wallet Helper */}
+                      <div className="mt-4">
+                        <TrustWalletHelper onConnectionSuccess={(result) => {
+                          setConnectedWallet(result.account);
+                        }} />
                       </div>
                     </div>
                   ) : (
@@ -983,10 +1049,9 @@ const Signup = () => {
               <div className="mt-5 p-3 bg-[#eef6f1] border rounded-md text-sm">
                 💳{" "}
                 <b>
-                  ${formData.selectedPlan === "premium" ? "20" : "10"} One-Time
-                  Payment
+                  ${formData.selectedPlan === "premium" ? "20" : "10"} Payment Options
                 </b>{" "}
-                required to activate your {formData.selectedPlan} account
+                - Choose USDT or BNB payment to activate your {formData.selectedPlan} account
               </div>
 
               <button
