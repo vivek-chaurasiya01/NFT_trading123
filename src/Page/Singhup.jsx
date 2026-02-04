@@ -42,6 +42,7 @@ const Signup = () => {
   });
   const [connectedWallet, setConnectedWallet] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [emailStatus, setEmailStatus] = useState({ checking: false, exists: false, message: "" });
 
   // Debug wallet on component mount
   useEffect(() => {
@@ -50,6 +51,39 @@ const Signup = () => {
   }, []);
 
   // const location = useLocation();
+
+  // Email validation function
+  const checkEmailExists = async (email) => {
+    if (!email || !email.includes('@')) {
+      setEmailStatus({ checking: false, exists: false, message: "" });
+      return;
+    }
+
+    setEmailStatus({ checking: true, exists: false, message: "Checking..." });
+    
+    try {
+      const response = await authAPI.checkEmail(email);
+      
+      if (response.data.exists) {
+        setEmailStatus({ checking: false, exists: true, message: "Email already registered" });
+      } else {
+        setEmailStatus({ checking: false, exists: false, message: "Email available" });
+      }
+    } catch (error) {
+      setEmailStatus({ checking: false, exists: false, message: "" });
+    }
+  };
+
+  // Debounced email check
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.email) {
+        checkEmailExists(formData.email);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [formData.email]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -263,6 +297,16 @@ const Signup = () => {
         icon: "warning",
         title: "Wallet Required",
         text: "Please connect your crypto wallet first",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (emailStatus.exists) {
+      Swal.fire({
+        icon: "error",
+        title: "Email Already Exists",
+        text: "This email is already registered. Please use a different email.",
       });
       setLoading(false);
       return;
@@ -642,15 +686,35 @@ const Signup = () => {
 
                 <div>
                   <label className="text-sm font-semibold">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Enter your email address"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full mt-2 px-4 py-[14px] rounded-md bg-[#eef6f1] border"
-                  />
+                  <div className="relative">
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Enter your email address"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      className={`w-full mt-2 px-4 py-[14px] rounded-md border ${
+                        emailStatus.exists 
+                          ? "bg-red-50 border-red-300" 
+                          : emailStatus.message === "Email available" 
+                          ? "bg-green-50 border-green-300" 
+                          : "bg-[#eef6f1] border-gray-300"
+                      }`}
+                    />
+                    {emailStatus.checking && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#0f7a4a]"></div>
+                      </div>
+                    )}
+                  </div>
+                  {emailStatus.message && (
+                    <p className={`text-xs mt-1 ${
+                      emailStatus.exists ? "text-red-600" : "text-green-600"
+                    }`}>
+                      {emailStatus.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-4 md:mt-0">

@@ -22,6 +22,7 @@ api.interceptors.request.use((config) => {
 
 // Auth API
 export const authAPI = {
+  checkEmail: (email) => api.post('/auth/check-email', { email }), // Email check API
   register: (userData) => api.post('/auth/register', userData), // ✅ API #2,3,4
   login: (credentials) => api.post('/auth/login', credentials), // ✅ API #5,6
   getAllUsers: () => api.get('/auth/Getuser'), // ✅ API #7
