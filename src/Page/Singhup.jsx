@@ -995,11 +995,11 @@ const Signup = () => {
                       </div>
                       
                       {/* Trust Wallet Helper */}
-                      <div className="mt-4">
+                      {/* <div className="mt-4">
                         <TrustWalletHelper onConnectionSuccess={(result) => {
                           setConnectedWallet(result.account);
                         }} />
-                      </div>
+                      </div> */}
                     </div>
                   ) : (
                     <div className="relative">
