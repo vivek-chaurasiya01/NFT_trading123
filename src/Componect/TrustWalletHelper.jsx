@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaRefresh } from 'react-icons/fa';
+import { FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaSyncAlt } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import fallbackWalletConnection from '../utils/fallbackWallet';
 
@@ -195,7 +195,7 @@ const TrustWalletHelper = ({ onConnectionSuccess }) => {
           className="ml-auto p-1 text-gray-500 hover:text-gray-700"
           title="Refresh Status"
         >
-          <FaRefresh />
+          <FaSyncAlt />
         </button>
       </div>
 
