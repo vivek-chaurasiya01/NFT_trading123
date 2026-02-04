@@ -373,8 +373,8 @@ class RealWalletService {
         throw new Error("Wagmi config not available");
       }
 
-      // USDT Contract Address (BSC Mainnet)
-      const usdtContractAddress = "0x55d398326f99059fF775485246999027B3197955"; // USDT on BSC
+      // USDT Contract Address (BSC Mainnet) - Correct USDT contract
+      const usdtContractAddress = "0x55d398326f99059fF775485246999027B3197955"; // USDT (Tether USD) on BSC
       
       // For $10 USDT, we send exactly 10 USDT tokens
       const usdtAmount = amountInUSD; // Direct USDT amount

@@ -12,7 +12,7 @@ export const envConfig = {
     import.meta.env.VITE_REOWN_PROJECT_ID || "5af094431cbc89a0153658536ff59fcc",
   companyWallet:
     import.meta.env.VITE_COMPANY_WALLET ||
-    "0xecb0dd296e2f85d60e1b2d4c532d73c1ea3d45f7",
+    "0xC58baf9E149dD09e1bA3b9ea83a223D3591Ec03D",
 
   // Network Configuration
   get networks() {

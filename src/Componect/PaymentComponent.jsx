@@ -98,11 +98,11 @@ const PaymentComponent = ({ onPaymentSuccess, defaultAmount = '', defaultPurpose
           }
         });
 
-        // Validate transaction
+        // Validate transaction properly
         const validationResult = await realWalletService.validateTransaction(paymentResult.txHash);
         
         if (validationResult.success && validationResult.status === 'confirmed') {
-          // Record payment on backend
+          // Record payment on backend with complete details
           try {
             await walletAPI.recordPayment({
               txHash: paymentResult.txHash,
@@ -110,8 +110,13 @@ const PaymentComponent = ({ onPaymentSuccess, defaultAmount = '', defaultPurpose
               amount: paymentResult.amount,
               amountUSD: paymentResult.amountUSD,
               purpose: paymentData.purpose,
-              description: paymentData.description
+              description: paymentData.description,
+              companyWallet: paymentResult.to,
+              userWallet: paymentResult.from,
+              chainId: paymentResult.chainId,
+              tokenSymbol: paymentResult.tokenSymbol
             });
+            console.log('✅ Payment recorded on backend successfully');
           } catch (error) {
             console.error('Failed to record payment on backend:', error);
           }

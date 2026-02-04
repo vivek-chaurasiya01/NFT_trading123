@@ -506,11 +506,25 @@ const Signup = () => {
           },
         });
 
-        // Simple validation - wait 3 seconds
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        // Simple validation - wait for actual confirmation
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        // Validate the transaction properly
+        const validationResult = await realWalletService.validateTransaction(paymentResult.txHash);
+        
+        if (!validationResult.success) {
+          throw new Error('Transaction validation failed');
+        }
 
         // Step 3: Now register user after successful payment
         try {
+          console.log('💰 Payment successful, registering user...', {
+            txHash: paymentResult.txHash,
+            amount: paymentResult.amountUSD,
+            from: connectedWallet,
+            to: paymentResult.to
+          });
+
           const response = await authAPI.register({
             name: formData.name,
             email: formData.email,
@@ -525,15 +539,20 @@ const Signup = () => {
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("user", JSON.stringify(response.data.user));
 
-          // Activate wallet on backend
-          await walletAPI.activate({
+          // Activate wallet on backend with payment details
+          const activationData = {
             txHash: paymentResult.txHash,
             walletAddress: connectedWallet,
             amount: paymentResult.amount,
             amountUSD: paymentResult.amountUSD,
-            paymentType: paymentResult.paymentType || "bnb",
+            paymentType: paymentResult.paymentType || paymentMethod,
             tokenSymbol: paymentResult.tokenSymbol,
-          });
+            companyWallet: paymentResult.to,
+            userWallet: paymentResult.from,
+            chainId: paymentResult.chainId
+          };
+          
+          const activationResponse = await walletAPI.activate(activationData);
 
           Swal.fire({
             icon: "success",
@@ -546,6 +565,12 @@ const Signup = () => {
                   <p class="text-sm text-green-800">
                     ✅ Transaction: ${paymentResult.txHash.slice(0, 10)}...
                   </p>
+                  <p class="text-sm text-green-800">
+                    💰 From: ${paymentResult.from.slice(0, 6)}...${paymentResult.from.slice(-4)}
+                  </p>
+                  <p class="text-sm text-green-800">
+                    🏦 To: ${paymentResult.to.slice(0, 6)}...${paymentResult.to.slice(-4)}
+                  </p>
                 </div>
               </div>
             `,
@@ -556,6 +581,7 @@ const Signup = () => {
           });
         } catch (registrationError) {
           console.error("Registration error after payment:", registrationError);
+          
           Swal.fire({
             icon: "error",
             title: "Registration Failed",
