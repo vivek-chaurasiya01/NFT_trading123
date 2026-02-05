@@ -125,6 +125,9 @@ const Wallet = () => {
       const walletAccount = realWalletService.getAccount();
       const networkInfo = realWalletService.getNetworkInfo();
       
+      console.log('🔄 Wallet Account:', walletAccount);
+      console.log('🔄 Network Info:', networkInfo);
+      
       setLoading(false);
 
       // Step 3: Payment method selection popup
@@ -140,23 +143,25 @@ const Wallet = () => {
             <div class="space-y-3">
               <p class="font-medium text-gray-800">Select your payment method:</p>
               
-              <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-300 hover:bg-yellow-50 transition-all">
-                <input type="radio" name="payment" value="bnb" checked class="mr-3 text-yellow-600">
-                <div class="flex-1">
-                  <div class="font-semibold text-gray-800">Pay with BNB</div>
-                  <div class="text-sm text-gray-600">Native BSC token • Lower fees</div>
-                </div>
-                <div class="text-yellow-600 font-bold">🟡</div>
-              </label>
-              
-              <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-300 hover:bg-green-50 transition-all">
-                <input type="radio" name="payment" value="usdt" class="mr-3 text-green-600">
-                <div class="flex-1">
-                  <div class="font-semibold text-gray-800">Pay with USDT</div>
-                  <div class="text-sm text-gray-600">Stablecoin (BEP-20) • Fixed price</div>
-                </div>
-                <div class="text-green-600 font-bold">💚</div>
-              </label>
+              <div class="space-y-2">
+                <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-300 hover:bg-yellow-50 transition-all">
+                  <input type="radio" name="payment" value="bnb" checked class="mr-3">
+                  <div class="flex-1">
+                    <div class="font-semibold text-gray-800">Pay with BNB</div>
+                    <div class="text-sm text-gray-600">Native BSC token • Lower fees</div>
+                  </div>
+                  <div class="text-yellow-600 font-bold">🟡</div>
+                </label>
+                
+                <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-300 hover:bg-green-50 transition-all">
+                  <input type="radio" name="payment" value="usdt" class="mr-3">
+                  <div class="flex-1">
+                    <div class="font-semibold text-gray-800">Pay with USDT</div>
+                    <div class="text-sm text-gray-600">Stablecoin (BEP-20) • Fixed price</div>
+                  </div>
+                  <div class="text-green-600 font-bold">💚</div>
+                </label>
+              </div>
             </div>
           </div>
         `,
@@ -166,17 +171,39 @@ const Wallet = () => {
         cancelButtonText: "Cancel",
         preConfirm: () => {
           const selected = document.querySelector('input[name="payment"]:checked');
-          return selected ? selected.value : "bnb";
+          console.log('🔍 Selected radio button:', selected);
+          console.log('🔍 Selected value:', selected ? selected.value : 'none');
+          
+          if (!selected) {
+            Swal.showValidationMessage('Please select a payment method');
+            return false;
+          }
+          
+          return selected.value;
         },
       });
 
       if (paymentMethod.isConfirmed) {
         // Step 4: Process based on selected method
+        console.log('🔄 Selected payment method:', paymentMethod.value);
+        
         if (paymentMethod.value === "bnb") {
+          console.log('🟡 Processing BNB payment...');
           await processBNBPayment();
-        } else {
+        } else if (paymentMethod.value === "usdt") {
+          console.log('💚 Processing USDT payment...');
           await processUSDTPayment();
+        } else {
+          console.log('❌ Unknown payment method:', paymentMethod.value);
+          Swal.fire({
+            icon: "error",
+            title: "Invalid Selection",
+            text: "Please select a valid payment method",
+            confirmButtonColor: "#0f7a4a",
+          });
         }
+      } else {
+        console.log('❌ Payment method selection cancelled');
       }
     } catch (error) {
       setLoading(false);
