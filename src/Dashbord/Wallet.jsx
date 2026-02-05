@@ -216,8 +216,8 @@ const Wallet = () => {
             const paymentResult = await realWalletService.sendPayment(addAmount);
             
             if (paymentResult.success) {
-              // Add to platform balance via API
-              const response = await demoAPI.addDemoBalance(addAmount);
+              // Add balance to database using admin API
+              const response = await walletAPI.addBalance(addAmount);
               
               if (response.data.success) {
                 const newBalance = response.data.newBalance;
@@ -237,10 +237,12 @@ const Wallet = () => {
                     <div class="text-left space-y-2">
                       <p><strong>Amount Added:</strong> $${addAmount}</p>
                       <p><strong>New Platform Balance:</strong> $${newBalance}</p>
-                      <p><strong>ETH Deducted:</strong> ${paymentResult.amount} ETH</p>
+                      <p><strong>Crypto Deducted:</strong> ${paymentResult.amount} ${paymentResult.tokenSymbol || 'ETH'}</p>
                       <p><strong>Transaction Hash:</strong></p>
                       <p class="text-xs break-all font-mono">${paymentResult.txHash}</p>
-                      <p class="text-sm text-green-600">✅ Real wallet integration!</p>
+                      <p><strong>Database Transaction:</strong></p>
+                      <p class="text-xs break-all font-mono">${response.data.transaction?.id || 'N/A'}</p>
+                      <p class="text-sm text-green-600">✅ Real database update!</p>
                     </div>
                   `,
                   confirmButtonColor: "#0f7a4a",

@@ -45,6 +45,7 @@ export const walletAPI = {
   getBalance: () => api.get('/wallet/balance'), // ✅ API #9
   getTransactions: () => api.get('/wallet/transactions'),
   recordPayment: (paymentData) => api.post('/wallet/record-payment', paymentData), // Record real crypto payment
+  addBalance: (amount) => api.post('/admin/demo-add-balance', { amount }), // Add balance to database
 };
 
 // Demo Payment API (NEW)
