@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import Swal from "sweetalert2";
 import { FaRegCopy, FaWallet, FaEthereum, FaMobile } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +11,7 @@ import networkChecker from "../utils/networkChecker";
 import TrustWalletHelper from "../Componect/TrustWalletHelper";
 import "../styles/modal-fix.css";
 import { useLocation } from "react-router-dom";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 const Signup = () => {
   const [isReferralLocked, setIsReferralLocked] = useState(false);
@@ -42,7 +45,11 @@ const Signup = () => {
   });
   const [connectedWallet, setConnectedWallet] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [emailStatus, setEmailStatus] = useState({ checking: false, exists: false, message: "" });
+  const [emailStatus, setEmailStatus] = useState({
+    checking: false,
+    exists: false,
+    message: "",
+  });
   const [mobileError, setMobileError] = useState("");
 
   // Debug wallet on component mount
@@ -55,20 +62,28 @@ const Signup = () => {
 
   // Email validation function
   const checkEmailExists = async (email) => {
-    if (!email || !email.includes('@')) {
+    if (!email || !email.includes("@")) {
       setEmailStatus({ checking: false, exists: false, message: "" });
       return;
     }
 
     setEmailStatus({ checking: true, exists: false, message: "Checking..." });
-    
+
     try {
       const response = await authAPI.checkEmail(email);
-      
+
       if (response.data.exists) {
-        setEmailStatus({ checking: false, exists: true, message: "Email already registered" });
+        setEmailStatus({
+          checking: false,
+          exists: true,
+          message: "Email already registered",
+        });
       } else {
-        setEmailStatus({ checking: false, exists: false, message: "Email available" });
+        setEmailStatus({
+          checking: false,
+          exists: false,
+          message: "Email available",
+        });
       }
     } catch (error) {
       setEmailStatus({ checking: false, exists: false, message: "" });
@@ -82,38 +97,17 @@ const Signup = () => {
         checkEmailExists(formData.email);
       }
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, [formData.email]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // Mobile number validation
-    if (name === 'mobile') {
-      const numericValue = value.replace(/\D/g, ''); // Remove non-digits
-      
-      if (numericValue.length > 10) {
-        setMobileError("Mobile number cannot exceed 10 digits");
-        return; // Don't update if more than 10 digits
-      } else if (numericValue.length < 10 && numericValue.length > 0) {
-        setMobileError("Mobile number must be exactly 10 digits");
-      } else if (numericValue.length === 10) {
-        setMobileError("");
-      } else {
-        setMobileError("");
-      }
-      
-      setFormData((prev) => ({
-        ...prev,
-        [name]: numericValue,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   // Connect real wallet (MetaMask, TrustWallet, etc.) - Enhanced
@@ -324,22 +318,26 @@ const Signup = () => {
       setLoading(false);
       return;
     }
+    const phone = parsePhoneNumberFromString(
+      `+${formData.mobile}`,
+      formData.country, // IN, US, AE
+    );
+
+    if (!phone || !phone.isValid()) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Mobile Number",
+        text: "Please enter a valid mobile number",
+      });
+      setLoading(false);
+      return;
+    }
 
     if (emailStatus.exists) {
       Swal.fire({
         icon: "error",
         title: "Email Already Exists",
         text: "This email is already registered. Please use a different email.",
-      });
-      setLoading(false);
-      return;
-    }
-
-    if (formData.mobile.length !== 10) {
-      Swal.fire({
-        icon: "error",
-        title: "Invalid Mobile Number",
-        text: "Mobile number must be exactly 10 digits.",
       });
       setLoading(false);
       return;
@@ -587,19 +585,21 @@ const Signup = () => {
         await new Promise((resolve) => setTimeout(resolve, 5000));
 
         // Validate the transaction properly
-        const validationResult = await realWalletService.validateTransaction(paymentResult.txHash);
-        
+        const validationResult = await realWalletService.validateTransaction(
+          paymentResult.txHash,
+        );
+
         if (!validationResult.success) {
-          throw new Error('Transaction validation failed');
+          throw new Error("Transaction validation failed");
         }
 
         // Step 3: Now register user after successful payment
         try {
-          console.log('💰 Payment successful, registering user...', {
+          console.log("💰 Payment successful, registering user...", {
             txHash: paymentResult.txHash,
             amount: paymentResult.amountUSD,
             from: connectedWallet,
-            to: paymentResult.to
+            to: paymentResult.to,
           });
 
           const response = await authAPI.register({
@@ -626,9 +626,9 @@ const Signup = () => {
             tokenSymbol: paymentResult.tokenSymbol,
             companyWallet: paymentResult.to,
             userWallet: paymentResult.from,
-            chainId: paymentResult.chainId
+            chainId: paymentResult.chainId,
           };
-          
+
           const activationResponse = await walletAPI.activate(activationData);
 
           Swal.fire({
@@ -658,7 +658,7 @@ const Signup = () => {
           });
         } catch (registrationError) {
           console.error("Registration error after payment:", registrationError);
-          
+
           Swal.fire({
             icon: "error",
             title: "Registration Failed",
@@ -728,11 +728,11 @@ const Signup = () => {
                       onChange={handleChange}
                       required
                       className={`w-full mt-2 px-4 py-[14px] rounded-md border ${
-                        emailStatus.exists 
-                          ? "bg-red-50 border-red-300" 
-                          : emailStatus.message === "Email available" 
-                          ? "bg-green-50 border-green-300" 
-                          : "bg-[#eef6f1] border-gray-300"
+                        emailStatus.exists
+                          ? "bg-red-50 border-red-300"
+                          : emailStatus.message === "Email available"
+                            ? "bg-green-50 border-green-300"
+                            : "bg-[#eef6f1] border-gray-300"
                       }`}
                     />
                     {emailStatus.checking && (
@@ -742,15 +742,19 @@ const Signup = () => {
                     )}
                   </div>
                   {emailStatus.message && (
-                    <p className={`text-xs mt-1 ${
-                      emailStatus.exists ? "text-red-600" : "text-green-600"
-                    }`}>
+                    <p
+                      className={`text-xs mt-1 ${
+                        emailStatus.exists ? "text-red-600" : "text-green-600"
+                      }`}
+                    >
                       {emailStatus.message}
                     </p>
                   )}
                 </div>
 
-                <div className="mt-4 md:mt-0">
+                {/* mobile+counatary */}
+
+                {/* <div className="mt-4 md:mt-0">
                   <label className="text-sm font-semibold">Mobile</label>
                   <input
                     type="tel"
@@ -1000,6 +1004,68 @@ const Signup = () => {
                     <option value="Zambia">Zambia</option>
                     <option value="Zimbabwe">Zimbabwe</option>
                   </select>
+                </div> */}
+
+                <div className="mt-4 md:mt-0">
+                  <label className="text-sm font-semibold">Mobile Number</label>
+
+                  <PhoneInput
+                    country="in"
+                    enableSearch
+                    value={formData.mobile}
+                    onChange={(value, country) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        mobile: value,
+                        country: country.countryCode.toUpperCase(),
+                      }));
+                    }}
+                    isValid={(value, country) => {
+                      if (!value) {
+                        setMobileError("Mobile number is required");
+                        return false;
+                      }
+
+                      const phone = parsePhoneNumberFromString(
+                        `+${value}`,
+                        country.countryCode.toUpperCase(),
+                      );
+
+                      if (!phone || !phone.isValid()) {
+                        setMobileError("Please enter a valid mobile number");
+                        return false;
+                      }
+
+                      setMobileError("");
+                      return true;
+                    }}
+                    inputStyle={{
+                      width: "100%",
+                      height: "52px",
+                      backgroundColor: "#eef6f1",
+                      borderRadius: "6px",
+                      border: mobileError
+                        ? "1px solid #f87171"
+                        : "1px solid #d1d5db",
+                      fontSize: "14px",
+                      paddingLeft: "58px",
+                    }}
+                    buttonStyle={{
+                      border: "1px solid #d1d5db",
+                      borderRadius: "6px 0 0 6px",
+                      backgroundColor: "#eef6f1",
+                    }}
+                    dropdownStyle={{
+                      borderRadius: "6px",
+                    }}
+                    containerStyle={{
+                      marginTop: "8px",
+                    }}
+                  />
+
+                  {mobileError && (
+                    <p className="text-xs mt-1 text-red-600">{mobileError}</p>
+                  )}
                 </div>
 
                 <div className="mt-4">
@@ -1016,6 +1082,7 @@ const Signup = () => {
                         ? "bg-gray-100 cursor-not-allowed"
                         : "bg-[#eef6f1]"
                     }`}
+                    required
                   />
                 </div>
               </div>
