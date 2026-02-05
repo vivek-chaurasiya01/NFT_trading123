@@ -12,6 +12,8 @@ import Swal from "sweetalert2";
 import { walletAPI, userAPI, demoAPI } from "../services/api";
 import WalletStatus from "../Componect/WalletStatus";
 import realWalletService from "../services/realWalletService";
+import bnbTokenUtils from "../utils/bnbTokenUtils";
+import envConfig from "../config/environment";
 
 const Wallet = () => {
   const [balance, setBalance] = useState(0);
@@ -88,16 +90,16 @@ const Wallet = () => {
       // Use same API as History page
       const response = await userAPI.getTransactions();
       const apiTransactions = response.data.transactions || [];
-      
+
       // Sort by date (newest first) and take only 5 recent transactions
       const recentTransactions = apiTransactions
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 5);
-      
+
       setTransactions(recentTransactions);
-      console.log('✅ Recent transactions loaded:', recentTransactions.length);
+      console.log("✅ Recent transactions loaded:", recentTransactions.length);
     } catch (error) {
-      console.error('❌ Error fetching transactions:', error);
+      console.error("❌ Error fetching transactions:", error);
       setTransactions([]);
     }
   };
@@ -121,13 +123,13 @@ const Wallet = () => {
   const showPaymentMethodSelection = async () => {
     try {
       setLoading(true);
-      
+
       const walletAccount = realWalletService.getAccount();
       const networkInfo = realWalletService.getNetworkInfo();
-      
-      console.log('🔄 Wallet Account:', walletAccount);
-      console.log('🔄 Network Info:', networkInfo);
-      
+
+      console.log("🔄 Wallet Account:", walletAccount);
+      console.log("🔄 Network Info:", networkInfo);
+
       setLoading(false);
 
       // Step 3: Payment method selection popup
@@ -148,7 +150,7 @@ const Wallet = () => {
                   <input type="radio" name="payment" value="bnb" checked class="mr-3">
                   <div class="flex-1">
                     <div class="font-semibold text-gray-800">Pay with BNB</div>
-                    <div class="text-sm text-gray-600">Native BSC token • Lower fees</div>
+                    
                   </div>
                   <div class="text-yellow-600 font-bold">🟡</div>
                 </label>
@@ -157,7 +159,7 @@ const Wallet = () => {
                   <input type="radio" name="payment" value="usdt" class="mr-3">
                   <div class="flex-1">
                     <div class="font-semibold text-gray-800">Pay with USDT</div>
-                    <div class="text-sm text-gray-600">Stablecoin (BEP-20) • Fixed price</div>
+                    
                   </div>
                   <div class="text-green-600 font-bold">💚</div>
                 </label>
@@ -170,31 +172,33 @@ const Wallet = () => {
         confirmButtonText: "Continue",
         cancelButtonText: "Cancel",
         preConfirm: () => {
-          const selected = document.querySelector('input[name="payment"]:checked');
-          console.log('🔍 Selected radio button:', selected);
-          console.log('🔍 Selected value:', selected ? selected.value : 'none');
-          
+          const selected = document.querySelector(
+            'input[name="payment"]:checked',
+          );
+          console.log("🔍 Selected radio button:", selected);
+          console.log("🔍 Selected value:", selected ? selected.value : "none");
+
           if (!selected) {
-            Swal.showValidationMessage('Please select a payment method');
+            Swal.showValidationMessage("Please select a payment method");
             return false;
           }
-          
+
           return selected.value;
         },
       });
 
-      if (paymentMethod.isConfirmed) {
+      if (paymentMethod) {
         // Step 4: Process based on selected method
-        console.log('🔄 Selected payment method:', paymentMethod.value);
-        
-        if (paymentMethod.value === "bnb") {
-          console.log('🟡 Processing BNB payment...');
+        console.log("🔄 Selected payment method:", paymentMethod);
+
+        if (paymentMethod === "bnb") {
+          console.log("🟡 Processing BNB payment...");
           await processBNBPayment();
-        } else if (paymentMethod.value === "usdt") {
-          console.log('💚 Processing USDT payment...');
+        } else if (paymentMethod === "usdt") {
+          console.log("💚 Processing USDT payment...");
           await processUSDTPayment();
         } else {
-          console.log('❌ Unknown payment method:', paymentMethod.value);
+          console.log("❌ Unknown payment method:", paymentMethod);
           Swal.fire({
             icon: "error",
             title: "Invalid Selection",
@@ -203,7 +207,7 @@ const Wallet = () => {
           });
         }
       } else {
-        console.log('❌ Payment method selection cancelled');
+        console.log("❌ Payment method selection cancelled");
       }
     } catch (error) {
       setLoading(false);
@@ -220,17 +224,19 @@ const Wallet = () => {
   const processBNBPayment = async () => {
     try {
       setLoading(true);
-      
+
       // Get BNB balance
       const walletBalance = await realWalletService.getBalance();
       const walletAccount = realWalletService.getAccount();
-      
+
       if (!walletBalance.success) {
         throw new Error(walletBalance.error || "Failed to fetch BNB balance");
       }
 
       const bnbBalance = parseFloat(walletBalance.balance);
-      const bnbPrice = 600; // 1 BNB = $600 (you can make this dynamic)
+      
+      // ✅ Fetch real-time BNB price from Binance API
+      const bnbPrice = await envConfig.fetchCurrentBNBPrice();
       const maxUsdAmount = (bnbBalance * bnbPrice).toFixed(2);
 
       setLoading(false);
@@ -250,10 +256,6 @@ const Wallet = () => {
                 <div class="flex justify-between">
                   <span class="text-gray-600">BNB Balance:</span>
                   <span class="font-medium">${bnbBalance} BNB</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">BNB Price:</span>
-                  <span class="font-medium">$${bnbPrice}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-600">Available:</span>
@@ -306,11 +308,17 @@ const Wallet = () => {
   const processUSDTPayment = async () => {
     try {
       setLoading(true);
-      
+
       const walletAccount = realWalletService.getAccount();
+
+      // ✅ Fetch real USDT balance from blockchain
+      const usdtBalanceResult = await bnbTokenUtils.getUSDTBalance(walletAccount);
       
-      // For demo, assume user has USDT (in real app, you'd check USDT balance)
-      const usdtBalance = 1000; // This should be fetched from USDT contract
+      if (!usdtBalanceResult.success) {
+        throw new Error("Failed to fetch USDT balance");
+      }
+      
+      const usdtBalance = parseFloat(usdtBalanceResult.balance);
       const maxUsdAmount = usdtBalance.toFixed(2);
 
       setLoading(false);
@@ -386,10 +394,14 @@ const Wallet = () => {
     }
   };
 
-  const confirmAndProcessPayment = async (addAmount, paymentMethod, tokenPrice) => {
+  const confirmAndProcessPayment = async (
+    addAmount,
+    paymentMethod,
+    tokenPrice,
+  ) => {
     try {
       setLoading(true);
-      
+
       const walletAccount = realWalletService.getAccount();
       const tokenRequired = (addAmount / tokenPrice).toFixed(6);
       const tokenSymbol = paymentMethod === "bnb" ? "BNB" : "USDT";
@@ -405,9 +417,7 @@ const Wallet = () => {
               <p><strong>From Wallet:</strong> ${walletAccount.substring(0, 6)}...${walletAccount.substring(-4)}</p>
               <p><strong>Network:</strong> BSC Mainnet</p>
             </div>
-            <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-              <p class="text-sm text-yellow-800">⚠️ This will deduct ${tokenRequired} ${tokenSymbol} from your connected wallet</p>
-            </div>
+
           </div>
         `,
         icon: "question",
@@ -420,24 +430,24 @@ const Wallet = () => {
       if (confirmResult.isConfirmed) {
         // Step 8: Process payment
         let paymentResult;
-        
+
         if (paymentMethod === "bnb") {
           paymentResult = await realWalletService.sendPayment(addAmount);
         } else {
           paymentResult = await realWalletService.sendUSDTPayment(addAmount);
         }
-        
+
         if (paymentResult.success) {
           // Step 10: Update platform balance
           const response = await walletAPI.addBalance(addAmount);
-          
+
           if (response.data.success) {
             const newBalance = response.data.newBalance;
             setBalance(newBalance);
 
             // Update localStorage
-            localStorage.setItem('demoBalance', newBalance.toString());
-            localStorage.setItem('userBalance', newBalance.toString());
+            localStorage.setItem("demoBalance", newBalance.toString());
+            localStorage.setItem("userBalance", newBalance.toString());
 
             // Notify other components
             window.dispatchEvent(
@@ -547,9 +557,7 @@ const Wallet = () => {
         </div>
       </div>
 
-  
-
-       <WalletStatus />
+      <WalletStatus />
 
       {/* Action Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -583,8 +591,6 @@ const Wallet = () => {
           <h3 className="font-semibold text-gray-800 mb-1">Withdraw</h3>
           <p className="text-gray-500 text-sm">Transfer to wallet</p>
         </button>
-
-
       </div>
 
       {/* Recent Transactions */}
@@ -610,9 +616,17 @@ const Wallet = () => {
             <div className="space-y-4">
               {transactions.slice(0, 5).map((transaction, index) => {
                 // Determine if money is added to wallet (credit) or withdrawn from company (debit)
-                const isMoneyAdded = transaction.type === "credit" || transaction.type === "add" || transaction.description?.toLowerCase().includes("added") || transaction.description?.toLowerCase().includes("deposit");
-                const isMoneyWithdrawn = transaction.type === "debit" || transaction.type === "withdraw" || transaction.description?.toLowerCase().includes("withdraw") || transaction.description?.toLowerCase().includes("sent");
-                
+                const isMoneyAdded =
+                  transaction.type === "credit" ||
+                  transaction.type === "add" ||
+                  transaction.description?.toLowerCase().includes("added") ||
+                  transaction.description?.toLowerCase().includes("deposit");
+                const isMoneyWithdrawn =
+                  transaction.type === "debit" ||
+                  transaction.type === "withdraw" ||
+                  transaction.description?.toLowerCase().includes("withdraw") ||
+                  transaction.description?.toLowerCase().includes("sent");
+
                 return (
                   <div
                     key={index}
@@ -644,13 +658,10 @@ const Wallet = () => {
                     <div className="flex-shrink-0 ml-3">
                       <p
                         className={`font-bold text-lg ${
-                          isMoneyAdded
-                            ? "text-green-600"
-                            : "text-red-600"
+                          isMoneyAdded ? "text-green-600" : "text-red-600"
                         }`}
                       >
-                        {isMoneyAdded ? "+" : "-"}$
-                        {transaction.amount}
+                        {isMoneyAdded ? "+" : "-"}${transaction.amount}
                       </p>
                     </div>
                   </div>
