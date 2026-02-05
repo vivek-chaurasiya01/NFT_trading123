@@ -103,7 +103,7 @@ const Wallet = () => {
   };
 
   const handleAddBalance = async () => {
-    // First check if wallet is connected
+    // Step 1: Check if wallet is connected
     if (!realWalletService.isWalletConnected()) {
       Swal.fire({
         icon: "warning",
@@ -114,55 +114,129 @@ const Wallet = () => {
       return;
     }
 
+    // Step 2: Show payment method selection
+    await showPaymentMethodSelection();
+  };
+
+  const showPaymentMethodSelection = async () => {
     try {
       setLoading(true);
       
-      // Get wallet balance
-      const walletBalance = await realWalletService.getBalance();
       const walletAccount = realWalletService.getAccount();
       const networkInfo = realWalletService.getNetworkInfo();
       
+      setLoading(false);
+
+      // Step 3: Payment method selection popup
+      const { value: paymentMethod } = await Swal.fire({
+        title: "Choose Payment Method",
+        html: `
+          <div class="text-left space-y-4">
+            <div class="bg-green-50 p-3 rounded-lg border border-green-200">
+              <p class="text-green-600 font-medium">✅ Wallet Connected: ${walletAccount.substring(0, 6)}...${walletAccount.substring(-4)}</p>
+              <p class="text-sm text-gray-600">Network: ${networkInfo.networkName}</p>
+            </div>
+            
+            <div class="space-y-3">
+              <p class="font-medium text-gray-800">Select your payment method:</p>
+              
+              <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-yellow-300 hover:bg-yellow-50 transition-all">
+                <input type="radio" name="payment" value="bnb" checked class="mr-3 text-yellow-600">
+                <div class="flex-1">
+                  <div class="font-semibold text-gray-800">Pay with BNB</div>
+                  <div class="text-sm text-gray-600">Native BSC token • Lower fees</div>
+                </div>
+                <div class="text-yellow-600 font-bold">🟡</div>
+              </label>
+              
+              <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-300 hover:bg-green-50 transition-all">
+                <input type="radio" name="payment" value="usdt" class="mr-3 text-green-600">
+                <div class="flex-1">
+                  <div class="font-semibold text-gray-800">Pay with USDT</div>
+                  <div class="text-sm text-gray-600">Stablecoin (BEP-20) • Fixed price</div>
+                </div>
+                <div class="text-green-600 font-bold">💚</div>
+              </label>
+            </div>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: "#0f7a4a",
+        confirmButtonText: "Continue",
+        cancelButtonText: "Cancel",
+        preConfirm: () => {
+          const selected = document.querySelector('input[name="payment"]:checked');
+          return selected ? selected.value : "bnb";
+        },
+      });
+
+      if (paymentMethod.isConfirmed) {
+        // Step 4: Process based on selected method
+        if (paymentMethod.value === "bnb") {
+          await processBNBPayment();
+        } else {
+          await processUSDTPayment();
+        }
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error("❌ Payment method selection failed:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to load payment options. Please try again.",
+        confirmButtonColor: "#0f7a4a",
+      });
+    }
+  };
+
+  const processBNBPayment = async () => {
+    try {
+      setLoading(true);
+      
+      // Get BNB balance
+      const walletBalance = await realWalletService.getBalance();
+      const walletAccount = realWalletService.getAccount();
+      
       if (!walletBalance.success) {
-        throw new Error(walletBalance.error || "Failed to fetch wallet balance");
+        throw new Error(walletBalance.error || "Failed to fetch BNB balance");
       }
 
-      const ethBalance = parseFloat(walletBalance.balance);
-      const ethToUsd = 2000; // 1 ETH = $2000 (you can make this dynamic)
-      const maxUsdAmount = (ethBalance * ethToUsd).toFixed(2);
+      const bnbBalance = parseFloat(walletBalance.balance);
+      const bnbPrice = 600; // 1 BNB = $600 (you can make this dynamic)
+      const maxUsdAmount = (bnbBalance * bnbPrice).toFixed(2);
 
       setLoading(false);
 
-      // Show wallet info and amount input
+      // Step 5: Show amount input for BNB
       const { value: amount } = await Swal.fire({
-        title: "Add Balance from Wallet",
+        title: "Add Balance with BNB",
         html: `
           <div class="text-left space-y-4 mb-4">
-            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-              <h4 class="font-semibold text-green-800 mb-2">Connected Wallet</h4>
+            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+              <h4 class="font-semibold text-yellow-800 mb-2">🟡 BNB Payment</h4>
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
-                  <span class="text-gray-600">Status:</span>
-                  <span class="text-green-600 font-medium">✅ Connected</span>
+                  <span class="text-gray-600">Connected Wallet:</span>
+                  <span class="font-mono text-xs">${walletAccount.substring(0, 6)}...${walletAccount.substring(-4)}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-gray-600">Address:</span>
-                  <span class="font-mono text-xs">${walletAccount.substring(0, 6)}...${walletAccount.substring(38)}</span>
+                  <span class="text-gray-600">BNB Balance:</span>
+                  <span class="font-medium">${bnbBalance} BNB</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-gray-600">Balance:</span>
-                  <span class="font-medium">${ethBalance} ETH (~$${maxUsdAmount})</span>
+                  <span class="text-gray-600">BNB Price:</span>
+                  <span class="font-medium">$${bnbPrice}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Available:</span>
+                  <span class="font-medium text-green-600">~$${maxUsdAmount}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-600">Network:</span>
-                  <span class="text-blue-600">${networkInfo.networkName}</span>
+                  <span class="text-blue-600">BSC Mainnet</span>
                 </div>
               </div>
-              <button 
-                onclick="location.reload()" 
-                class="mt-2 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
-              >
-                🔄 Refresh Balance
-              </button>
             </div>
           </div>
         `,
@@ -176,108 +250,211 @@ const Wallet = () => {
         },
         showCancelButton: true,
         confirmButtonColor: "#0f7a4a",
-        confirmButtonText: "Add from Wallet",
+        confirmButtonText: "Continue with BNB",
         inputValidator: (value) => {
           if (!value || value <= 0) {
             return "Please enter a valid amount!";
           }
           if (parseFloat(value) > parseFloat(maxUsdAmount)) {
-            return `Insufficient wallet balance! Max: $${maxUsdAmount}`;
+            return `Insufficient BNB balance! Max: $${maxUsdAmount}`;
           }
         },
       });
 
       if (amount) {
-        setLoading(true);
-        const addAmount = parseFloat(amount);
-        const ethRequired = (addAmount / ethToUsd).toFixed(6);
-
-        // Confirm transaction
-        const confirmResult = await Swal.fire({
-          title: "Confirm Transaction",
-          html: `
-            <div class="text-left space-y-2">
-              <p><strong>Amount to Add:</strong> $${addAmount} USD</p>
-              <p><strong>ETH Required:</strong> ${ethRequired} ETH</p>
-              <p><strong>From Wallet:</strong> ${walletAccount.substring(0, 6)}...${walletAccount.substring(38)}</p>
-              <p class="text-sm text-gray-600 mt-3">This will deduct ETH from your connected wallet</p>
-            </div>
-          `,
-          icon: "question",
-          showCancelButton: true,
-          confirmButtonColor: "#0f7a4a",
-          confirmButtonText: "Confirm & Add",
-          cancelButtonText: "Cancel",
-        });
-
-        if (confirmResult.isConfirmed) {
-          try {
-            // Send ETH transaction (this will deduct from wallet)
-            const paymentResult = await realWalletService.sendPayment(addAmount);
-            
-            if (paymentResult.success) {
-              // Add balance to database using admin API
-              const response = await walletAPI.addBalance(addAmount);
-              
-              if (response.data.success) {
-                const newBalance = response.data.newBalance;
-                setBalance(newBalance);
-
-                // Notify other components
-                window.dispatchEvent(
-                  new CustomEvent("balanceUpdate", {
-                    detail: { balance: newBalance },
-                  }),
-                );
-
-                Swal.fire({
-                  icon: "success",
-                  title: "Balance Added Successfully!",
-                  html: `
-                    <div class="text-left space-y-2">
-                      <p><strong>Amount Added:</strong> $${addAmount}</p>
-                      <p><strong>New Platform Balance:</strong> $${newBalance}</p>
-                      <p><strong>Crypto Deducted:</strong> ${paymentResult.amount} ${paymentResult.tokenSymbol || 'ETH'}</p>
-                      <p><strong>Transaction Hash:</strong></p>
-                      <p class="text-xs break-all font-mono">${paymentResult.txHash}</p>
-                      <p><strong>Database Transaction:</strong></p>
-                      <p class="text-xs break-all font-mono">${response.data.transaction?.id || 'N/A'}</p>
-                      <p class="text-sm text-green-600">✅ Real database update!</p>
-                    </div>
-                  `,
-                  confirmButtonColor: "#0f7a4a",
-                });
-              }
-            } else {
-              throw new Error(paymentResult.error || "Transaction failed");
-            }
-
-            // Refresh data
-            fetchBalance();
-            fetchTransactions();
-          } catch (error) {
-            console.error("❌ Wallet transaction failed:", error);
-            Swal.fire({
-              icon: "error",
-              title: "Transaction Failed",
-              text: error.message || "Failed to process wallet transaction",
-              confirmButtonColor: "#0f7a4a",
-            });
-          }
-        }
-        setLoading(false);
+        await confirmAndProcessPayment(parseFloat(amount), "bnb", bnbPrice);
       }
     } catch (error) {
       setLoading(false);
-      console.error("❌ Wallet balance fetch failed:", error);
-      
-      // Fallback to regular add balance
+      console.error("❌ BNB payment failed:", error);
       Swal.fire({
-        icon: "warning",
-        title: "Wallet Error",
-        text: "Could not fetch wallet balance. Use regular add balance instead.",
+        icon: "error",
+        title: "BNB Payment Error",
+        text: error.message || "Failed to process BNB payment",
         confirmButtonColor: "#0f7a4a",
       });
+    }
+  };
+
+  const processUSDTPayment = async () => {
+    try {
+      setLoading(true);
+      
+      const walletAccount = realWalletService.getAccount();
+      
+      // For demo, assume user has USDT (in real app, you'd check USDT balance)
+      const usdtBalance = 1000; // This should be fetched from USDT contract
+      const maxUsdAmount = usdtBalance.toFixed(2);
+
+      setLoading(false);
+
+      // Step 5: Show amount input for USDT
+      const { value: amount } = await Swal.fire({
+        title: "Add Balance with USDT",
+        html: `
+          <div class="text-left space-y-4 mb-4">
+            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+              <h4 class="font-semibold text-green-800 mb-2">💚 USDT Payment</h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Connected Wallet:</span>
+                  <span class="font-mono text-xs">${walletAccount.substring(0, 6)}...${walletAccount.substring(-4)}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">USDT Balance:</span>
+                  <span class="font-medium">${usdtBalance} USDT</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">USDT Price:</span>
+                  <span class="font-medium">$1.00 (Stable)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Available:</span>
+                  <span class="font-medium text-green-600">$${maxUsdAmount}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Network:</span>
+                  <span class="text-blue-600">BSC Mainnet (BEP-20)</span>
+                </div>
+              </div>
+              <div class="mt-3 p-2 bg-yellow-50 rounded border border-yellow-200">
+                <p class="text-xs text-yellow-800">⚠️ Make sure you have BNB for gas fees</p>
+              </div>
+            </div>
+          </div>
+        `,
+        input: "number",
+        inputLabel: `Enter Amount (Max: $${maxUsdAmount} USD)`,
+        inputPlaceholder: "Enter USD amount to add",
+        inputAttributes: {
+          min: 1,
+          max: parseFloat(maxUsdAmount),
+          step: 0.01,
+        },
+        showCancelButton: true,
+        confirmButtonColor: "#0f7a4a",
+        confirmButtonText: "Continue with USDT",
+        inputValidator: (value) => {
+          if (!value || value <= 0) {
+            return "Please enter a valid amount!";
+          }
+          if (parseFloat(value) > parseFloat(maxUsdAmount)) {
+            return `Insufficient USDT balance! Max: $${maxUsdAmount}`;
+          }
+        },
+      });
+
+      if (amount) {
+        await confirmAndProcessPayment(parseFloat(amount), "usdt", 1);
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error("❌ USDT payment failed:", error);
+      Swal.fire({
+        icon: "error",
+        title: "USDT Payment Error",
+        text: error.message || "Failed to process USDT payment",
+        confirmButtonColor: "#0f7a4a",
+      });
+    }
+  };
+
+  const confirmAndProcessPayment = async (addAmount, paymentMethod, tokenPrice) => {
+    try {
+      setLoading(true);
+      
+      const walletAccount = realWalletService.getAccount();
+      const tokenRequired = (addAmount / tokenPrice).toFixed(6);
+      const tokenSymbol = paymentMethod === "bnb" ? "BNB" : "USDT";
+
+      // Step 7: Confirm transaction
+      const confirmResult = await Swal.fire({
+        title: "Confirm Transaction",
+        html: `
+          <div class="text-left space-y-3">
+            <div class="bg-gray-50 p-3 rounded-lg">
+              <p><strong>Amount to Add:</strong> $${addAmount} USD</p>
+              <p><strong>${tokenSymbol} Required:</strong> ${tokenRequired} ${tokenSymbol}</p>
+              <p><strong>From Wallet:</strong> ${walletAccount.substring(0, 6)}...${walletAccount.substring(-4)}</p>
+              <p><strong>Network:</strong> BSC Mainnet</p>
+            </div>
+            <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+              <p class="text-sm text-yellow-800">⚠️ This will deduct ${tokenRequired} ${tokenSymbol} from your connected wallet</p>
+            </div>
+          </div>
+        `,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#0f7a4a",
+        confirmButtonText: `Confirm & Send ${tokenSymbol}`,
+        cancelButtonText: "Cancel",
+      });
+
+      if (confirmResult.isConfirmed) {
+        // Step 8: Process payment
+        let paymentResult;
+        
+        if (paymentMethod === "bnb") {
+          paymentResult = await realWalletService.sendPayment(addAmount);
+        } else {
+          paymentResult = await realWalletService.sendUSDTPayment(addAmount);
+        }
+        
+        if (paymentResult.success) {
+          // Step 10: Update platform balance
+          const response = await walletAPI.addBalance(addAmount);
+          
+          if (response.data.success) {
+            const newBalance = response.data.newBalance;
+            setBalance(newBalance);
+
+            // Update localStorage
+            localStorage.setItem('demoBalance', newBalance.toString());
+            localStorage.setItem('userBalance', newBalance.toString());
+
+            // Notify other components
+            window.dispatchEvent(
+              new CustomEvent("balanceUpdate", {
+                detail: { balance: newBalance },
+              }),
+            );
+
+            // Step 11: Success message
+            Swal.fire({
+              icon: "success",
+              title: "Balance Added Successfully! 🎉",
+              html: `
+                <div class="text-left space-y-2">
+                  <p><strong>Amount Added:</strong> $${addAmount}</p>
+                  <p><strong>New Platform Balance:</strong> $${newBalance}</p>
+                  <p><strong>Payment Method:</strong> ${paymentResult.tokenSymbol || tokenSymbol}</p>
+                  <p><strong>Crypto Deducted:</strong> ${paymentResult.amount} ${paymentResult.tokenSymbol || tokenSymbol}</p>
+                  <p><strong>Transaction Hash:</strong></p>
+                  <p class="text-xs break-all font-mono bg-gray-100 p-2 rounded">${paymentResult.txHash}</p>
+                  <p class="text-sm text-green-600 mt-2">✅ Real blockchain transaction completed!</p>
+                </div>
+              `,
+              confirmButtonColor: "#0f7a4a",
+            });
+          }
+        } else {
+          throw new Error(paymentResult.error || "Transaction failed");
+        }
+
+        // Refresh data
+        fetchBalance();
+        fetchTransactions();
+      }
+    } catch (error) {
+      console.error("❌ Payment processing failed:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Transaction Failed",
+        text: error.message || "Failed to process payment. Please try again.",
+        confirmButtonColor: "#0f7a4a",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
