@@ -130,7 +130,7 @@ const NFTMarketplace = () => {
 
         Swal.fire({
           icon: "success",
-          title: "Admin NFT Purchased!",
+          title: "NFT Purchased Successfully Thanks for being a Part of GTN Project in Phase -1",
           text: response.data.message || "NFT added to your collection",
           confirmButtonColor: "#0f7a4a",
         });

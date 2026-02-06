@@ -696,6 +696,7 @@ const Signup = () => {
           <div className="relative z-10 px-6 pt-10 text-white">
             <p className="text-sm font-medium">Hi,</p>
             <h1 className="text-[22px] font-bold">Create Account</h1>
+            <p className="text-center text-lg font-semibold mt-4">Welcome to GTN Project</p>
           </div>
         </div>
 
