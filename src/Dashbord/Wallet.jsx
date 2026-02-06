@@ -438,7 +438,9 @@ const Wallet = () => {
         }
 
         if (paymentResult.success) {
-          // Step 10: Update platform balance
+          // Step 10: Update platform balance via backend API
+          console.log('💰 Updating balance via backend API...');
+          
           const response = await walletAPI.addBalance(addAmount);
 
           if (response.data.success) {
@@ -456,6 +458,8 @@ const Wallet = () => {
               }),
             );
 
+            console.log('✅ Balance updated successfully:', newBalance);
+
             // Step 11: Success message
             Swal.fire({
               icon: "success",
@@ -468,11 +472,14 @@ const Wallet = () => {
                   <p><strong>Crypto Deducted:</strong> ${paymentResult.amount} ${paymentResult.tokenSymbol || tokenSymbol}</p>
                   <p><strong>Transaction Hash:</strong></p>
                   <p class="text-xs break-all font-mono bg-gray-100 p-2 rounded">${paymentResult.txHash}</p>
-                  <p class="text-sm text-green-600 mt-2">✅ Real blockchain transaction completed!</p>
+                  <p class="text-sm text-green-600 mt-2">✅ Blockchain transaction completed!</p>
+                  <p class="text-sm text-green-600">✅ Balance updated in database!</p>
                 </div>
               `,
               confirmButtonColor: "#0f7a4a",
             });
+          } else {
+            throw new Error('Failed to update balance in database');
           }
         } else {
           throw new Error(paymentResult.error || "Transaction failed");

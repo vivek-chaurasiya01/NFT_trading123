@@ -23,6 +23,7 @@ const History = () => {
       setTransactions(response.data.transactions || []);
     } catch (error) {
       setError("Failed to load transactions");
+      setTransactions([]);
     }
     setLoading(false);
   };
