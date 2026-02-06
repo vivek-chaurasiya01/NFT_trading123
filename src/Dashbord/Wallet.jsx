@@ -40,38 +40,15 @@ const Wallet = () => {
 
   const fetchBalance = async () => {
     try {
-      // ✅ Real API First - Using API #8
+      // ✅ Always fetch from database API
       const response = await walletAPI.getBalance();
       const realBalance = response.data.balance || 0;
 
-      console.log("🔍 Real API Balance:", realBalance);
-
-      // Use real balance if available
-      if (realBalance > 0) {
-        setBalance(realBalance);
-        console.log("✅ Using real balance:", realBalance);
-        return;
-      }
-
-      // Fallback to demo balance only if real balance is 0
-      const demoBalance =
-        localStorage.getItem("demoBalance") ||
-        localStorage.getItem("userBalance");
-      if (demoBalance) {
-        setBalance(parseFloat(demoBalance));
-        console.log("⚠️ Using demo balance:", demoBalance);
-      } else {
-        setBalance(0);
-        console.log("❌ No balance found");
-      }
+      console.log("🔍 Database Balance:", realBalance);
+      setBalance(realBalance);
     } catch (error) {
-      console.error("❌ Real API failed:", error);
-      // Only use demo on API failure
-      const demoBalance =
-        localStorage.getItem("demoBalance") ||
-        localStorage.getItem("userBalance");
-      setBalance(demoBalance ? parseFloat(demoBalance) : 0);
-      console.log("⚠️ API failed, using demo:", demoBalance || 0);
+      console.error("❌ Failed to fetch balance:", error);
+      setBalance(0);
     }
   };
 
@@ -447,10 +424,6 @@ const Wallet = () => {
             const newBalance = response.data.newBalance;
             setBalance(newBalance);
 
-            // Update localStorage
-            localStorage.setItem("demoBalance", newBalance.toString());
-            localStorage.setItem("userBalance", newBalance.toString());
-
             // Notify other components
             window.dispatchEvent(
               new CustomEvent("balanceUpdate", {
@@ -458,7 +431,7 @@ const Wallet = () => {
               }),
             );
 
-            console.log('✅ Balance updated successfully:', newBalance);
+            console.log('✅ Balance updated in database:', newBalance);
 
             // Step 11: Success message
             Swal.fire({
