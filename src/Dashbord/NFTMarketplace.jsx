@@ -36,23 +36,15 @@ const NFTMarketplace = () => {
 
   const fetchBalance = async () => {
     try {
-      // Use same balance logic as NFTDashboard
-      const [balanceRes] = await Promise.allSettled([walletAPI.getBalance()]);
-
-      const balanceData =
-        balanceRes.status === "fulfilled"
-          ? balanceRes.value.data
-          : { balance: 0 };
-      const balance =
-        balanceData.balance ||
-        parseFloat(localStorage.getItem("demoBalance") || "0");
+      // ✅ Always fetch from database API
+      const response = await walletAPI.getBalance();
+      const balance = response.data.balance || 0;
 
       setUserBalance(balance);
-      console.log("💰 Using balance:", balance);
+      console.log("💰 Database balance:", balance);
     } catch (error) {
       console.error("Error fetching balance:", error);
-      const balance = parseFloat(localStorage.getItem("demoBalance") || "0");
-      setUserBalance(balance);
+      setUserBalance(0);
     }
   };
 
@@ -136,49 +128,16 @@ const NFTMarketplace = () => {
         });
       }
 
-      // Update balance after purchase
-      const newBalance = userBalance - price;
-      setUserBalance(newBalance);
-
-      localStorage.setItem("demoBalance", newBalance.toString());
-      localStorage.setItem("userBalance", newBalance.toString());
-
-      // Create transaction record
-      const transaction = {
-        _id: Date.now().toString(),
-        type: "debit",
-        amount: price,
-        description: `NFT Purchase - ${nftId} ${isUserListed ? "(User Listed)" : "(Admin)"}`,
-        createdAt: new Date().toISOString(),
-        status: "completed",
-        nftId: nftId,
-        isUserListed: isUserListed,
-      };
-
-      const existingTransactions = JSON.parse(
-        localStorage.getItem("userTransactions") || "[]",
-      );
-      existingTransactions.unshift(transaction);
-      localStorage.setItem(
-        "userTransactions",
-        JSON.stringify(existingTransactions),
-      );
-
-      // Dispatch balance update events
-      window.dispatchEvent(
-        new CustomEvent("balanceUpdate", {
-          detail: { balance: newBalance },
-        }),
-      );
-
-      window.dispatchEvent(
-        new CustomEvent("walletBalanceUpdate", {
-          detail: { balance: newBalance },
-        }),
-      );
-
+      // Refresh data from backend
       fetchMarketplace();
       fetchBalance();
+
+      // Dispatch balance update event
+      window.dispatchEvent(
+        new CustomEvent("balanceUpdate", {
+          detail: { balance: response.data.newBalance || userBalance - price },
+        }),
+      );
     } catch (error) {
       console.error("Buy error:", error);
       Swal.fire(
