@@ -476,47 +476,305 @@ const Wallet = () => {
   };
 
   const handleWithdraw = async () => {
+    // Step 1: Check if user has sufficient balance
+    if (balance <= 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Insufficient Balance",
+        text: "You don't have enough balance to withdraw",
+        confirmButtonColor: "#0f7a4a",
+      });
+      return;
+    }
+
+    // Step 2: Show loading while preparing form
+    Swal.fire({
+      title: 'Loading...',
+      text: 'Preparing withdrawal form',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Small delay for smooth transition
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Step 3: Show beautiful withdrawal modal
     const { value: formValues } = await Swal.fire({
-      title: "Withdraw Funds",
-      html:
-        '<input id="amount" class="swal2-input" placeholder="Amount" type="number">' +
-        '<input id="wallet" class="swal2-input" placeholder="Wallet Address">',
+      title: '<strong>💰 Withdraw Funds</strong>',
+      html: `
+        <div class="text-left space-y-4" style="padding: 10px;">
+          <!-- Balance Info -->
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 12px; color: white;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <p style="font-size: 12px; opacity: 0.9; margin: 0;">Available Balance</p>
+                <p style="font-size: 24px; font-weight: bold; margin: 5px 0 0 0;">$${balance.toFixed(2)}</p>
+              </div>
+              <div style="font-size: 32px;">💵</div>
+            </div>
+          </div>
+
+          <!-- Amount Input -->
+          <div>
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151; font-size: 14px;">
+              💵 Withdrawal Amount
+            </label>
+            <input 
+              id="amount" 
+              class="swal2-input" 
+              placeholder="Enter amount (Min: $10)" 
+              type="number"
+              min="10"
+              max="${balance}"
+              step="0.01"
+              style="width: 100%; margin: 0; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;"
+            >
+          </div>
+
+          <!-- Wallet Address Input -->
+          <div>
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151; font-size: 14px;">
+              🔐 BSC Wallet Address
+            </label>
+            <input 
+              id="wallet" 
+              class="swal2-input" 
+              placeholder="0x..." 
+              type="text"
+              style="width: 100%; margin: 0; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-family: monospace;"
+            >
+            <p style="font-size: 11px; color: #6b7280; margin: 5px 0 0 0;">
+              ℹ️ Enter your BSC (BEP-20) wallet address
+            </p>
+          </div>
+
+          <!-- Info Box -->
+          <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 12px; border-radius: 8px;">
+            <p style="font-size: 12px; color: #92400e; margin: 0; line-height: 1.5;">
+              ⚠️ <strong>Important:</strong> Withdrawals are processed within 24-48 hours after admin approval
+            </p>
+          </div>
+        </div>
+      `,
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonColor: "#0f7a4a",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: '✅ Request Withdrawal',
+      cancelButtonText: '❌ Cancel',
+      width: '550px',
+      padding: '20px',
+      customClass: {
+        popup: 'animated-popup',
+        title: 'custom-title',
+        confirmButton: 'custom-confirm-btn',
+        cancelButton: 'custom-cancel-btn'
+      },
       preConfirm: () => {
-        return [
-          document.getElementById("amount").value,
-          document.getElementById("wallet").value,
-        ];
+        const amount = document.getElementById("amount").value;
+        const wallet = document.getElementById("wallet").value;
+        
+        if (!amount || parseFloat(amount) <= 0) {
+          Swal.showValidationMessage("❌ Please enter a valid amount");
+          return false;
+        }
+        
+        if (parseFloat(amount) < 10) {
+          Swal.showValidationMessage("❌ Minimum withdrawal is $10");
+          return false;
+        }
+        
+        if (parseFloat(amount) > balance) {
+          Swal.showValidationMessage(`❌ Insufficient balance. Available: $${balance.toFixed(2)}`);
+          return false;
+        }
+        
+        if (!wallet || wallet.trim() === '') {
+          Swal.showValidationMessage("❌ Please enter wallet address");
+          return false;
+        }
+        
+        if (!wallet.startsWith("0x")) {
+          Swal.showValidationMessage("❌ Wallet address must start with 0x");
+          return false;
+        }
+        
+        if (wallet.length !== 42) {
+          Swal.showValidationMessage("❌ Invalid wallet address length");
+          return false;
+        }
+        
+        return [parseFloat(amount), wallet.trim()];
       },
     });
 
     if (formValues) {
       const [amount, walletAddress] = formValues;
-      if (!amount || !walletAddress) {
-        Swal.fire("Error", "Please fill all fields", "error");
-        return;
-      }
-
+      
+      // Show processing loader
+      Swal.fire({
+        title: '🔄 Processing...',
+        html: '<p>Submitting your withdrawal request</p>',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+      
       setLoading(true);
+      
       try {
-        await walletAPI.withdraw(parseFloat(amount), walletAddress);
+        console.log('📤 Sending withdrawal request:', { amount, walletAddress });
+        console.log('🔑 Token:', localStorage.getItem('token') ? 'Present' : 'Missing');
+        console.log('🎯 API URL:', import.meta.env.VITE_API_URL);
+        
+        const response = await walletAPI.withdraw(amount, walletAddress);
+        
+        console.log('✅ Withdrawal response:', response);
+        console.log('✅ Response data:', response.data);
+        
+        // Update balance immediately
+        const newBalance = balance - amount;
+        setBalance(newBalance);
+        
+        window.dispatchEvent(
+          new CustomEvent("balanceUpdate", {
+            detail: { balance: newBalance },
+          })
+        );
+        
+        // Success SweetAlert
         Swal.fire({
           icon: "success",
-          title: "Withdrawal Requested",
-          text: "Your request is pending admin approval",
+          title: '<strong>🎉 Withdrawal Requested!</strong>',
+            html: `
+            <div style="text-align: left; padding: 10px;">
+              <!-- Success Header -->
+              <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px;">
+                <p style="font-size: 14px; margin: 0; opacity: 0.9;">Withdrawal Amount</p>
+                <p style="font-size: 28px; font-weight: bold; margin: 5px 0;">$${amount.toFixed(2)}</p>
+              </div>
+
+              <!-- Details -->
+              <div style="background: #f9fafb; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <p style="font-size: 13px; margin: 0 0 8px 0; color: #374151;"><strong>🔐 To Wallet:</strong></p>
+                <p style="font-size: 12px; font-family: monospace; background: white; padding: 10px; border-radius: 6px; word-break: break-all; border: 1px solid #e5e7eb; margin: 0;">
+                  ${walletAddress}
+                </p>
+              </div>
+
+              <!-- Status -->
+              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 12px; border-radius: 10px; margin-bottom: 15px;">
+                <p style="font-size: 13px; color: #92400e; margin: 0;"><strong>📄 Status:</strong> Pending Admin Approval</p>
+                ${response.data.withdrawalId ? `<p style="font-size: 12px; color: #92400e; margin: 5px 0 0 0;"><strong>Request ID:</strong> ${response.data.withdrawalId}</p>` : ''}
+              </div>
+
+              <!-- Info Cards -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div style="background: #dbeafe; padding: 12px; border-radius: 8px; text-align: center;">
+                  <p style="font-size: 11px; color: #1e40af; margin: 0;">New Balance</p>
+                  <p style="font-size: 18px; font-weight: bold; color: #1e40af; margin: 5px 0 0 0;">$${newBalance.toFixed(2)}</p>
+                </div>
+                <div style="background: #fce7f3; padding: 12px; border-radius: 8px; text-align: center;">
+                  <p style="font-size: 11px; color: #be185d; margin: 0;">Processing Time</p>
+                  <p style="font-size: 18px; font-weight: bold; color: #be185d; margin: 5px 0 0 0;">24-48h</p>
+                </div>
+              </div>
+
+              <!-- Success Message -->
+              <div style="background: #d1fae5; border: 2px solid #10b981; padding: 12px; border-radius: 10px;">
+                <p style="font-size: 12px; color: #065f46; margin: 0; line-height: 1.6;">
+                  ✅ Your withdrawal request has been submitted successfully!<br>
+                  📧 You will receive a notification once processed.
+                </p>
+              </div>
+            </div>
+          `,
           confirmButtonColor: "#0f7a4a",
+          confirmButtonText: '✅ Done',
+          width: '550px',
+          padding: '20px'
         });
+        
         fetchBalance();
         fetchProfit();
         fetchTransactions();
+        
       } catch (error) {
-        Swal.fire(
-          "Error",
-          error.response?.data?.message || "Withdrawal failed",
-          "error",
-        );
+        console.error('❌ Withdrawal error:', error);
+        console.error('❌ Error details:', error.response);
+        
+        const errorData = error.response?.data;
+        const errorMessage = errorData?.message || error.message || "Withdrawal failed";
+        const errorDetails = errorData?.error || "";
+        
+        let errorTitle = "❌ Withdrawal Failed";
+        let errorHtml = '';
+        
+        if (errorMessage.includes('Invalid wallet address format')) {
+          errorTitle = "❌ Invalid Wallet Address";
+          errorHtml = `
+            <div style="text-align: left; padding: 10px;">
+              <div style="background: #fee2e2; border: 2px solid #ef4444; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <p style="font-size: 14px; color: #991b1b; margin: 0; font-weight: 600;">${errorMessage}</p>
+                ${errorDetails ? `<p style="font-size: 12px; color: #991b1b; margin: 8px 0 0 0;">${errorDetails}</p>` : ''}
+              </div>
+              <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 15px; border-radius: 10px;">
+                <p style="font-size: 13px; color: #1e40af; margin: 0 0 10px 0; font-weight: 600;">📝 Valid Format:</p>
+                <ul style="font-size: 12px; color: #1e40af; margin: 0; padding-left: 20px; line-height: 1.8;">
+                  <li>Must start with <code>0x</code></li>
+                  <li>Must be 42 characters long</li>
+                  <li>Example: <code style="background: white; padding: 2px 6px; border-radius: 4px;">0x742d35Cc...f0bEb</code></li>
+                </ul>
+              </div>
+            </div>
+          `;
+        } else if (errorMessage.includes('zero address')) {
+          errorTitle = "❌ Invalid Address";
+          errorHtml = `
+            <div style="text-align: left; padding: 10px;">
+              <div style="background: #fee2e2; border: 2px solid #ef4444; padding: 15px; border-radius: 10px;">
+                <p style="font-size: 14px; color: #991b1b; margin: 0;">🚫 Cannot withdraw to zero address (0x000...)</p>
+                <p style="font-size: 12px; color: #991b1b; margin: 8px 0 0 0;">Please enter a valid wallet address</p>
+              </div>
+            </div>
+          `;
+        } else if (errorMessage.includes('Insufficient balance')) {
+          errorTitle = "❌ Insufficient Balance";
+          errorHtml = `
+            <div style="text-align: left; padding: 10px;">
+              <div style="background: #fef3c7; border: 2px solid #f59e0b; padding: 15px; border-radius: 10px;">
+                <p style="font-size: 14px; color: #92400e; margin: 0; font-weight: 600;">${errorMessage}</p>
+                <p style="font-size: 13px; color: #92400e; margin: 10px 0 0 0;">Your current balance: <strong>$${balance.toFixed(2)}</strong></p>
+                <p style="font-size: 12px; color: #92400e; margin: 8px 0 0 0;">💰 Please add funds before withdrawing</p>
+              </div>
+            </div>
+          `;
+        } else {
+          errorHtml = `
+            <div style="text-align: left; padding: 10px;">
+              <div style="background: #fee2e2; border: 2px solid #ef4444; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <p style="font-size: 14px; color: #991b1b; margin: 0; font-weight: 600;">${errorMessage}</p>
+                ${errorDetails ? `<p style="font-size: 12px; color: #991b1b; margin: 8px 0 0 0;">${errorDetails}</p>` : ''}
+              </div>
+              <div style="background: #f3f4f6; padding: 12px; border-radius: 8px;">
+                <p style="font-size: 11px; color: #4b5563; margin: 0;">📞 If the problem persists, please contact support</p>
+              </div>
+            </div>
+          `;
+        }
+        
+        Swal.fire({
+          icon: "error",
+          title: errorTitle,
+          html: errorHtml,
+          confirmButtonColor: "#ef4444",
+          confirmButtonText: '🔄 Try Again',
+          width: '550px',
+          padding: '20px'
+        });
       }
       setLoading(false);
     }
