@@ -504,38 +504,38 @@ const Wallet = () => {
     const { value: formValues } = await Swal.fire({
       title: '<strong>💰 Withdraw Funds</strong>',
       html: `
-        <div class="text-left space-y-4" style="padding: 10px;">
+        <div style="padding: 5px;">
           <!-- Balance Info -->
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 12px; color: white;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 12px; border-radius: 10px; color: white; margin-bottom: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <p style="font-size: 12px; opacity: 0.9; margin: 0;">Available Balance</p>
-                <p style="font-size: 24px; font-weight: bold; margin: 5px 0 0 0;">$${balance.toFixed(2)}</p>
+                <p style="font-size: 11px; opacity: 0.9; margin: 0;">Available Balance</p>
+                <p style="font-size: 20px; font-weight: bold; margin: 5px 0 0 0;">$${balance.toFixed(2)}</p>
               </div>
-              <div style="font-size: 32px;">💵</div>
+              <div style="font-size: 28px;">💵</div>
             </div>
           </div>
 
           <!-- Amount Input -->
-          <div>
-            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151; font-size: 14px;">
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #374151; font-size: 13px; text-align: left;">
               💵 Withdrawal Amount
             </label>
             <input 
               id="amount" 
               class="swal2-input" 
-              placeholder="Enter amount (Min: $10)" 
+              placeholder="Min: $10" 
               type="number"
               min="10"
               max="${balance}"
               step="0.01"
-              style="width: 100%; margin: 0; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;"
+              style="width: 100%; margin: 0; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 15px; box-sizing: border-box;"
             >
           </div>
 
           <!-- Wallet Address Input -->
-          <div>
-            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151; font-size: 14px;">
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #374151; font-size: 13px; text-align: left;">
               🔐 BSC Wallet Address
             </label>
             <input 
@@ -543,17 +543,17 @@ const Wallet = () => {
               class="swal2-input" 
               placeholder="0x..." 
               type="text"
-              style="width: 100%; margin: 0; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-family: monospace;"
+              style="width: 100%; margin: 0; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-family: monospace; box-sizing: border-box; word-break: break-all;"
             >
-            <p style="font-size: 11px; color: #6b7280; margin: 5px 0 0 0;">
-              ℹ️ Enter your BSC (BEP-20) wallet address
+            <p style="font-size: 10px; color: #6b7280; margin: 4px 0 0 0; text-align: left;">
+              ℹ️ Enter your BSC wallet address
             </p>
           </div>
 
           <!-- Info Box -->
-          <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 12px; border-radius: 8px;">
-            <p style="font-size: 12px; color: #92400e; margin: 0; line-height: 1.5;">
-              ⚠️ <strong>Important:</strong> Withdrawals are processed within 24-48 hours after admin approval
+          <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 10px; border-radius: 8px;">
+            <p style="font-size: 11px; color: #92400e; margin: 0; line-height: 1.4; text-align: left;">
+              ⚠️ <strong>Important:</strong> Withdrawals processed in 24-48 hours
             </p>
           </div>
         </div>
@@ -562,10 +562,10 @@ const Wallet = () => {
       showCancelButton: true,
       confirmButtonColor: "#0f7a4a",
       cancelButtonColor: "#6b7280",
-      confirmButtonText: '✅ Request Withdrawal',
+      confirmButtonText: '✅ Request',
       cancelButtonText: '❌ Cancel',
-      width: '550px',
-      padding: '20px',
+      width: window.innerWidth < 640 ? '95%' : '550px',
+      padding: '15px',
       customClass: {
         popup: 'animated-popup',
         title: 'custom-title',
@@ -648,54 +648,54 @@ const Wallet = () => {
         // Success SweetAlert
         Swal.fire({
           icon: "success",
-          title: '<strong>🎉 Withdrawal Requested!</strong>',
+          title: '<strong>🎉 Success!</strong>',
             html: `
-            <div style="text-align: left; padding: 10px;">
+            <div style="padding: 5px;">
               <!-- Success Header -->
-              <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 15px; border-radius: 12px; color: white; margin-bottom: 15px;">
-                <p style="font-size: 14px; margin: 0; opacity: 0.9;">Withdrawal Amount</p>
-                <p style="font-size: 28px; font-weight: bold; margin: 5px 0;">$${amount.toFixed(2)}</p>
+              <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 12px; border-radius: 10px; color: white; margin-bottom: 12px;">
+                <p style="font-size: 12px; margin: 0; opacity: 0.9;">Withdrawal Amount</p>
+                <p style="font-size: 22px; font-weight: bold; margin: 5px 0;">$${amount.toFixed(2)}</p>
               </div>
 
               <!-- Details -->
-              <div style="background: #f9fafb; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                <p style="font-size: 13px; margin: 0 0 8px 0; color: #374151;"><strong>🔐 To Wallet:</strong></p>
-                <p style="font-size: 12px; font-family: monospace; background: white; padding: 10px; border-radius: 6px; word-break: break-all; border: 1px solid #e5e7eb; margin: 0;">
+              <div style="background: #f9fafb; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                <p style="font-size: 12px; margin: 0 0 6px 0; color: #374151; text-align: left;"><strong>🔐 To Wallet:</strong></p>
+                <p style="font-size: 10px; font-family: monospace; background: white; padding: 8px; border-radius: 6px; word-break: break-all; border: 1px solid #e5e7eb; margin: 0;">
                   ${walletAddress}
                 </p>
               </div>
 
               <!-- Status -->
-              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 12px; border-radius: 10px; margin-bottom: 15px;">
-                <p style="font-size: 13px; color: #92400e; margin: 0;"><strong>📄 Status:</strong> Pending Admin Approval</p>
-                ${response.data.withdrawalId ? `<p style="font-size: 12px; color: #92400e; margin: 5px 0 0 0;"><strong>Request ID:</strong> ${response.data.withdrawalId}</p>` : ''}
+              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+                <p style="font-size: 11px; color: #92400e; margin: 0; text-align: left;"><strong>📄 Status:</strong> Pending</p>
+                ${response.data.withdrawalId ? `<p style="font-size: 10px; color: #92400e; margin: 4px 0 0 0; text-align: left;"><strong>ID:</strong> ${response.data.withdrawalId}</p>` : ''}
               </div>
 
               <!-- Info Cards -->
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                <div style="background: #dbeafe; padding: 12px; border-radius: 8px; text-align: center;">
-                  <p style="font-size: 11px; color: #1e40af; margin: 0;">New Balance</p>
-                  <p style="font-size: 18px; font-weight: bold; color: #1e40af; margin: 5px 0 0 0;">$${newBalance.toFixed(2)}</p>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                <div style="background: #dbeafe; padding: 10px; border-radius: 8px; text-align: center;">
+                  <p style="font-size: 10px; color: #1e40af; margin: 0;">New Balance</p>
+                  <p style="font-size: 16px; font-weight: bold; color: #1e40af; margin: 4px 0 0 0;">$${newBalance.toFixed(2)}</p>
                 </div>
-                <div style="background: #fce7f3; padding: 12px; border-radius: 8px; text-align: center;">
-                  <p style="font-size: 11px; color: #be185d; margin: 0;">Processing Time</p>
-                  <p style="font-size: 18px; font-weight: bold; color: #be185d; margin: 5px 0 0 0;">24-48h</p>
+                <div style="background: #fce7f3; padding: 10px; border-radius: 8px; text-align: center;">
+                  <p style="font-size: 10px; color: #be185d; margin: 0;">Time</p>
+                  <p style="font-size: 16px; font-weight: bold; color: #be185d; margin: 4px 0 0 0;">24-48h</p>
                 </div>
               </div>
 
               <!-- Success Message -->
-              <div style="background: #d1fae5; border: 2px solid #10b981; padding: 12px; border-radius: 10px;">
-                <p style="font-size: 12px; color: #065f46; margin: 0; line-height: 1.6;">
-                  ✅ Your withdrawal request has been submitted successfully!<br>
-                  📧 You will receive a notification once processed.
+              <div style="background: #d1fae5; border: 2px solid #10b981; padding: 10px; border-radius: 8px;">
+                <p style="font-size: 11px; color: #065f46; margin: 0; line-height: 1.5; text-align: left;">
+                  ✅ Request submitted!<br>
+                  📧 You'll be notified once processed.
                 </p>
               </div>
             </div>
           `,
           confirmButtonColor: "#0f7a4a",
           confirmButtonText: '✅ Done',
-          width: '550px',
-          padding: '20px'
+          width: window.innerWidth < 640 ? '95%' : '550px',
+          padding: '15px'
         });
         
         fetchBalance();
@@ -714,19 +714,19 @@ const Wallet = () => {
         let errorHtml = '';
         
         if (errorMessage.includes('Invalid wallet address format')) {
-          errorTitle = "❌ Invalid Wallet Address";
+          errorTitle = "❌ Invalid Address";
           errorHtml = `
-            <div style="text-align: left; padding: 10px;">
-              <div style="background: #fee2e2; border: 2px solid #ef4444; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                <p style="font-size: 14px; color: #991b1b; margin: 0; font-weight: 600;">${errorMessage}</p>
-                ${errorDetails ? `<p style="font-size: 12px; color: #991b1b; margin: 8px 0 0 0;">${errorDetails}</p>` : ''}
+            <div style="padding: 5px;">
+              <div style="background: #fee2e2; border: 2px solid #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                <p style="font-size: 12px; color: #991b1b; margin: 0; font-weight: 600; text-align: left;">${errorMessage}</p>
+                ${errorDetails ? `<p style="font-size: 11px; color: #991b1b; margin: 6px 0 0 0; text-align: left;">${errorDetails}</p>` : ''}
               </div>
-              <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 15px; border-radius: 10px;">
-                <p style="font-size: 13px; color: #1e40af; margin: 0 0 10px 0; font-weight: 600;">📝 Valid Format:</p>
-                <ul style="font-size: 12px; color: #1e40af; margin: 0; padding-left: 20px; line-height: 1.8;">
-                  <li>Must start with <code>0x</code></li>
-                  <li>Must be 42 characters long</li>
-                  <li>Example: <code style="background: white; padding: 2px 6px; border-radius: 4px;">0x742d35Cc...f0bEb</code></li>
+              <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 12px; border-radius: 8px;">
+                <p style="font-size: 12px; color: #1e40af; margin: 0 0 8px 0; font-weight: 600; text-align: left;">📝 Valid Format:</p>
+                <ul style="font-size: 11px; color: #1e40af; margin: 0; padding-left: 18px; line-height: 1.6; text-align: left;">
+                  <li>Start with <code>0x</code></li>
+                  <li>42 characters long</li>
+                  <li>Example: <code>0x742d...f0bEb</code></li>
                 </ul>
               </div>
             </div>
@@ -734,33 +734,33 @@ const Wallet = () => {
         } else if (errorMessage.includes('zero address')) {
           errorTitle = "❌ Invalid Address";
           errorHtml = `
-            <div style="text-align: left; padding: 10px;">
-              <div style="background: #fee2e2; border: 2px solid #ef4444; padding: 15px; border-radius: 10px;">
-                <p style="font-size: 14px; color: #991b1b; margin: 0;">🚫 Cannot withdraw to zero address (0x000...)</p>
-                <p style="font-size: 12px; color: #991b1b; margin: 8px 0 0 0;">Please enter a valid wallet address</p>
+            <div style="padding: 5px;">
+              <div style="background: #fee2e2; border: 2px solid #ef4444; padding: 12px; border-radius: 8px;">
+                <p style="font-size: 12px; color: #991b1b; margin: 0; text-align: left;">🚫 Cannot use zero address</p>
+                <p style="font-size: 11px; color: #991b1b; margin: 6px 0 0 0; text-align: left;">Enter a valid wallet address</p>
               </div>
             </div>
           `;
         } else if (errorMessage.includes('Insufficient balance')) {
-          errorTitle = "❌ Insufficient Balance";
+          errorTitle = "❌ Low Balance";
           errorHtml = `
-            <div style="text-align: left; padding: 10px;">
-              <div style="background: #fef3c7; border: 2px solid #f59e0b; padding: 15px; border-radius: 10px;">
-                <p style="font-size: 14px; color: #92400e; margin: 0; font-weight: 600;">${errorMessage}</p>
-                <p style="font-size: 13px; color: #92400e; margin: 10px 0 0 0;">Your current balance: <strong>$${balance.toFixed(2)}</strong></p>
-                <p style="font-size: 12px; color: #92400e; margin: 8px 0 0 0;">💰 Please add funds before withdrawing</p>
+            <div style="padding: 5px;">
+              <div style="background: #fef3c7; border: 2px solid #f59e0b; padding: 12px; border-radius: 8px;">
+                <p style="font-size: 12px; color: #92400e; margin: 0; font-weight: 600; text-align: left;">${errorMessage}</p>
+                <p style="font-size: 11px; color: #92400e; margin: 8px 0 0 0; text-align: left;">Balance: <strong>$${balance.toFixed(2)}</strong></p>
+                <p style="font-size: 11px; color: #92400e; margin: 6px 0 0 0; text-align: left;">💰 Add funds first</p>
               </div>
             </div>
           `;
         } else {
           errorHtml = `
-            <div style="text-align: left; padding: 10px;">
-              <div style="background: #fee2e2; border: 2px solid #ef4444; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                <p style="font-size: 14px; color: #991b1b; margin: 0; font-weight: 600;">${errorMessage}</p>
-                ${errorDetails ? `<p style="font-size: 12px; color: #991b1b; margin: 8px 0 0 0;">${errorDetails}</p>` : ''}
+            <div style="padding: 5px;">
+              <div style="background: #fee2e2; border: 2px solid #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                <p style="font-size: 12px; color: #991b1b; margin: 0; font-weight: 600; text-align: left;">${errorMessage}</p>
+                ${errorDetails ? `<p style="font-size: 11px; color: #991b1b; margin: 6px 0 0 0; text-align: left;">${errorDetails}</p>` : ''}
               </div>
-              <div style="background: #f3f4f6; padding: 12px; border-radius: 8px;">
-                <p style="font-size: 11px; color: #4b5563; margin: 0;">📞 If the problem persists, please contact support</p>
+              <div style="background: #f3f4f6; padding: 10px; border-radius: 8px;">
+                <p style="font-size: 10px; color: #4b5563; margin: 0; text-align: left;">📞 Contact support if issue persists</p>
               </div>
             </div>
           `;
@@ -772,8 +772,8 @@ const Wallet = () => {
           html: errorHtml,
           confirmButtonColor: "#ef4444",
           confirmButtonText: '🔄 Try Again',
-          width: '550px',
-          padding: '20px'
+          width: window.innerWidth < 640 ? '95%' : '550px',
+          padding: '15px'
         });
       }
       setLoading(false);

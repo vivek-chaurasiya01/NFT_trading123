@@ -54,6 +54,9 @@ const Signup = () => {
 
   // Debug wallet on component mount
   useEffect(() => {
+    // Show official notice on page load
+    showOfficialNotice();
+    
     walletDebug.logDebugInfo();
     networkChecker.logNetworkInfo(); // Show network info
   }, []);
@@ -303,6 +306,91 @@ const Signup = () => {
         showConfirmButton: false,
       });
     }
+  };
+
+  const showOfficialNotice = () => {
+    // Always show the notice (removed localStorage check)
+    setTimeout(() => {
+        Swal.fire({
+          title: '<strong style="color: #0f7a4a; font-size: 16px;">📢 Important Official Notice</strong>',
+          html: `
+            <div style="text-align: left; line-height: 1.6;">
+              <p style="font-size: 13px; font-weight: 600; color: #0f7a4a; margin-bottom: 10px;">
+                Dear GTN Partners,
+              </p>
+              
+              <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">
+                A warm welcome to all our valued GTN Partners.
+              </p>
+              
+              <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">
+                The GTN Project extends its heartfelt congratulations and sincere appreciation for your hard work, dedication, honesty, and trust. Your participation in Phase 1 has clearly demonstrated that you are ready to create history in 2026.
+              </p>
+              
+              <p style="font-size: 12px; color: #374151; margin-bottom: 10px;">
+                We are pleased to inform you that <strong>Phase 1 of the GTN Project is now very close to completion.</strong>
+              </p>
+              
+              <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 10px; border-radius: 6px; margin: 12px 0; color: white;">
+                <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 6px 0;">🚀 Phase 2 Launch</h3>
+                <p style="font-size: 12px; margin: 0;">
+                  <strong>Date: 17th February 2026</strong>
+                </p>
+              </div>
+              
+              <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">
+                After completing all necessary testing and calculations with proper verification, the GTN Project has officially decided to launch <strong>Phase 2 – Public Trading on 17th February 2026.</strong>
+              </p>
+              
+              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 8px; border-radius: 6px; margin: 10px 0;">
+                <p style="font-size: 12px; color: #92400e; margin: 0 0 6px 0;">
+                  <strong>💰 Phase 2 Pricing:</strong>
+                </p>
+                <ul style="font-size: 11px; color: #92400e; margin: 0; padding-left: 16px; line-height: 1.5;">
+                  <li>GTN Token Price: <strong>$20</strong></li>
+                  <li>Special Offer: <strong>Buy One Get One</strong></li>
+                </ul>
+              </div>
+              
+              <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 8px; border-radius: 6px; margin: 10px 0;">
+                <p style="font-size: 12px; color: #1e40af; margin: 0 0 6px 0;">
+                  <strong>🎁 Special Early Bird Offer:</strong>
+                </p>
+                <p style="font-size: 11px; color: #1e40af; margin: 0 0 5px 0; line-height: 1.5;">
+                  Until <strong>17th February, 12:00 AM</strong>, the community will have the opportunity to purchase the token at a special price of <strong>$10</strong>.
+                </p>
+                <p style="font-size: 11px; color: #1e40af; margin: 0; line-height: 1.5;">
+                  ⚠️ <strong>Limit:</strong> Two tokens per participant
+                </p>
+              </div>
+              
+              <p style="font-size: 12px; color: #374151; margin: 12px 0 10px 0;">
+                We truly appreciate your continued hard work and unwavering trust in the GTN Project.
+              </p>
+              
+              <p style="font-size: 12px; font-weight: 600; color: #0f7a4a; margin-top: 12px;">
+                Warm regards,<br>
+                <strong>GTN Project Team</strong>
+              </p>
+            </div>
+          `,
+          confirmButtonColor: '#0f7a4a',
+          confirmButtonText: '✅ Got it',
+          width: window.innerWidth < 640 ? '96%' : '650px',
+          padding: '10px',
+          scrollbarWidth: 'thin',
+          customClass: {
+            popup: 'swal-no-padding',
+            htmlContainer: 'swal-html-no-padding swal-scrollable'
+          },
+          showClass: {
+            popup: 'animate__animated animate__fadeInDown'
+          },
+          hideClass: {
+            popup: 'animate__animated animate__fadeOutUp'
+          }
+        });
+      }, 500); // Show after 0.5 seconds
   };
 
   const handleSubmit = async (e) => {
