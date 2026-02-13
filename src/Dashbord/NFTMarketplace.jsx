@@ -122,7 +122,8 @@ const NFTMarketplace = () => {
 
         Swal.fire({
           icon: "success",
-          title: "NFT Purchased Successfully Thanks for being a Part of GTN Project in Phase -1",
+          title:
+            "NFT Purchased Successfully Thanks for being a Part of GTN Project in Phase -1",
           text: response.data.message || "NFT added to your collection",
           confirmButtonColor: "#0f7a4a",
         });
@@ -269,7 +270,7 @@ const NFTMarketplace = () => {
                       <FaShoppingCart className="text-sm" />
                       <span>
                         Buy ${nft.buyPrice}{" "}
-                        {nft.type === "user_resold" ? "(User)" : "(Admin)"}
+                        {nft.type === "user_resold" ? "(User)" : "(GTN Token)"}
                       </span>
                     </>
                   ) : (
