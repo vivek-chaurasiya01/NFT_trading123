@@ -36,7 +36,7 @@ const WelcomeCard = () => {
               onClick={() => navigate("/login")}
               className="bg-green-600 text-white px-6 py-3 rounded-full text-sm font-semibold"
             >
-              Explore NFTs
+              Explore Crypto
             </button>
           </div>
         </div>

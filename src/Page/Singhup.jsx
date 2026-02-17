@@ -309,74 +309,91 @@ const Signup = () => {
   };
 
   const showOfficialNotice = () => {
-    // Always show the notice (removed localStorage check)
     setTimeout(() => {
         Swal.fire({
-          title: '<strong style="color: #0f7a4a; font-size: 16px;">📢 Important Official Notice</strong>',
+          title: '<strong style="color: #0f7a4a; font-size: 16px;">🎷 Official Notification 🎷</strong>',
           html: `
             <div style="text-align: left; line-height: 1.6;">
-              <p style="font-size: 13px; font-weight: 600; color: #0f7a4a; margin-bottom: 10px;">
-                Dear GTN Partners,
+              <h3 style="font-size: 14px; font-weight: bold; color: #0f7a4a; margin-bottom: 10px; text-align: center;">
+                GTN Token – Phase 2 Launch Update
+              </h3>
+              
+              <p style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px;">
+                Dear Global Partners,
               </p>
               
               <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">
-                A warm welcome to all our valued GTN Partners.
+                Congratulations to all members on the successful completion of Phase 1. This achievement reflects your dedication, hard work, and unwavering trust in the GTN Project.
               </p>
               
               <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">
-                The GTN Project extends its heartfelt congratulations and sincere appreciation for your hard work, dedication, honesty, and trust. Your participation in Phase 1 has clearly demonstrated that you are ready to create history in 2026.
+                Our mission is to maintain transparency while working towards setting a new benchmark in the crypto market.
               </p>
               
-              <p style="font-size: 12px; color: #374151; margin-bottom: 10px;">
-                We are pleased to inform you that <strong>Phase 1 of the GTN Project is now very close to completion.</strong>
+              <p style="font-size: 12px; color: #374151; margin-bottom: 10px; font-weight: 600;">
+                We are pleased to announce that <strong>GTN Phase 2 is officially ready for launch.</strong>
               </p>
               
               <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 10px; border-radius: 6px; margin: 12px 0; color: white;">
-                <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 6px 0;">🚀 Phase 2 Launch</h3>
+                <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 6px 0;">🚀 Launch Date: 17 February 2026</h3>
                 <p style="font-size: 12px; margin: 0;">
-                  <strong>Date: 17th February 2026</strong>
+                  <strong>Time: 11:30 PM (SGT)</strong>
                 </p>
               </div>
               
               <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">
-                After completing all necessary testing and calculations with proper verification, the GTN Project has officially decided to launch <strong>Phase 2 – Public Trading on 17th February 2026.</strong>
+                In response to strong community demand, new subscriptions will remain open until <strong>17 February 2026</strong>, and tokens will be available for purchase at <strong>$10 per token</strong> until the official start of Phase 2.
               </p>
               
-              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 8px; border-radius: 6px; margin: 10px 0;">
-                <p style="font-size: 12px; color: #92400e; margin: 0 0 6px 0;">
-                  <strong>💰 Phase 2 Pricing:</strong>
+              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 10px; border-radius: 6px; margin: 12px 0;">
+                <h4 style="font-size: 13px; font-weight: bold; color: #92400e; margin: 0 0 8px 0; text-align: center;">
+                  🎉 It's Now Your Turn to Earn!
+                </h4>
+                <p style="font-size: 12px; color: #92400e; margin: 0; text-align: center; font-weight: 600;">
+                  Welcome to the Buy & Sell Public Trading – Phase 2
                 </p>
-                <ul style="font-size: 11px; color: #92400e; margin: 0; padding-left: 16px; line-height: 1.5;">
-                  <li>GTN Token Price: <strong>$20</strong></li>
-                  <li>Special Offer: <strong>Buy One Get One</strong></li>
+              </div>
+              
+              <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 10px; border-radius: 6px; margin: 10px 0;">
+                <p style="font-size: 12px; color: #1e40af; margin: 0 0 8px 0; font-weight: bold;">
+                  📊 Key Updates for Phase 2:
+                </p>
+                <ul style="font-size: 11px; color: #1e40af; margin: 0; padding-left: 16px; line-height: 1.6;">
+                  <li>Purchase limit increased from <strong>2 GTN Tokens to 10 GTN Tokens</strong> per user</li>
+                  <li>Token Price: <strong>$20 per token</strong></li>
+                  <li>Special Offer: <strong>Buy One, Get One</strong></li>
+                  <li>Expected Trading: <strong>~1 Million GTN Tokens</strong></li>
+                  <li>Profit Potential: <strong>Up to 40% per token sold</strong></li>
                 </ul>
               </div>
               
-              <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 8px; border-radius: 6px; margin: 10px 0;">
-                <p style="font-size: 12px; color: #1e40af; margin: 0 0 6px 0;">
-                  <strong>🎁 Special Early Bird Offer:</strong>
+              <div style="background: #dcfce7; border: 2px solid #10b981; padding: 10px; border-radius: 6px; margin: 10px 0;">
+                <p style="font-size: 12px; color: #065f46; margin: 0 0 8px 0; font-weight: bold;">
+                  💰 Three Types of Earnings in GTN Phase 2:
                 </p>
-                <p style="font-size: 11px; color: #1e40af; margin: 0 0 5px 0; line-height: 1.5;">
-                  Until <strong>17th February, 12:00 AM</strong>, the community will have the opportunity to purchase the token at a special price of <strong>$10</strong>.
-                </p>
-                <p style="font-size: 11px; color: #1e40af; margin: 0; line-height: 1.5;">
-                  ⚠️ <strong>Limit:</strong> Two tokens per participant
-                </p>
+                <ul style="font-size: 11px; color: #065f46; margin: 0; padding-left: 16px; line-height: 1.6;">
+                  <li><strong>👉 Token Buy & Sell Income</strong> – Up to 40% profit in a single trade</li>
+                  <li><strong>👉 Referral Bonus</strong> – $1 per subscription, up to 10 levels (Direct & Indirect)</li>
+                  <li><strong>👉 GTN Team Trading Income</strong> – Up to 10 Levels</li>
+                </ul>
               </div>
               
-              <p style="font-size: 12px; color: #374151; margin: 12px 0 10px 0;">
-                We truly appreciate your continued hard work and unwavering trust in the GTN Project.
+              <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600; text-align: center;">
+                GTN Token is set to create history — and you have the opportunity to be part of this journey.
               </p>
               
-              <p style="font-size: 12px; font-weight: 600; color: #0f7a4a; margin-top: 12px;">
-                Warm regards,<br>
+              <p style="font-size: 12px; color: #374151; margin: 8px 0;">
+                Thank you for your continued support and subscription. We warmly welcome all new users in joining Phase 2.
+              </p>
+              
+              <p style="font-size: 12px; font-weight: 600; color: #0f7a4a; margin-top: 12px; text-align: center;">
                 <strong>GTN Project Team</strong>
               </p>
             </div>
           `,
           confirmButtonColor: '#0f7a4a',
-          confirmButtonText: '✅ Got it',
-          width: window.innerWidth < 640 ? '96%' : '650px',
+          confirmButtonText: '✅ Got it, Let\'s Start!',
+          width: window.innerWidth < 640 ? '96%' : '700px',
           padding: '10px',
           scrollbarWidth: 'thin',
           customClass: {
@@ -390,7 +407,7 @@ const Signup = () => {
             popup: 'animate__animated animate__fadeOutUp'
           }
         });
-      }, 500); // Show after 0.5 seconds
+      }, 500);
   };
 
   const handleSubmit = async (e) => {
