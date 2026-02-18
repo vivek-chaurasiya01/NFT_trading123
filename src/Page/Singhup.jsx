@@ -311,38 +311,42 @@ const Signup = () => {
   const showOfficialNotice = () => {
     setTimeout(() => {
         Swal.fire({
-          title: '<strong style="color: #0f7a4a; font-size: 16px;">🎷 Official Notification 🎷</strong>',
+          title: '<strong style="color: #0f7a4a; font-size: 16px;">📢 Official Announcement – GTN Project</strong>',
           html: `
             <div style="text-align: left; line-height: 1.6;">
               <p style="font-size: 13px; font-weight: 600; color: #0f7a4a; margin-bottom: 10px;">
-                Congratulations to all members for being a part of GTN Token Phase–1.
+                Dear GTN Partners,
               </p>
               
-              <p style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px;">
-                Dear GTN Token Holders,
+              <p style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 12px;">
+                We are pleased to inform you that you can now sell your GTN Token.
               </p>
               
-              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 12px; border-radius: 8px; margin: 12px 0;">
-                <p style="font-size: 12px; color: #92400e; margin: 0 0 8px 0; line-height: 1.5;">
-                  Due to some technical errors, there has been a slight delay in launching Phase–2. Our technical team is actively working to resolve the issue as quickly as possible.
-                </p>
-                <p style="font-size: 12px; color: #92400e; margin: 0; line-height: 1.5;">
-                  We kindly request your patience to ensure that GTN Token Phase–2 is launched smoothly and operates without any disruptions.
-                </p>
+              <div style="background: #f0fdf4; border: 2px solid #0f7a4a; padding: 12px; border-radius: 8px; margin: 12px 0;">
+                <p style="font-size: 13px; font-weight: bold; color: #0f7a4a; margin: 0 0 10px 0;">Selling Process:</p>
+                <ol style="font-size: 12px; color: #374151; margin: 0; padding-left: 20px; line-height: 1.8;">
+                  <li>Log in to your account using your registered email address and password.</li>
+                  <li>Go to the Dashboard.</li>
+                  <li>Navigate to My GTN.</li>
+                  <li>Click on the green "Sell for $20" button.</li>
+                  <li>A new pop-up window will appear.</li>
+                  <li>Finally, click on "List for Sale" to complete the process.</li>
+                </ol>
               </div>
               
-              <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 12px; border-radius: 8px; margin: 12px 0; color: white;">
-                <p style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">🎉 Phase–2 Community Trading</p>
-                <p style="font-size: 14px; font-weight: bold; margin: 0;">✅ Successfully Launched!</p>
+              <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 10px; border-radius: 6px; margin: 12px 0;">
+                <p style="font-size: 11px; color: #92400e; margin: 0; line-height: 1.5;">
+                  <strong>Note:</strong> You may purchase GTN Tokens again through the GTN Marketplace at any time.
+                </p>
               </div>
               
               <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600;">
-                We sincerely apologize for the inconvenience caused and appreciate your patience, understanding, and continued support.
+                Thank you for your continued support.
               </p>
               
               <p style="font-size: 12px; font-weight: 600; color: #0f7a4a; margin-top: 12px; text-align: center;">
-                Regards<br>
-                <strong>GTN Project</strong>
+                Regards,<br>
+                <strong>GTN Project Team</strong>
               </p>
             </div>
           `,

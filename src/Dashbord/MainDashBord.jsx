@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
   FaUsers,
   FaWallet,
@@ -17,6 +18,69 @@ import { MdDashboard } from "react-icons/md";
 export default function MainDashBord() {
   const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Swal.fire({
+        title: '<strong style="color: #0f7a4a; font-size: 16px;">📢 Official Announcement – GTN Project</strong>',
+        html: `
+          <div style="text-align: left; line-height: 1.6;">
+            <p style="font-size: 13px; font-weight: 600; color: #0f7a4a; margin-bottom: 10px;">
+              Dear GTN Partners,
+            </p>
+            
+            <p style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 12px;">
+              We are pleased to inform you that you can now sell your GTN Token.
+            </p>
+            
+            <div style="background: #f0fdf4; border: 2px solid #0f7a4a; padding: 12px; border-radius: 8px; margin: 12px 0;">
+              <p style="font-size: 13px; font-weight: bold; color: #0f7a4a; margin: 0 0 10px 0;">Selling Process:</p>
+              <ol style="font-size: 12px; color: #374151; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li>Log in to your account using your registered email address and password.</li>
+                <li>Go to the Dashboard.</li>
+                <li>Navigate to My GTN.</li>
+                <li>Click on the green "Sell for $20" button.</li>
+                <li>A new pop-up window will appear.</li>
+                <li>Finally, click on "List for Sale" to complete the process.</li>
+              </ol>
+            </div>
+            
+            <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 10px; border-radius: 6px; margin: 12px 0;">
+              <p style="font-size: 11px; color: #92400e; margin: 0; line-height: 1.5;">
+                <strong>Note:</strong> You may purchase GTN Tokens again through the GTN Marketplace at any time.
+              </p>
+            </div>
+            
+            <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600;">
+              Thank you for your continued support.
+            </p>
+            
+            <p style="font-size: 12px; font-weight: 600; color: #0f7a4a; margin-top: 12px; text-align: center;">
+              Regards,<br>
+              <strong>GTN Project Team</strong>
+            </p>
+          </div>
+        `,
+        confirmButtonColor: '#0f7a4a',
+        confirmButtonText: '✅ Got it, Thanks!',
+        width: window.innerWidth < 640 ? '96%' : '600px',
+        padding: '10px',
+        scrollbarWidth: 'thin',
+        customClass: {
+          popup: 'swal-no-padding',
+          htmlContainer: 'swal-html-no-padding swal-scrollable'
+        },
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        }
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const bottomNavItems = [
     { to: "/dashbord/my-team", label: "Team", icon: <FaUsers size={18} /> },
