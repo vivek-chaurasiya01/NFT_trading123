@@ -38,18 +38,18 @@ export default function MainDashBord() {
   const menuItems = [
     {
       to: "/dashbord/nft-dashboard",
-      label: "NFT Dashboard",
+      label: "GTN Dashboard",
       icon: <FaChartBar />,
     },
     {
       to: "/dashbord/nft-marketplace",
-      label: "NFT Marketplace",
+      label: "GTN Marketplace",
       icon: <FaImage />,
     },
-    { to: "/dashbord/my-nfts", label: "My NFTs", icon: <FaImage /> },
+    { to: "/dashbord/my-nfts", label: "My GTN", icon: <FaImage /> },
     {
       to: "/dashbord/nft-management",
-      label: "NFT Management",
+      label: "GTN Management",
       icon: <FaCog />,
     },
     // { to: "/dashbord/nft-status", label: "NFT Status", icon: <FaCog /> },
@@ -59,7 +59,7 @@ export default function MainDashBord() {
       label: "Package Upgrade",
       icon: <FaChartBar />,
     },
-    { to: "/dashbord/nft-history", label: "NFT History", icon: <FaImage /> },
+    { to: "/dashbord/nft-history", label: "GTN History", icon: <FaImage /> },
     { to: "/dashbord/contact-us", label: "Contact Us", icon: <FaEnvelope /> },
   ];
 

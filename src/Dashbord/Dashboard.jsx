@@ -232,32 +232,13 @@ const Dashboard = () => {
                   Due to some technical errors, there has been a slight delay in launching Phase–2. Our technical team is actively working to resolve the issue as quickly as possible.
                 </p>
                 <p style="font-size: 12px; color: #92400e; margin: 0; line-height: 1.5;">
-                  We kindly request an additional <strong>3 hours</strong> to ensure that GTN Token Phase–2 is launched smoothly and operates without any disruptions.
+                  We kindly request your patience to ensure that GTN Token Phase–2 is launched smoothly and operates without any disruptions.
                 </p>
               </div>
               
               <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 12px; border-radius: 8px; margin: 12px 0; color: white;">
-                <p style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">📅 Phase–2 Community Trading</p>
-                <p style="font-size: 13px; font-weight: bold; margin: 0 0 4px 0;">🚀 Revised Launch Time</p>
-                <p style="font-size: 12px; margin: 0;">⏰ Today at 5:00 PM</p>
-              </div>
-              
-              <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 12px; border-radius: 8px; margin: 12px 0;">
-                <p style="font-size: 12px; font-weight: bold; color: #1e40af; margin: 0 0 8px 0; text-align: center;">⏳ Countdown Timer</p>
-                <div id="countdown" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                  <div style="background: white; padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 60px;">
-                    <div id="hours" style="font-size: 20px; font-weight: bold; color: #0f7a4a;">03</div>
-                    <div style="font-size: 10px; color: #1e40af;">Hours</div>
-                  </div>
-                  <div style="background: white; padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 60px;">
-                    <div id="minutes" style="font-size: 20px; font-weight: bold; color: #0f7a4a;">00</div>
-                    <div style="font-size: 10px; color: #1e40af;">Minutes</div>
-                  </div>
-                  <div style="background: white; padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 60px;">
-                    <div id="seconds" style="font-size: 20px; font-weight: bold; color: #0f7a4a;">00</div>
-                    <div style="font-size: 10px; color: #1e40af;">Seconds</div>
-                  </div>
-                </div>
+                <p style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">🎉 Phase–2 Community Trading</p>
+                <p style="font-size: 14px; font-weight: bold; margin: 0;">✅ Successfully Launched!</p>
               </div>
               
               <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600;">
@@ -272,7 +253,7 @@ const Dashboard = () => {
           `,
           confirmButtonColor: '#0f7a4a',
           confirmButtonText: '✅ Got it, Thanks!',
-          width: window.innerWidth < 640 ? '96%' : '650px',
+          width: window.innerWidth < 640 ? '96%' : '600px',
           padding: '10px',
           scrollbarWidth: 'thin',
           customClass: {
@@ -284,48 +265,6 @@ const Dashboard = () => {
           },
           hideClass: {
             popup: 'animate__animated animate__fadeOutUp'
-          },
-          didOpen: () => {
-            // Countdown Timer Logic - Today 5:00 PM
-            const now = new Date();
-            const countdownDate = new Date();
-            countdownDate.setHours(17, 0, 0, 0); // 5:00 PM today
-            
-            // If 5 PM has already passed today, set for tomorrow
-            if (now.getTime() > countdownDate.getTime()) {
-              countdownDate.setDate(countdownDate.getDate() + 1);
-            }
-            
-            const targetTime = countdownDate.getTime();
-            
-            const updateCountdown = () => {
-              const currentTime = new Date().getTime();
-              const distance = targetTime - currentTime;
-              
-              if (distance < 0) {
-                document.getElementById('hours').textContent = '00';
-                document.getElementById('minutes').textContent = '00';
-                document.getElementById('seconds').textContent = '00';
-                return;
-              }
-              
-              const totalHours = Math.floor(distance / (1000 * 60 * 60));
-              const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-              const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-              
-              document.getElementById('hours').textContent = String(totalHours).padStart(2, '0');
-              document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-              document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
-            };
-            
-            updateCountdown();
-            const interval = setInterval(updateCountdown, 1000);
-            
-            // Clear interval when modal closes
-            const modal = document.querySelector('.swal2-container');
-            if (modal) {
-              modal.addEventListener('click', () => clearInterval(interval));
-            }
           }
         }).then(() => {
           // Mark as seen when user closes the modal

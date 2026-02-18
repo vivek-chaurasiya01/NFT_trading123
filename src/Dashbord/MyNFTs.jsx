@@ -363,10 +363,10 @@ const MyNFTs = () => {
               <div className="bg-[#0f7a4a] p-1.5 sm:p-2 rounded-lg sm:rounded-xl">
                 <FaCoins className="text-white" size={16} />
               </div>
-              My NFTs
+              My GTN
             </h2>
             <p className="text-gray-600 mt-1 text-sm">
-              Manage and sell your NFT collection
+              Manage and sell your GTN collection
             </p>
           </div>
           <div className="text-right">

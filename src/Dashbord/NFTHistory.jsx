@@ -64,7 +64,7 @@ const NFTHistory = () => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-800">NFT History</h2>
+        <h2 className="text-xl font-bold text-gray-800">GTN History</h2>
         <FaHistory className="text-[#0f7a4a]" size={20} />
       </div>
       
@@ -124,7 +124,7 @@ const NFTHistory = () => {
                     </div>
                     <div>
                       <p className="font-medium text-sm">
-                        {tx.type === 'buy' ? 'Bought NFT' : 'Sold NFT'}
+                        {tx.type === 'buy' ? 'Bought GTN' : 'Sold NFT'}
                       </p>
                       <p className="text-xs text-gray-500 truncate max-w-[150px]" title={tx.nftId}>
                         {tx.nftId || 'NFT Transaction'}
@@ -167,7 +167,7 @@ const NFTHistory = () => {
           <div className="text-center py-8">
             <div className="bg-gray-100 rounded-lg p-6">
               <FaImage className="mx-auto text-gray-400 mb-3" size={32} />
-              <h4 className="font-medium text-gray-800 mb-2">No NFT History</h4>
+              <h4 className="font-medium text-gray-800 mb-2">No GTN History</h4>
               <p className="text-sm text-gray-600 mb-3">
                 Your NFT buy/sell transactions will appear here
               </p>
@@ -203,20 +203,7 @@ const NFTHistory = () => {
         </div>
       )}
 
-      {/* NFT Trading Tips */}
-      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-        <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
-          <FaCoins className="text-sm" />
-          NFT Trading Tips
-        </h4>
-        <div className="space-y-1 text-xs text-blue-700">
-          <p>• Buy NFTs at $10, get 2 NFTs (1 Hold + 1 Sell)</p>
-          <p>• Sell NFTs at $20, earn $14 profit (70% seller share)</p>
-          <p>• Each purchase generates 2 new NFTs for buyer</p>
-          <p>• Hold NFTs convert to Sell when you get new NFTs</p>
-          <p>• Continuous trading cycle for regular income</p>
-        </div>
-      </div>
+
     </div>
   );
 };

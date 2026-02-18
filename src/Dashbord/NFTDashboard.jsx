@@ -229,9 +229,9 @@ const NFTDashboard = () => {
               <div className="bg-gradient-to-r from-[#0f7a4a] to-blue-600 p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-lg">
                 <FaChartLine className="text-white" size={16} />
               </div>
-              NFT Dashboard
+              GTN Dashboard
             </h2>
-            <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">Complete overview of your NFT portfolio</p>
+            <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">Complete overview of your GTN portfolio</p>
             <div className="flex items-center gap-2 mt-1 sm:mt-2">
               <div className="bg-green-100 px-2 sm:px-3 py-1 rounded-full">
                 <span className="text-xs sm:text-sm font-semibold text-green-700">Balance: ${userBalance.toFixed(2)}</span>
@@ -266,7 +266,7 @@ const NFTDashboard = () => {
                 <FaCoins className="text-white" size={12} />
               </div>
             </div>
-            <span className="text-xs sm:text-sm font-medium text-[#0f7a4a] block mb-1">Total NFTs</span>
+            <span className="text-xs sm:text-sm font-medium text-[#0f7a4a] block mb-1">Total GTN</span>
             <p className="text-lg sm:text-2xl font-bold text-[#0f7a4a]">{userStats.totalNFTs}</p>
           </div>
           
@@ -276,7 +276,7 @@ const NFTDashboard = () => {
                 <FaCheckCircle className="text-white" size={12} />
               </div>
             </div>
-            <span className="text-xs sm:text-sm font-medium text-green-700 block mb-1">Hold NFTs</span>
+            <span className="text-xs sm:text-sm font-medium text-green-700 block mb-1">Hold GTN</span>
             <p className="text-lg sm:text-2xl font-bold text-green-600">{userStats.holdNFTs}</p>
           </div>
           
@@ -286,7 +286,7 @@ const NFTDashboard = () => {
                 <FaStore className="text-white" size={12} />
               </div>
             </div>
-            <span className="text-xs sm:text-sm font-medium text-[#0f7a4a] block mb-1">Sell NFTs</span>
+            <span className="text-xs sm:text-sm font-medium text-[#0f7a4a] block mb-1">Sell GTN</span>
             <p className="text-lg sm:text-2xl font-bold text-[#0f7a4a]">{userStats.sellNFTs}</p>
           </div>
           
@@ -327,7 +327,7 @@ const NFTDashboard = () => {
               <FaStore className="text-white" size={20} />
             </div>
             <h4 className="font-semibold text-[#0f7a4a] mb-2 text-base sm:text-lg">Marketplace</h4>
-            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Browse available NFTs</p>
+            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Browse available GTN</p>
             <button 
               onClick={() => navigate('/dashboard/nft-marketplace')}
               className="w-full bg-gradient-to-r from-[#0f7a4a] to-green-600 text-white py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-medium hover:from-green-600 hover:to-[#0f7a4a] transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base"
@@ -340,7 +340,7 @@ const NFTDashboard = () => {
             <div className="bg-green-600 p-2 sm:p-3 rounded-xl sm:rounded-2xl mx-auto w-fit mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
               <FaCoins className="text-white" size={20} />
             </div>
-            <h4 className="font-semibold text-green-700 mb-2 text-base sm:text-lg">My NFTs</h4>
+            <h4 className="font-semibold text-green-700 mb-2 text-base sm:text-lg">My GTN</h4>
             <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Manage your collection</p>
             <button 
               onClick={() => navigate('/dashboard/my-nfts')}
@@ -396,9 +396,9 @@ const NFTDashboard = () => {
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[#0f7a4a]/20 to-green-600/20 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg border border-[#0f7a4a]/30">
               <FaGift className="text-[#0f7a4a]" size={24} />
             </div>
-            <h3 className="font-bold text-xl sm:text-2xl text-gray-800 mb-2 sm:mb-3">Get Started with NFTs</h3>
+            <h3 className="font-bold text-xl sm:text-2xl text-gray-800 mb-2 sm:mb-3">Get Started with GTN</h3>
             <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base max-w-md mx-auto">
-              Buy your first NFT to start earning and building your portfolio
+              Buy your first GTN to start earning and building your portfolio
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-lg mx-auto">

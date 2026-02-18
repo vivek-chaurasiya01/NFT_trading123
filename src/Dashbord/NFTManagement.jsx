@@ -376,7 +376,7 @@ const NFTManagement = () => {
               <div className="bg-[#0f7a4a] p-1.5 sm:p-2 rounded-lg sm:rounded-xl">
                 <FaImage className="text-white" size={16} />
               </div>
-              NFT Management
+              GTN Management
             </h2>
             <p className="text-gray-600 mt-1 text-sm">Buy, sell, stake and manage your NFTs</p>
             <p className="text-sm text-gray-500">Balance: <span className="font-bold text-green-600">${userBalance.toFixed(2)}</span></p>
@@ -396,7 +396,7 @@ const NFTManagement = () => {
           ) : (
             <>
               <FaShoppingCart size={18} />
-              <span>Buy Pre-Launch NFT ($10)</span>
+              <span>Buy Pre-Launch GTN ($10)</span>
             </>
           )}
         </button>
@@ -411,7 +411,7 @@ const NFTManagement = () => {
           ) : (
             <>
               <FaGift size={18} />
-              <span>Buy Trading NFT ($20)</span>
+              <span>Buy Trading GTN ($20)</span>
             </>
           )}
         </button>
@@ -453,7 +453,7 @@ const NFTManagement = () => {
       {/* NFT List */}
       {myNFTs.length > 0 ? (
         <div className="space-y-3 sm:space-y-4">
-          <h3 className="font-bold text-lg text-gray-800">My NFT Collection</h3>
+          <h3 className="font-bold text-lg text-gray-800">My GTN Collection</h3>
           {myNFTs.map((nft) => (
             <div key={nft._id || nft.nftId} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border hover:shadow-md transition-all duration-300">
               {/* NFT Header */}

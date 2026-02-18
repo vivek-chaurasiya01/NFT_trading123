@@ -163,7 +163,7 @@ const NFTMarketplace = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">NFT Marketplace</h2>
+          <h2 className="text-xl font-bold text-gray-800">GTN Marketplace</h2>
           <p className="text-sm text-gray-600">
             Balance:{" "}
             <span className="font-bold text-green-600">
