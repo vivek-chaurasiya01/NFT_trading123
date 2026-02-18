@@ -334,7 +334,7 @@ const Signup = () => {
               <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 12px; border-radius: 8px; margin: 12px 0; color: white;">
                 <p style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">📅 Phase–2 Community Trading</p>
                 <p style="font-size: 13px; font-weight: bold; margin: 0 0 4px 0;">🚀 Revised Launch Time</p>
-                <p style="font-size: 12px; margin: 0;">⏰ Expected in: 3 Hours</p>
+                <p style="font-size: 12px; margin: 0;">⏰ Today at 5:00 PM</p>
               </div>
               
               <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 12px; border-radius: 8px; margin: 12px 0;">
@@ -381,13 +381,21 @@ const Signup = () => {
             popup: 'animate__animated animate__fadeOutUp'
           },
           didOpen: () => {
-            // Countdown Timer Logic - 3 hours from now
-            const now = new Date().getTime();
-            const countdownDate = now + (3 * 60 * 60 * 1000); // 3 hours from now
+            // Countdown Timer Logic - Today 5:00 PM
+            const now = new Date();
+            const countdownDate = new Date();
+            countdownDate.setHours(17, 0, 0, 0); // 5:00 PM today
+            
+            // If 5 PM has already passed today, set for tomorrow
+            if (now.getTime() > countdownDate.getTime()) {
+              countdownDate.setDate(countdownDate.getDate() + 1);
+            }
+            
+            const targetTime = countdownDate.getTime();
             
             const updateCountdown = () => {
               const currentTime = new Date().getTime();
-              const distance = countdownDate - currentTime;
+              const distance = targetTime - currentTime;
               
               if (distance < 0) {
                 document.getElementById('hours').textContent = '00';
