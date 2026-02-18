@@ -12,9 +12,11 @@ import { nftAPI, walletAPI } from "../services/api";
 
 const NFTMarketplace = () => {
   const [nfts, setNfts] = useState([]);
+  const [allNfts, setAllNfts] = useState([]);
   const [userBalance, setUserBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(null);
+  const [currentBatch, setCurrentBatch] = useState(0);
 
   useEffect(() => {
     fetchMarketplace();
@@ -50,19 +52,36 @@ const NFTMarketplace = () => {
 
   const fetchMarketplace = async () => {
     try {
-      // ✅ Using API #20 - NFT Marketplace (Only real NFTs from admin)
       const response = await nftAPI.getMarketplace();
       const nftData = response.data.nfts || response.data || [];
 
-      // Only use real NFTs from API - no fake/demo NFTs
-      setNfts(nftData);
-      console.log("✅ Real NFTs loaded from admin:", nftData.length);
+      setAllNfts(nftData);
+      
+      // Calculate which batch to show based on sold NFTs
+      let batchIndex = 0;
+      for (let i = 0; i < nftData.length; i += 10) {
+        const batch = nftData.slice(i, i + 10);
+        const allSoldInBatch = batch.every(nft => nft.status === 'sold' || nft.status === 'purchased');
+        
+        if (!allSoldInBatch) {
+          batchIndex = Math.floor(i / 10);
+          break;
+        }
+      }
+      
+      const startIdx = batchIndex * 10;
+      const currentBatchNfts = nftData.slice(startIdx, startIdx + 10);
+      
+      // Filter out sold NFTs from current batch
+      const availableNfts = currentBatchNfts.filter(nft => nft.status !== 'sold' && nft.status !== 'purchased');
+      setNfts(availableNfts);
+      setCurrentBatch(batchIndex);
+      
+      console.log(`✅ Batch ${batchIndex + 1}: Showing ${availableNfts.length} available NFTs`);
     } catch (error) {
       console.error("❌ Error fetching marketplace:", error);
-
-      // No fallback demo NFTs - show empty if API fails
       setNfts([]);
-      console.log("⚠️ API failed, no NFTs available");
+      setAllNfts([]);
     }
     setLoading(false);
   };
@@ -130,8 +149,8 @@ const NFTMarketplace = () => {
       }
 
       // Refresh data from backend
-      fetchMarketplace();
-      fetchBalance();
+      await fetchMarketplace();
+      await fetchBalance();
 
       // Dispatch balance update event
       window.dispatchEvent(
