@@ -22,7 +22,8 @@ export default function MainDashBord() {
   useEffect(() => {
     const timer = setTimeout(() => {
       Swal.fire({
-        title: '<strong style="color: #0f7a4a; font-size: 16px;">📢 Official Announcement – GTN Project</strong>',
+        title:
+          '<strong style="color: #0f7a4a; font-size: 16px;">📢 Official Announcement – GTN Project</strong>',
         html: `
           <div style="text-align: left; line-height: 1.6;">
             <p style="font-size: 13px; font-weight: 600; color: #0f7a4a; margin-bottom: 10px;">
@@ -61,21 +62,21 @@ export default function MainDashBord() {
             </p>
           </div>
         `,
-        confirmButtonColor: '#0f7a4a',
-        confirmButtonText: '✅ Got it, Thanks!',
-        width: window.innerWidth < 640 ? '96%' : '600px',
-        padding: '10px',
-        scrollbarWidth: 'thin',
+        confirmButtonColor: "#0f7a4a",
+        confirmButtonText: "✅ Got it, Thanks!",
+        width: window.innerWidth < 640 ? "96%" : "600px",
+        padding: "10px",
+        scrollbarWidth: "thin",
         customClass: {
-          popup: 'swal-no-padding',
-          htmlContainer: 'swal-html-no-padding swal-scrollable'
+          popup: "swal-no-padding",
+          htmlContainer: "swal-html-no-padding swal-scrollable",
         },
         showClass: {
-          popup: 'animate__animated animate__fadeInDown'
+          popup: "animate__animated animate__fadeInDown",
         },
         hideClass: {
-          popup: 'animate__animated animate__fadeOutUp'
-        }
+          popup: "animate__animated animate__fadeOutUp",
+        },
       });
     }, 500);
 
@@ -102,28 +103,28 @@ export default function MainDashBord() {
   const menuItems = [
     {
       to: "/dashbord/nft-dashboard",
-      label: "GTN Dashboard",
+      label: "MY Deshboard,",
       icon: <FaChartBar />,
     },
     {
       to: "/dashbord/nft-marketplace",
-      label: "GTN Marketplace",
+      label: "GTN Token Buy & Sell",
       icon: <FaImage />,
     },
-    { to: "/dashbord/my-nfts", label: "My GTN", icon: <FaImage /> },
+    { to: "/dashbord/my-nfts", label: "MY Portfolio ", icon: <FaImage /> },
     {
       to: "/dashbord/nft-management",
-      label: "GTN Management",
+      label: "Token Managment ",
       icon: <FaCog />,
     },
     // { to: "/dashbord/nft-status", label: "NFT Status", icon: <FaCog /> },
-    { to: "/dashbord/mlm-tree", label: "MY TEAM", icon: <FaUsers /> },
+    { to: "/dashbord/mlm-tree", label: "My Community", icon: <FaUsers /> },
     {
       to: "/dashbord/package-upgrade",
       label: "Package Upgrade",
       icon: <FaChartBar />,
     },
-    { to: "/dashbord/nft-history", label: "GTN History", icon: <FaImage /> },
+    { to: "/dashbord/nft-history", label: "Token History", icon: <FaImage /> },
     { to: "/dashbord/contact-us", label: "Contact Us", icon: <FaEnvelope /> },
   ];
 
