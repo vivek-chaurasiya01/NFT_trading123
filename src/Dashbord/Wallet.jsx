@@ -812,7 +812,7 @@ const Wallet = () => {
             )}
           </div>
           <h3 className="font-semibold text-gray-800 mb-1">Add Balance</h3>
-          <p className="text-gray-500 text-sm">Add money for NFT trading</p>
+          <p className="text-gray-500 text-sm">Add money for GTN trading</p>
         </button>
         <button
           onClick={handleWithdraw}

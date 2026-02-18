@@ -322,37 +322,41 @@ const Signup = () => {
                 Dear GTN Token Holders,
               </p>
               
-              <p style="font-size: 12px; color: #374151; margin-bottom: 10px; line-height: 1.5;">
-                We are pleased to announce the launch of <strong>Phase–2</strong>, which introduces the <strong>Buy & Sell Community Trading</strong> feature. In this phase, participants will have the opportunity to earn <strong>up to 40% profit</strong> on each trade. We are confident that Phase–2 will create significant earning potential and mark a new milestone for our growing community in the history of crypto market.
-              </p>
-              
-              <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 12px; border-radius: 8px; margin: 12px 0; color: white;">
-                <p style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">📅 Today Phase–2 Community Trading</p>
-                <p style="font-size: 13px; font-weight: bold; margin: 0 0 4px 0;">🚀 Launch Date: 18/02/2026</p>
-                <p style="font-size: 12px; margin: 0 0 4px 0;">⏰ Time: 2:00 PM</p>
-                <p style="font-size: 12px; margin: 0;">🎯 Buy Limit: Maximum 10 GTN Tokens per user</p>
+              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 12px; border-radius: 8px; margin: 12px 0;">
+                <p style="font-size: 12px; color: #92400e; margin: 0 0 8px 0; line-height: 1.5;">
+                  Due to some technical errors, there has been a slight delay in launching Phase–2. Our technical team is actively working to resolve the issue as quickly as possible.
+                </p>
+                <p style="font-size: 12px; color: #92400e; margin: 0; line-height: 1.5;">
+                  We kindly request an additional <strong>3 hours</strong> to ensure that GTN Token Phase–2 is launched smoothly and operates without any disruptions.
+                </p>
               </div>
               
-              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 12px; border-radius: 8px; margin: 12px 0;">
-                <p style="font-size: 12px; font-weight: bold; color: #92400e; margin: 0 0 8px 0; text-align: center;">⏳ Countdown Timer</p>
+              <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 12px; border-radius: 8px; margin: 12px 0; color: white;">
+                <p style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">📅 Phase–2 Community Trading</p>
+                <p style="font-size: 13px; font-weight: bold; margin: 0 0 4px 0;">🚀 Revised Launch Time</p>
+                <p style="font-size: 12px; margin: 0;">⏰ Expected in: 3 Hours</p>
+              </div>
+              
+              <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 12px; border-radius: 8px; margin: 12px 0;">
+                <p style="font-size: 12px; font-weight: bold; color: #1e40af; margin: 0 0 8px 0; text-align: center;">⏳ Countdown Timer</p>
                 <div id="countdown" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
                   <div style="background: white; padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 60px;">
-                    <div id="hours" style="font-size: 20px; font-weight: bold; color: #0f7a4a;">00</div>
-                    <div style="font-size: 10px; color: #92400e;">Hours</div>
+                    <div id="hours" style="font-size: 20px; font-weight: bold; color: #0f7a4a;">03</div>
+                    <div style="font-size: 10px; color: #1e40af;">Hours</div>
                   </div>
                   <div style="background: white; padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 60px;">
                     <div id="minutes" style="font-size: 20px; font-weight: bold; color: #0f7a4a;">00</div>
-                    <div style="font-size: 10px; color: #92400e;">Minutes</div>
+                    <div style="font-size: 10px; color: #1e40af;">Minutes</div>
                   </div>
                   <div style="background: white; padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 60px;">
                     <div id="seconds" style="font-size: 20px; font-weight: bold; color: #0f7a4a;">00</div>
-                    <div style="font-size: 10px; color: #92400e;">Seconds</div>
+                    <div style="font-size: 10px; color: #1e40af;">Seconds</div>
                   </div>
                 </div>
               </div>
               
               <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600;">
-                Thank you for your Endless Support, Dedication, and Trust in the GTN Project.
+                We sincerely apologize for the inconvenience caused and appreciate your patience, understanding, and continued support.
               </p>
               
               <p style="font-size: 12px; font-weight: 600; color: #0f7a4a; margin-top: 12px; text-align: center;">
@@ -362,7 +366,7 @@ const Signup = () => {
             </div>
           `,
           confirmButtonColor: '#0f7a4a',
-          confirmButtonText: '✅ Got it, Let\'s Start!',
+          confirmButtonText: '✅ Got it, Thanks!',
           width: window.innerWidth < 640 ? '96%' : '650px',
           padding: '10px',
           scrollbarWidth: 'thin',
@@ -377,12 +381,13 @@ const Signup = () => {
             popup: 'animate__animated animate__fadeOutUp'
           },
           didOpen: () => {
-            // Countdown Timer Logic
-            const countdownDate = new Date('2026-02-18T14:00:00+05:30').getTime(); // 2 PM India Time
+            // Countdown Timer Logic - 3 hours from now
+            const now = new Date().getTime();
+            const countdownDate = now + (3 * 60 * 60 * 1000); // 3 hours from now
             
             const updateCountdown = () => {
-              const now = new Date().getTime();
-              const distance = countdownDate - now;
+              const currentTime = new Date().getTime();
+              const distance = countdownDate - currentTime;
               
               if (distance < 0) {
                 document.getElementById('hours').textContent = '00';
