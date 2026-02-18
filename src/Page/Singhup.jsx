@@ -314,86 +314,56 @@ const Signup = () => {
           title: '<strong style="color: #0f7a4a; font-size: 16px;">🎷 Official Notification 🎷</strong>',
           html: `
             <div style="text-align: left; line-height: 1.6;">
-              <h3 style="font-size: 14px; font-weight: bold; color: #0f7a4a; margin-bottom: 10px; text-align: center;">
-                GTN Token – Phase 2 Launch Update
-              </h3>
+              <p style="font-size: 13px; font-weight: 600; color: #0f7a4a; margin-bottom: 10px;">
+                Congratulations to all members for being a part of GTN Token Phase–1.
+              </p>
               
               <p style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px;">
-                Dear Global Partners,
+                Dear GTN Token Holders,
               </p>
               
-              <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">
-                Congratulations to all members on the successful completion of Phase 1. This achievement reflects your dedication, hard work, and unwavering trust in the GTN Project.
+              <p style="font-size: 12px; color: #374151; margin-bottom: 10px; line-height: 1.5;">
+                We are pleased to announce the launch of <strong>Phase–2</strong>, which introduces the <strong>Buy & Sell Community Trading</strong> feature. In this phase, participants will have the opportunity to earn <strong>up to 40% profit</strong> on each trade. We are confident that Phase–2 will create significant earning potential and mark a new milestone for our growing community in the history of crypto market.
               </p>
               
-              <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">
-                Our mission is to maintain transparency while working towards setting a new benchmark in the crypto market.
-              </p>
-              
-              <p style="font-size: 12px; color: #374151; margin-bottom: 10px; font-weight: 600;">
-                We are pleased to announce that <strong>GTN Phase 2 is officially ready for launch.</strong>
-              </p>
-              
-              <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 10px; border-radius: 6px; margin: 12px 0; color: white;">
-                <h3 style="font-size: 14px; font-weight: bold; margin: 0 0 6px 0;">🚀 Launch Date: 17 February 2026</h3>
-                <p style="font-size: 12px; margin: 0;">
-                  <strong>Time: 11:30 PM (SGT)</strong>
-                </p>
+              <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 12px; border-radius: 8px; margin: 12px 0; color: white;">
+                <p style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">📅 Today Phase–2 Community Trading</p>
+                <p style="font-size: 13px; font-weight: bold; margin: 0 0 4px 0;">🚀 Launch Date: 18/02/2026</p>
+                <p style="font-size: 12px; margin: 0 0 4px 0;">⏰ Time: 2:00 PM (India Time)</p>
+                <p style="font-size: 12px; margin: 0;">🎯 Buy Limit: Maximum 10 GTN Tokens per user</p>
               </div>
               
-              <p style="font-size: 12px; color: #374151; margin-bottom: 8px;">
-                In response to strong community demand, new subscriptions will remain open until <strong>17 February 2026</strong>, and tokens will be available for purchase at <strong>$10 per token</strong> until the official start of Phase 2.
-              </p>
-              
-              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 10px; border-radius: 6px; margin: 12px 0;">
-                <h4 style="font-size: 13px; font-weight: bold; color: #92400e; margin: 0 0 8px 0; text-align: center;">
-                  🎉 It's Now Your Turn to Earn!
-                </h4>
-                <p style="font-size: 12px; color: #92400e; margin: 0; text-align: center; font-weight: 600;">
-                  Welcome to the Buy & Sell Public Trading – Phase 2
-                </p>
+              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 12px; border-radius: 8px; margin: 12px 0;">
+                <p style="font-size: 12px; font-weight: bold; color: #92400e; margin: 0 0 8px 0; text-align: center;">⏳ Countdown Timer</p>
+                <div id="countdown" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                  <div style="background: white; padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 60px;">
+                    <div id="hours" style="font-size: 20px; font-weight: bold; color: #0f7a4a;">00</div>
+                    <div style="font-size: 10px; color: #92400e;">Hours</div>
+                  </div>
+                  <div style="background: white; padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 60px;">
+                    <div id="minutes" style="font-size: 20px; font-weight: bold; color: #0f7a4a;">00</div>
+                    <div style="font-size: 10px; color: #92400e;">Minutes</div>
+                  </div>
+                  <div style="background: white; padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 60px;">
+                    <div id="seconds" style="font-size: 20px; font-weight: bold; color: #0f7a4a;">00</div>
+                    <div style="font-size: 10px; color: #92400e;">Seconds</div>
+                  </div>
+                </div>
               </div>
               
-              <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 10px; border-radius: 6px; margin: 10px 0;">
-                <p style="font-size: 12px; color: #1e40af; margin: 0 0 8px 0; font-weight: bold;">
-                  📊 Key Updates for Phase 2:
-                </p>
-                <ul style="font-size: 11px; color: #1e40af; margin: 0; padding-left: 16px; line-height: 1.6;">
-                  <li>Purchase limit increased from <strong>2 GTN Tokens to 10 GTN Tokens</strong> per user</li>
-                  <li>Token Price: <strong>$20 per token</strong></li>
-                  <li>Special Offer: <strong>Buy One, Get One</strong></li>
-                  <li>Expected Trading: <strong>~1 Million GTN Tokens</strong></li>
-                  <li>Profit Potential: <strong>Up to 40% per token sold</strong></li>
-                </ul>
-              </div>
-              
-              <div style="background: #dcfce7; border: 2px solid #10b981; padding: 10px; border-radius: 6px; margin: 10px 0;">
-                <p style="font-size: 12px; color: #065f46; margin: 0 0 8px 0; font-weight: bold;">
-                  💰 Three Types of Earnings in GTN Phase 2:
-                </p>
-                <ul style="font-size: 11px; color: #065f46; margin: 0; padding-left: 16px; line-height: 1.6;">
-                  <li><strong>👉 Token Buy & Sell Income</strong> – Up to 40% profit in a single trade</li>
-                  <li><strong>👉 Referral Bonus</strong> – $1 per subscription, up to 10 levels (Direct & Indirect)</li>
-                  <li><strong>👉 GTN Team Trading Income</strong> – Up to 10 Levels</li>
-                </ul>
-              </div>
-              
-              <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600; text-align: center;">
-                GTN Token is set to create history — and you have the opportunity to be part of this journey.
-              </p>
-              
-              <p style="font-size: 12px; color: #374151; margin: 8px 0;">
-                Thank you for your continued support and subscription. We warmly welcome all new users in joining Phase 2.
+              <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600;">
+                Thank you for your Endless Support, Dedication, and Trust in the GTN Project.
               </p>
               
               <p style="font-size: 12px; font-weight: 600; color: #0f7a4a; margin-top: 12px; text-align: center;">
-                <strong>GTN Project Team</strong>
+                Regards<br>
+                <strong>GTN Project</strong>
               </p>
             </div>
           `,
           confirmButtonColor: '#0f7a4a',
           confirmButtonText: '✅ Got it, Let\'s Start!',
-          width: window.innerWidth < 640 ? '96%' : '700px',
+          width: window.innerWidth < 640 ? '96%' : '650px',
           padding: '10px',
           scrollbarWidth: 'thin',
           customClass: {
@@ -405,6 +375,39 @@ const Signup = () => {
           },
           hideClass: {
             popup: 'animate__animated animate__fadeOutUp'
+          },
+          didOpen: () => {
+            // Countdown Timer Logic
+            const countdownDate = new Date('2026-02-18T14:00:00+05:30').getTime(); // 2 PM India Time
+            
+            const updateCountdown = () => {
+              const now = new Date().getTime();
+              const distance = countdownDate - now;
+              
+              if (distance < 0) {
+                document.getElementById('hours').textContent = '00';
+                document.getElementById('minutes').textContent = '00';
+                document.getElementById('seconds').textContent = '00';
+                return;
+              }
+              
+              const totalHours = Math.floor(distance / (1000 * 60 * 60));
+              const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+              const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+              
+              document.getElementById('hours').textContent = String(totalHours).padStart(2, '0');
+              document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+              document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            };
+            
+            updateCountdown();
+            const interval = setInterval(updateCountdown, 1000);
+            
+            // Clear interval when modal closes
+            const modal = document.querySelector('.swal2-container');
+            if (modal) {
+              modal.addEventListener('click', () => clearInterval(interval));
+            }
           }
         });
       }, 500);
