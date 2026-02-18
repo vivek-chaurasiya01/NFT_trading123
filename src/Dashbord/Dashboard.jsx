@@ -207,6 +207,13 @@ const Dashboard = () => {
   };
 
   const showOfficialNotice = () => {
+    // Check if user has already seen the notice
+    const hasSeenNotice = localStorage.getItem('hasSeenPhase2Notice');
+    
+    if (hasSeenNotice) {
+      return; // Don't show if already seen
+    }
+    
     setTimeout(() => {
         Swal.fire({
           title: '<strong style="color: #0f7a4a; font-size: 16px;">🎷 Official Notification 🎷</strong>',
@@ -227,7 +234,7 @@ const Dashboard = () => {
               <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 12px; border-radius: 8px; margin: 12px 0; color: white;">
                 <p style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">📅 Today Phase–2 Community Trading</p>
                 <p style="font-size: 13px; font-weight: bold; margin: 0 0 4px 0;">🚀 Launch Date: 18/02/2026</p>
-                <p style="font-size: 12px; margin: 0 0 4px 0;">⏰ Time: 2:00 PM (India Time)</p>
+                <p style="font-size: 12px; margin: 0 0 4px 0;">⏰ Time: 2:00 PM</p>
                 <p style="font-size: 12px; margin: 0;">🎯 Buy Limit: Maximum 10 GTN Tokens per user</p>
               </div>
               
@@ -307,6 +314,9 @@ const Dashboard = () => {
               modal.addEventListener('click', () => clearInterval(interval));
             }
           }
+        }).then(() => {
+          // Mark as seen when user closes the modal
+          localStorage.setItem('hasSeenPhase2Notice', 'true');
         });
       }, 500);
   };

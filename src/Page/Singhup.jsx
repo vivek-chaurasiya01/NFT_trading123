@@ -329,7 +329,7 @@ const Signup = () => {
               <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 12px; border-radius: 8px; margin: 12px 0; color: white;">
                 <p style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">📅 Today Phase–2 Community Trading</p>
                 <p style="font-size: 13px; font-weight: bold; margin: 0 0 4px 0;">🚀 Launch Date: 18/02/2026</p>
-                <p style="font-size: 12px; margin: 0 0 4px 0;">⏰ Time: 2:00 PM (India Time)</p>
+                <p style="font-size: 12px; margin: 0 0 4px 0;">⏰ Time: 2:00 PM</p>
                 <p style="font-size: 12px; margin: 0;">🎯 Buy Limit: Maximum 10 GTN Tokens per user</p>
               </div>
               

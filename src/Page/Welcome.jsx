@@ -27,8 +27,8 @@ const WelcomeCard = () => {
           </h1>
 
           <p className="text-gray-400 text-[13px] mt-3 max-w-[260px]">
-            Discover, trade, and manage next-generation NFT tokens powered by secure
-            blockchain technology.
+            Discover, trade, and manage next-generation NFT tokens powered by
+            secure blockchain technology.
           </p>
 
           <div className="flex justify-end mt-6">
