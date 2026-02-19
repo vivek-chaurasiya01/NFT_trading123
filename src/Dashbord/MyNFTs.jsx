@@ -597,7 +597,7 @@ const MyNFTs = () => {
                     ) : (
                       <>
                         <FaDollarSign size={14} />
-                        <span>Sell for ${nft.sellPrice}</span>
+                        <span>Token sell Price ${nft.sellPrice}</span>
                       </>
                     )}
                   </button>
