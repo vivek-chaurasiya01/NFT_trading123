@@ -40,6 +40,7 @@ const Login = () => {
       
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem('userEmail', response.data.user.email);
 
       // Check if user needs activation
       if (response.data.needsActivation || !response.data.user.isActive) {
