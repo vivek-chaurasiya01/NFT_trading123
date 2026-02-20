@@ -7,6 +7,8 @@ import {
   FaImage,
   FaRocket,
   FaLayerGroup,
+  FaCoins,
+  FaExchangeAlt,
 } from "react-icons/fa";
 // import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -33,6 +35,9 @@ const Dashboard = () => {
     sold: 0,
     totalProfit: 0,
   });
+  const [tokenProfit, setTokenProfit] = useState(0);
+  const [tradingIncome, setTradingIncome] = useState(0);
+  const [referralIncome, setReferralIncome] = useState(0);
   const [currentPackage, setCurrentPackage] = useState("basic");
   const [loading, setLoading] = useState(true);
   const [balanceLoaded, setBalanceLoaded] = useState(false);
@@ -49,6 +54,7 @@ const Dashboard = () => {
     fetchNFTStats();
     fetchPackageInfo();
     fetchLevelEarnings();
+    fetchTokenProfit();
 
     const handleBalanceUpdate = (event) => {
       setStats((prev) => ({ ...prev, balance: event.detail.balance }));
@@ -138,8 +144,43 @@ const Dashboard = () => {
   const fetchNFTStats = async () => {
     try {
       const response = await nftAPI.getMyNFTs();
-      setNftStats(response.data.stats);
+      const apiStats = response.data.stats || {};
+      setNftStats({
+        total: apiStats.total || 0,
+        holding: apiStats.holdNFTs || apiStats.holding || 0,
+        sold: apiStats.soldNFTs || apiStats.sold || 0,
+        totalProfit: apiStats.totalProfit || 0,
+      });
     } catch {}
+  };
+
+  const fetchTokenProfit = async () => {
+    try {
+      const response = await userAPI.getTransactions();
+      const transactions = response.data.transactions || [];
+      
+      const profit = transactions
+        .filter(tx => tx.type === 'nft_sale')
+        .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+      
+      setTokenProfit(profit);
+
+      const trading = transactions
+        .filter(tx => tx.type === 'nft_parent_bonus')
+        .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+      
+      setTradingIncome(trading);
+
+      const referral = transactions
+        .filter(tx => tx.type === 'referral_bonus')
+        .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+      
+      setReferralIncome(referral);
+    } catch {
+      setTokenProfit(0);
+      setTradingIncome(0);
+      setReferralIncome(0);
+    }
   };
 
   const fetchPackageInfo = async () => {
@@ -308,10 +349,12 @@ const Dashboard = () => {
       {/* NFT + Package + Level Earnings */}
       <div className="grid grid-cols-2 gap-3 ">
         {[
-          ["Total GTN Token", nftStats.total, <FaImage />, false],
-          ["Holding", nftStats.holding, <FaImage />, false],
-          ["GTN Profit", `$${nftStats.totalProfit}`, <FaChartLine />, false],
-          ["Package", currentPackage.toUpperCase(), <FaRocket />, false],
+          ["Total GTN Token", nftStats.total, <FaImage key="img1" />, false],
+          ["Holding", nftStats.holding, <FaImage key="img2" />, false],
+          ["Token Profit", `$${tokenProfit.toFixed(2)}`, <FaCoins key="coin" />, false],
+          ["Referral Income", `$${referralIncome.toFixed(2)}`, <FaUsers key="users" />, false],
+          ["Trading Income", `$${tradingIncome.toFixed(2)}`, <FaExchangeAlt key="exchange" />, false],
+          ["Package", currentPackage.toUpperCase(), <FaRocket key="rocket" />, false],
         ].map((item, i) => (
           <div key={i} className="bg-white p-3 rounded-xl shadow-sm">
             <div className="text-[#0f7a4a] mb-1">{item[2]}</div>

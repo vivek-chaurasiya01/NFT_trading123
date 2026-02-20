@@ -19,6 +19,8 @@ import SimpleNFTTest from "../Dashbord/SimpleNFTTest";
 import EndpointTest from "../Dashbord/EndpointTest";
 import PackageUpgrade from "../Dashbord/PackageUpgrade";
 import Profile from "../Dashbord/Profile";
+import ChangePassword from "../Dashbord/ChangePassword";
+import MySoldNFTs from "../Dashbord/MySoldNFTs";
 // import APITester from "../Dashbord/APITester";
 // import NFTStatus from "../Dashbord/NFTStatus";
 import ContactUs from "../Dashbord/ContactUs";
@@ -51,6 +53,8 @@ function Routesr() {
           {/* <Route path="nft-status" element={<NFTStatus />} /> */}
           <Route path="package-upgrade" element={<PackageUpgrade />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="change-password" element={<ChangePassword />} />
+          <Route path="my-sold-nfts" element={<MySoldNFTs />} />
           <Route path="contact-us" element={<ContactUs />} />
         </Route>
       </Routes>

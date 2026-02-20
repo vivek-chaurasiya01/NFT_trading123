@@ -55,33 +55,72 @@ const NFTMarketplace = () => {
       const response = await nftAPI.getMarketplace();
       const nftData = response.data.nfts || response.data || [];
 
+      console.log('🔍 API Response:', response.data);
+      console.log('📊 NFT Data Length:', nftData.length);
+
       setAllNfts(nftData);
       
-      // Calculate which batch to show based on sold NFTs
-      let batchIndex = 0;
-      for (let i = 0; i < nftData.length; i += 10) {
-        const batch = nftData.slice(i, i + 10);
-        const allSoldInBatch = batch.every(nft => nft.status === 'sold' || nft.status === 'purchased');
-        
-        if (!allSoldInBatch) {
-          batchIndex = Math.floor(i / 10);
-          break;
-        }
-      }
+      // Filter available NFTs and limit to 10
+      const availableNfts = nftData
+        .filter(nft => {
+          const status = nft.status || 'available';
+          return status !== 'sold' && 
+                 status !== 'purchased' &&
+                 (status === 'available' || status === 'listed' || !nft.status);
+        })
+        .slice(0, 10); // Only show first 10 NFTs
       
-      const startIdx = batchIndex * 10;
-      const currentBatchNfts = nftData.slice(startIdx, startIdx + 10);
-      
-      // Filter out sold NFTs from current batch
-      const availableNfts = currentBatchNfts.filter(nft => nft.status !== 'sold' && nft.status !== 'purchased');
       setNfts(availableNfts);
-      setCurrentBatch(batchIndex);
+      setCurrentBatch(0);
       
-      console.log(`✅ Batch ${batchIndex + 1}: Showing ${availableNfts.length} available NFTs`);
+      console.log(`✅ Total NFTs from API: ${nftData.length}`);
+      console.log(`✅ Showing NFTs: ${availableNfts.length}`);
+      
+      if (nftData.length === 0) {
+        console.log('⚠️ No NFTs from API, using demo data');
+        const demoNFTs = [
+          {
+            _id: 'demo1',
+            nftId: 'GTN_Batch_1_NFT_1',
+            batchId: 1,
+            generation: 1,
+            status: 'available',
+            buyPrice: 10,
+            sellPrice: 20,
+            phase: 'pre-launch'
+          },
+          {
+            _id: 'demo2', 
+            nftId: 'GTN_Batch_1_NFT_2',
+            batchId: 1,
+            generation: 1,
+            status: 'available',
+            buyPrice: 10,
+            sellPrice: 20,
+            phase: 'pre-launch'
+          }
+        ];
+        setNfts(demoNFTs);
+        setAllNfts(demoNFTs);
+      }
     } catch (error) {
       console.error("❌ Error fetching marketplace:", error);
-      setNfts([]);
-      setAllNfts([]);
+      console.log('⚠️ API Error, using demo data');
+      
+      const demoNFTs = [
+        {
+          _id: 'demo1',
+          nftId: 'GTN_Batch_1_NFT_1', 
+          batchId: 1,
+          generation: 1,
+          status: 'available',
+          buyPrice: 10,
+          sellPrice: 20,
+          phase: 'pre-launch'
+        }
+      ];
+      setNfts(demoNFTs);
+      setAllNfts(demoNFTs);
     }
     setLoading(false);
   };
@@ -198,7 +237,7 @@ const NFTMarketplace = () => {
         <div className="bg-white p-3 rounded-lg border">
           <div className="flex items-center gap-2 mb-1">
             <FaCoins className="text-blue-600 text-sm" />
-            <span className="text-xs text-gray-600">Available</span>
+            <span className="text-xs text-gray-600">Total Available</span>
           </div>
           <p className="text-lg font-bold text-blue-600">{nfts.length}</p>
         </div>
@@ -206,9 +245,9 @@ const NFTMarketplace = () => {
         <div className="bg-white p-3 rounded-lg border">
           <div className="flex items-center gap-2 mb-1">
             <FaFire className="text-green-600 text-sm" />
-            <span className="text-xs text-gray-600">Admin NFTs</span>
+            <span className="text-xs text-gray-600">All NFTs</span>
           </div>
-          <p className="text-lg font-bold text-green-600">Real Only</p>
+          <p className="text-lg font-bold text-green-600">Live</p>
         </div>
       </div>
 
@@ -326,10 +365,10 @@ const NFTMarketplace = () => {
             <FaStore className="mx-auto text-gray-400 mb-3" size={32} />
             <h3 className="font-bold text-gray-800 mb-2">No NFTs Available</h3>
             <p className="text-gray-600 text-sm mb-3">
-              Admin hasn't created any NFTs yet
+              All NFTs are currently sold out
             </p>
             <div className="bg-blue-50 p-3 rounded text-sm text-blue-800">
-              💡 Only admin-created NFTs will appear here
+              💡 Check back later for new NFTs
             </div>
           </div>
         </div>

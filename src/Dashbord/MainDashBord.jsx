@@ -12,6 +12,8 @@ import {
   FaSignOutAlt,
   FaChartBar,
   FaEnvelope,
+  FaLock,
+  FaShoppingCart,
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 
@@ -42,7 +44,7 @@ export default function MainDashBord() {
                 <li>Navigate to My GTN.</li>
                 <li>Click on the green "Sell for $20" button.</li>
                 <li>A new pop-up window will appear.</li>
-                <li>Finally, click on "List for Sale" to complete the process.</li>
+                <li>Finally, click on "List for sell Confirm" to complete the process.</li>
               </ol>
             </div>
             
@@ -125,6 +127,8 @@ export default function MainDashBord() {
       icon: <FaChartBar />,
     },
     { to: "/dashbord/nft-history", label: "Token History", icon: <FaImage /> },
+    { to: "/dashbord/my-sold-nfts", label: "My Sold NFTs", icon: <FaShoppingCart /> },
+    { to: "/dashbord/change-password", label: "Change Password", icon: <FaLock /> },
     { to: "/dashbord/contact-us", label: "Contact Us", icon: <FaEnvelope /> },
   ];
 

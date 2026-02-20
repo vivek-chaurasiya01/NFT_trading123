@@ -56,7 +56,7 @@ const Signup = () => {
   useEffect(() => {
     // Show official notice on page load
     showOfficialNotice();
-    
+
     walletDebug.logDebugInfo();
     networkChecker.logNetworkInfo(); // Show network info
   }, []);
@@ -310,9 +310,10 @@ const Signup = () => {
 
   const showOfficialNotice = () => {
     setTimeout(() => {
-        Swal.fire({
-          title: '<strong style="color: #0f7a4a; font-size: 16px;">📢 Official Announcement – GTN Project</strong>',
-          html: `
+      Swal.fire({
+        title:
+          '<strong style="color: #0f7a4a; font-size: 16px;">📢 Official Announcement – GTN Project</strong>',
+        html: `
             <div style="text-align: left; line-height: 1.6;">
               <p style="font-size: 13px; font-weight: 600; color: #0f7a4a; margin-bottom: 10px;">
                 Dear GTN Partners,
@@ -336,7 +337,7 @@ const Signup = () => {
               
               <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 10px; border-radius: 6px; margin: 12px 0;">
                 <p style="font-size: 11px; color: #92400e; margin: 0; line-height: 1.5;">
-                  <strong>Note:</strong> You may purchase GTN Tokens again through the GTN Marketplace at any time.
+                  <strong>Note:</strong> You may purchase GTN Tokens again through the NFT Marketplace at any time.
                 </p>
               </div>
               
@@ -350,23 +351,23 @@ const Signup = () => {
               </p>
             </div>
           `,
-          confirmButtonColor: '#0f7a4a',
-          confirmButtonText: '✅ Got it, Thanks!',
-          width: window.innerWidth < 640 ? '96%' : '600px',
-          padding: '10px',
-          scrollbarWidth: 'thin',
-          customClass: {
-            popup: 'swal-no-padding',
-            htmlContainer: 'swal-html-no-padding swal-scrollable'
-          },
-          showClass: {
-            popup: 'animate__animated animate__fadeInDown'
-          },
-          hideClass: {
-            popup: 'animate__animated animate__fadeOutUp'
-          }
-        });
-      }, 500);
+        confirmButtonColor: "#0f7a4a",
+        confirmButtonText: "✅ Got it, Thanks!",
+        width: window.innerWidth < 640 ? "96%" : "600px",
+        padding: "10px",
+        scrollbarWidth: "thin",
+        customClass: {
+          popup: "swal-no-padding",
+          htmlContainer: "swal-html-no-padding swal-scrollable",
+        },
+        showClass: {
+          popup: "animate__animated animate__fadeInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__fadeOutUp",
+        },
+      });
+    }, 500);
   };
 
   const handleSubmit = async (e) => {
@@ -760,7 +761,9 @@ const Signup = () => {
           <div className="relative z-10 px-6 pt-10 text-white">
             <p className="text-sm font-medium">Hi,</p>
             <h1 className="text-[22px] font-bold">Create Account</h1>
-            <p className="text-center text-lg font-semibold mt-4">Welcome to GTN Project</p>
+            <p className="text-center text-lg font-semibold mt-4">
+              Welcome to GTN Project
+            </p>
           </div>
         </div>
 

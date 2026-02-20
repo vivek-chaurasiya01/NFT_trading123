@@ -261,7 +261,7 @@ const MyNFTs = () => {
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#0f7a4a",
-      confirmButtonText: "List for Sale",
+      confirmButtonText: "List for sell Confirm",
       cancelButtonText: "Cancel",
       width: "600px",
     });
