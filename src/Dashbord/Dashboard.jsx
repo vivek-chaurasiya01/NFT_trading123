@@ -248,8 +248,11 @@ const Dashboard = () => {
   };
 
   const showOfficialNotice = () => {
-    // Check if user has already seen the notice
-    const hasSeenNotice = localStorage.getItem('hasSeenPhase2Notice');
+    // Clear old notice flag to show new message
+    localStorage.removeItem('hasSeenPhase2Notice');
+    
+    // Check if user has already seen the NEW notice
+    const hasSeenNotice = localStorage.getItem('hasSeenGTNNotice2027');
     
     if (hasSeenNotice) {
       return; // Don't show if already seen
@@ -261,33 +264,32 @@ const Dashboard = () => {
           html: `
             <div style="text-align: left; line-height: 1.6;">
               <p style="font-size: 13px; font-weight: 600; color: #0f7a4a; margin-bottom: 10px;">
-                Congratulations to all members for being a part of GTN Token Phase–1.
+                Dear GTN Project Members,
               </p>
               
-              <p style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px;">
-                Dear GTN Token Holders,
+              <p style="font-size: 12px; color: #374151; margin-bottom: 12px; line-height: 1.6;">
+                Thank you for being a valued part of GTN Project Phase–1 and Phase–2. We sincerely appreciate your continuous dedication, effort, and trust. While you are actively contributing at the forefront of the GTN Project, our team is diligently working behind the scenes to build a strong, secure, and sustainable future system for our entire community.
               </p>
               
-              <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 12px; border-radius: 8px; margin: 12px 0;">
-                <p style="font-size: 12px; color: #92400e; margin: 0 0 8px 0; line-height: 1.5;">
-                  Due to some technical errors, there has been a slight delay in launching Phase–2. Our technical team is actively working to resolve the issue as quickly as possible.
-                </p>
-                <p style="font-size: 12px; color: #92400e; margin: 0; line-height: 1.5;">
-                  We kindly request your patience to ensure that GTN Token Phase–2 is launched smoothly and operates without any disruptions.
-                </p>
+              <p style="font-size: 12px; color: #374151; margin-bottom: 12px; line-height: 1.6;">
+                Our goals are clearly defined, and we remain fully committed to achieving them. By 2027, we aim to launch our crypto token on the BNB Blockchain and build a global community of over 200,000 members. Together, GTN Token holders will celebrate this significant achievement and set a new milestone in the history of the crypto market.
+              </p>
+              
+              <div style="background: #f0fdf4; border: 2px solid #0f7a4a; padding: 12px; border-radius: 8px; margin: 12px 0;">
+                <p style="font-size: 12px; font-weight: bold; color: #0f7a4a; margin: 0 0 10px 0;">Now is the time to strengthen and expand your personal community within the GTN Project and take advantage of 3 key earning opportunities:</p>
+                <ul style="font-size: 12px; color: #374151; margin: 0; padding-left: 20px; line-height: 1.8;">
+                  <li>👉 GTN Token Sales Income</li>
+                  <li>👉 Referral Bonus up to 10 Levels</li>
+                  <li>👉 Token Trading Income up to 10 Levels</li>
+                </ul>
               </div>
               
-              <div style="background: linear-gradient(135deg, #0f7a4a 0%, #059669 100%); padding: 12px; border-radius: 8px; margin: 12px 0; color: white;">
-                <p style="font-size: 12px; font-weight: bold; margin: 0 0 8px 0;">🎉 Phase–2 Community Trading</p>
-                <p style="font-size: 14px; font-weight: bold; margin: 0;">✅ Successfully Launched!</p>
-              </div>
-              
-              <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600;">
-                We sincerely apologize for the inconvenience caused and appreciate your patience, understanding, and continued support.
+              <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600; text-align: center;">
+                Together, we move forward toward growth and success.
               </p>
               
               <p style="font-size: 12px; font-weight: 600; color: #0f7a4a; margin-top: 12px; text-align: center;">
-                Regards<br>
+                Regards,<br>
                 <strong>GTN Project</strong>
               </p>
             </div>
@@ -308,8 +310,8 @@ const Dashboard = () => {
             popup: 'animate__animated animate__fadeOutUp'
           }
         }).then(() => {
-          // Mark as seen when user closes the modal
-          localStorage.setItem('hasSeenPhase2Notice', 'true');
+          // Mark as seen with NEW key
+          localStorage.setItem('hasSeenGTNNotice2027', 'true');
         });
       }, 500);
   };

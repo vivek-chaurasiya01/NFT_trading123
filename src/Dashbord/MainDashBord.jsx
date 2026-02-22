@@ -25,42 +25,37 @@ export default function MainDashBord() {
     const timer = setTimeout(() => {
       Swal.fire({
         title:
-          '<strong style="color: #0f7a4a; font-size: 16px;">📢 Official Announcement – GTN Project</strong>',
+          '<strong style="color: #0f7a4a; font-size: 16px;">🎷 Official Notification 🎷</strong>',
         html: `
           <div style="text-align: left; line-height: 1.6;">
             <p style="font-size: 13px; font-weight: 600; color: #0f7a4a; margin-bottom: 10px;">
-              Dear GTN Partners,
+              Dear GTN Project Members,
             </p>
             
-            <p style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 12px;">
-              We are pleased to inform you that you can now sell your GTN Token.
+            <p style="font-size: 12px; color: #374151; margin-bottom: 12px; line-height: 1.6;">
+              Thank you for being a valued part of GTN Project Phase–1 and Phase–2. We sincerely appreciate your continuous dedication, effort, and trust. While you are actively contributing at the forefront of the GTN Project, our team is diligently working behind the scenes to build a strong, secure, and sustainable future system for our entire community.
+            </p>
+            
+            <p style="font-size: 12px; color: #374151; margin-bottom: 12px; line-height: 1.6;">
+              Our goals are clearly defined, and we remain fully committed to achieving them. By 2027, we aim to launch our crypto token on the BNB Blockchain and build a global community of over 200,000 members. Together, GTN Token holders will celebrate this significant achievement and set a new milestone in the history of the crypto market.
             </p>
             
             <div style="background: #f0fdf4; border: 2px solid #0f7a4a; padding: 12px; border-radius: 8px; margin: 12px 0;">
-              <p style="font-size: 13px; font-weight: bold; color: #0f7a4a; margin: 0 0 10px 0;">Selling Process:</p>
-              <ol style="font-size: 12px; color: #374151; margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li>Log in to your account using your registered email address and password.</li>
-                <li>Go to the Dashboard.</li>
-                <li>Navigate to My GTN.</li>
-                <li>Click on the green "Sell for $20" button.</li>
-                <li>A new pop-up window will appear.</li>
-                <li>Finally, click on "List for sell Confirm" to complete the process.</li>
-              </ol>
+              <p style="font-size: 12px; font-weight: bold; color: #0f7a4a; margin: 0 0 10px 0;">Now is the time to strengthen and expand your personal community within the GTN Project and take advantage of 3 key earning opportunities:</p>
+              <ul style="font-size: 12px; color: #374151; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li>👉 GTN Token Sales Income</li>
+                <li>👉 Referral Bonus up to 10 Levels</li>
+                <li>👉 Token Trading Income up to 10 Levels</li>
+              </ul>
             </div>
             
-            <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 10px; border-radius: 6px; margin: 12px 0;">
-              <p style="font-size: 11px; color: #92400e; margin: 0; line-height: 1.5;">
-                <strong>Note:</strong> You may purchase GTN Tokens again through the GTN Marketplace at any time.
-              </p>
-            </div>
-            
-            <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600;">
-              Thank you for your continued support.
+            <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600; text-align: center;">
+              Together, we move forward toward growth and success.
             </p>
             
             <p style="font-size: 12px; font-weight: 600; color: #0f7a4a; margin-top: 12px; text-align: center;">
               Regards,<br>
-              <strong>GTN Project Team</strong>
+              <strong>GTN Project</strong>
             </p>
           </div>
         `,
