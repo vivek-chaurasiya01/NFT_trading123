@@ -26,6 +26,8 @@ import MySoldNFTs from "../Dashbord/MySoldNFTs";
 import ContactUs from "../Dashbord/ContactUs";
 import ScrollToTop from "../Componect/ScrollToTop";
 
+import Notifications from "../Dashbord/Notifications";
+
 function Routesr() {
   return (
     <>
@@ -55,6 +57,7 @@ function Routesr() {
           <Route path="profile" element={<Profile />} />
           <Route path="change-password" element={<ChangePassword />} />
           <Route path="my-sold-nfts" element={<MySoldNFTs />} />
+          <Route path="notifications" element={<Notifications />} />
           <Route path="contact-us" element={<ContactUs />} />
         </Route>
       </Routes>

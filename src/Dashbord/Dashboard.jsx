@@ -247,73 +247,72 @@ const Dashboard = () => {
     }
   };
 
-  const showOfficialNotice = () => {
-    // Clear old notice flag to show new message
-    localStorage.removeItem('hasSeenPhase2Notice');
-    
-    // Check if user has already seen the NEW notice
-    const hasSeenNotice = localStorage.getItem('hasSeenGTNNotice2027');
-    
-    if (hasSeenNotice) {
-      return; // Don't show if already seen
+  const showOfficialNotice = async () => {
+    try {
+      console.log('🔔 Dashboard: Fetching notification from API...');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/active`);
+      console.log('📡 Dashboard API Response status:', response.status);
+      
+      const result = await response.json();
+      console.log('📦 Dashboard API Result:', result);
+      
+      // Clear old notice flag
+      localStorage.removeItem('hasSeenPhase2Notice');
+      
+      // Check if user has already seen the NEW notice
+      const hasSeenNotice = localStorage.getItem('hasSeenGTNNotice2027');
+      
+      if (hasSeenNotice) {
+        console.log('ℹ️ User has already seen this notification');
+        return;
+      }
+      
+      if (result.success && result.data && result.data.length > 0) {
+        const notification = result.data[0];
+        console.log('✅ Dashboard notification found:', notification.title);
+        
+        // Format message with proper HTML
+        const formattedMessage = notification.message
+          .split('\n')
+          .map(line => {
+            if (line.trim().startsWith('👉')) {
+              return `<li style="font-size: 12px; color: #374151;">${line.trim()}</li>`;
+            } else if (line.trim()) {
+              return `<p style="font-size: 12px; color: #374151; margin-bottom: 12px; line-height: 1.6;">${line.trim()}</p>`;
+            }
+            return '';
+          })
+          .join('');
+        
+        setTimeout(() => {
+          Swal.fire({
+            title: `<strong style="color: #0f7a4a; font-size: 16px;">${notification.title}</strong>`,
+            html: `<div style="text-align: left; line-height: 1.6;">${formattedMessage}</div>`,
+            confirmButtonColor: '#0f7a4a',
+            confirmButtonText: '✅ Got it, Thanks!',
+            width: window.innerWidth < 640 ? '96%' : '600px',
+            padding: '10px',
+            scrollbarWidth: 'thin',
+            customClass: {
+              popup: 'swal-no-padding',
+              htmlContainer: 'swal-html-no-padding swal-scrollable'
+            },
+            showClass: {
+              popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOutUp'
+            }
+          }).then(() => {
+            localStorage.setItem('hasSeenGTNNotice2027', 'true');
+          });
+        }, 500);
+      } else {
+        console.warn('⚠️ Dashboard: No notification data found');
+      }
+    } catch (error) {
+      console.error('❌ Dashboard: Failed to fetch notification:', error);
     }
-    
-    setTimeout(() => {
-        Swal.fire({
-          title: '<strong style="color: #0f7a4a; font-size: 16px;">🎷 Official Notification 🎷</strong>',
-          html: `
-            <div style="text-align: left; line-height: 1.6;">
-              <p style="font-size: 13px; font-weight: 600; color: #0f7a4a; margin-bottom: 10px;">
-                Dear GTN Project Members,
-              </p>
-              
-              <p style="font-size: 12px; color: #374151; margin-bottom: 12px; line-height: 1.6;">
-                Thank you for being a valued part of GTN Project Phase–1 and Phase–2. We sincerely appreciate your continuous dedication, effort, and trust. While you are actively contributing at the forefront of the GTN Project, our team is diligently working behind the scenes to build a strong, secure, and sustainable future system for our entire community.
-              </p>
-              
-              <p style="font-size: 12px; color: #374151; margin-bottom: 12px; line-height: 1.6;">
-                Our goals are clearly defined, and we remain fully committed to achieving them. By 2027, we aim to launch our crypto token on the BNB Blockchain and build a global community of over 200,000 members. Together, GTN Token holders will celebrate this significant achievement and set a new milestone in the history of the crypto market.
-              </p>
-              
-              <div style="background: #f0fdf4; border: 2px solid #0f7a4a; padding: 12px; border-radius: 8px; margin: 12px 0;">
-                <p style="font-size: 12px; font-weight: bold; color: #0f7a4a; margin: 0 0 10px 0;">Now is the time to strengthen and expand your personal community within the GTN Project and take advantage of 3 key earning opportunities:</p>
-                <ul style="font-size: 12px; color: #374151; margin: 0; padding-left: 20px; line-height: 1.8;">
-                  <li>👉 GTN Token Sales Income</li>
-                  <li>👉 Referral Bonus up to 10 Levels</li>
-                  <li>👉 Token Trading Income up to 10 Levels</li>
-                </ul>
-              </div>
-              
-              <p style="font-size: 12px; color: #374151; margin: 12px 0 8px 0; font-weight: 600; text-align: center;">
-                Together, we move forward toward growth and success.
-              </p>
-              
-              <p style="font-size: 12px; font-weight: 600; color: #0f7a4a; margin-top: 12px; text-align: center;">
-                Regards,<br>
-                <strong>GTN Project</strong>
-              </p>
-            </div>
-          `,
-          confirmButtonColor: '#0f7a4a',
-          confirmButtonText: '✅ Got it, Thanks!',
-          width: window.innerWidth < 640 ? '96%' : '600px',
-          padding: '10px',
-          scrollbarWidth: 'thin',
-          customClass: {
-            popup: 'swal-no-padding',
-            htmlContainer: 'swal-html-no-padding swal-scrollable'
-          },
-          showClass: {
-            popup: 'animate__animated animate__fadeInDown'
-          },
-          hideClass: {
-            popup: 'animate__animated animate__fadeOutUp'
-          }
-        }).then(() => {
-          // Mark as seen with NEW key
-          localStorage.setItem('hasSeenGTNNotice2027', 'true');
-        });
-      }, 500);
   };
 
   if (loading || !balanceLoaded) {
