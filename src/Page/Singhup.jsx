@@ -716,12 +716,47 @@ const Signup = () => {
           });
         } catch (registrationError) {
           console.error("Registration error after payment:", registrationError);
+          console.error("Error details:", registrationError.response?.data);
+
+          // Get detailed error message
+          const errorMessage = registrationError.response?.data?.message 
+            || registrationError.response?.data?.error
+            || registrationError.message 
+            || "Unknown error occurred";
+          
+          const errorStatus = registrationError.response?.status || 'Network Error';
+          const errorDetails = registrationError.response?.data?.details || '';
 
           Swal.fire({
             icon: "error",
             title: "Registration Failed",
-            text: "Payment successful but registration failed. Please contact support.",
+            html: `
+              <div class="text-left">
+                <p class="mb-3"><strong>✅ Payment Successful</strong></p>
+                <div class="bg-green-50 p-3 rounded mb-3">
+                  <p class="text-sm text-green-800">💰 Amount: $${paymentResult.amountUSD}</p>
+                  <p class="text-sm text-green-800">🔗 TX: ${paymentResult.txHash.slice(0, 20)}...</p>
+                </div>
+                
+                <p class="mb-3"><strong>❌ Registration Error:</strong></p>
+                <div class="bg-red-50 p-3 rounded mb-3">
+                  <p class="text-sm text-red-800"><strong>Error:</strong> ${errorMessage}</p>
+                  <p class="text-sm text-red-600"><strong>Status:</strong> ${errorStatus}</p>
+                  ${errorDetails ? `<p class="text-xs text-red-600 mt-2">${errorDetails}</p>` : ''}
+                </div>
+                
+                <div class="bg-blue-50 p-3 rounded">
+                  <p class="text-sm font-bold text-blue-800">📞 Next Steps:</p>
+                  <p class="text-sm text-blue-700">1. Screenshot this message</p>
+                  <p class="text-sm text-blue-700">2. Contact support immediately</p>
+                  <p class="text-sm text-blue-700">3. Share transaction ID</p>
+                  <p class="text-sm text-blue-700 mt-2">⏰ We'll activate within 24 hours</p>
+                </div>
+              </div>
+            `,
             confirmButtonColor: "#0f7a4a",
+            confirmButtonText: "Contact Support",
+            width: '600px'
           });
         }
       }
