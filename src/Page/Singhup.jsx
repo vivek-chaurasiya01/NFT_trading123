@@ -671,24 +671,33 @@ const Signup = () => {
             planType: formData.selectedPlan,
           });
 
+          // Registration successful - save token
+          console.log("✅ Registration successful!", response.data);
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("user", JSON.stringify(response.data.user));
 
-          // Activate wallet on backend with payment details
-          const activationData = {
-            txHash: paymentResult.txHash,
-            walletAddress: connectedWallet,
-            amount: paymentResult.amount,
-            amountUSD: paymentResult.amountUSD,
-            paymentType: paymentResult.paymentType || paymentMethod,
-            tokenSymbol: paymentResult.tokenSymbol,
-            companyWallet: paymentResult.to,
-            userWallet: paymentResult.from,
-            chainId: paymentResult.chainId,
-          };
+          // Try wallet activation (non-blocking)
+          try {
+            const activationData = {
+              txHash: paymentResult.txHash,
+              walletAddress: connectedWallet,
+              amount: paymentResult.amount,
+              amountUSD: paymentResult.amountUSD,
+              paymentType: paymentResult.paymentType || paymentMethod,
+              tokenSymbol: paymentResult.tokenSymbol,
+              companyWallet: paymentResult.to,
+              userWallet: paymentResult.from,
+              chainId: paymentResult.chainId,
+            };
 
-          const activationResponse = await walletAPI.activate(activationData);
+            await walletAPI.activate(activationData);
+            console.log("✅ Wallet activation successful!");
+          } catch (activationError) {
+            // Log but don't block registration success
+            console.warn("⚠️ Wallet activation failed (non-critical):", activationError);
+          }
 
+          // Show success message and redirect
           Swal.fire({
             icon: "success",
             title: "Registration & Payment Successful! 🎉",
@@ -711,11 +720,17 @@ const Signup = () => {
             `,
             confirmButtonColor: "#0f7a4a",
             confirmButtonText: "Go to Dashboard",
-          }).then(() => {
-            navigate("/dashbord");
+            allowOutsideClick: false,
+          }).then((result) => {
+            if (result.isConfirmed) {
+              navigate("/dashbord");
+            }
           });
+          
+          return; // Exit successfully
+          
         } catch (registrationError) {
-          console.error("Registration error after payment:", registrationError);
+          console.error("❌ Registration error after payment:", registrationError);
           console.error("Error details:", registrationError.response?.data);
 
           // Get detailed error message
@@ -756,8 +771,11 @@ const Signup = () => {
             `,
             confirmButtonColor: "#0f7a4a",
             confirmButtonText: "Contact Support",
-            width: '600px'
+            width: '600px',
+            allowOutsideClick: false,
           });
+          
+          return; // Exit with error
         }
       }
     } catch (error) {
