@@ -526,12 +526,14 @@ const Signup = () => {
         // Payment method choose karo
         await handleAddTradingBalance();
       } else {
-        // Popup kisi tarah band hua — button dikhao
+        // Popup kisi tarah band hua — flag set karo + button dikhao
+        localStorage.setItem('needsTopUp', 'true');
         setShowAddMoneyButton(true);
       }
     } catch (error) {
       console.error("Balance check error:", error);
-      // Error pe bhi button dikhao
+      // Error pe bhi flag set karo + button dikhao
+      localStorage.setItem('needsTopUp', 'true');
       setShowAddMoneyButton(true);
     }
   };
@@ -650,6 +652,8 @@ const Signup = () => {
         throw new Error("Failed to update balance");
       }
 
+      // Success — flag hatao
+      localStorage.removeItem('needsTopUp');
       setShowAddMoneyButton(false);
 
       // Success — Dashboard pe jaao
