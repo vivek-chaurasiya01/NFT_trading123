@@ -51,6 +51,7 @@ const Signup = () => {
     message: "",
   });
   const [mobileError, setMobileError] = useState("");
+  const [showAddMoneyButton, setShowAddMoneyButton] = useState(false);
 
   // Debug wallet on component mount
   useEffect(() => {
@@ -463,6 +464,225 @@ const Signup = () => {
     }, 500);
   };
 
+  // ✅ NAYA FUNCTION — Registration ke baad balance check aur $20 add karo
+  const checkBalanceAndAddMoney = async (registrationPaymentResult) => {
+    try {
+      // Pehle registration success popup dikhao
+      await Swal.fire({
+        icon: "success",
+        title: "Registration Successful! 🎉",
+        html: `
+          <div class="text-center">
+            <p>Account created successfully!</p>
+            <div class="mt-3 p-3 bg-green-50 rounded">
+              <p class="text-sm text-green-800">✅ TX: ${registrationPaymentResult.txHash.slice(0, 10)}...</p>
+            </div>
+            <p class="mt-3 text-sm text-gray-600">Checking your trading balance...</p>
+          </div>
+        `,
+        confirmButtonColor: "#0f7a4a",
+        confirmButtonText: "Continue",
+        allowOutsideClick: false,
+        timer: 2500,
+        timerProgressBar: true,
+      });
+
+      // Balance check karo
+      const balanceRes = await walletAPI.getBalance();
+      const currentBalance = balanceRes.data.balance || 0;
+
+      console.log("💰 Current platform balance:", currentBalance);
+
+      if (currentBalance >= 20) {
+        // Balance theek hai — seedha dashboard
+        navigate("/dashbord");
+        return;
+      }
+
+      // Balance < $20 — Force popup dikhao
+      const popupResult = await Swal.fire({
+        icon: "warning",
+        title: "💰 Add $20 Trading Balance",
+        html: `
+          <div class="text-left space-y-3">
+            <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+              <p class="text-yellow-800 font-semibold">⚠️ Trading Balance Required</p>
+              <p class="text-sm text-yellow-700 mt-1">Your current balance: <strong>$${currentBalance.toFixed(2)}</strong></p>
+              <p class="text-sm text-yellow-700">Required for trading: <strong>$20.00</strong></p>
+            </div>
+            <p class="text-sm text-gray-600">Add $20 to your account to start trading GTN Tokens.</p>
+            <div class="bg-blue-50 p-3 rounded-lg">
+              <p class="text-xs text-blue-700">💡 Pay via BNB or USDT on BSC Network</p>
+            </div>
+          </div>
+        `,
+        confirmButtonColor: "#0f7a4a",
+        confirmButtonText: "💰 Add $20 Now",
+        allowOutsideClick: false,
+        showCancelButton: false,
+      });
+
+      if (popupResult.isConfirmed) {
+        // Payment method choose karo
+        await handleAddTradingBalance();
+      } else {
+        // Popup kisi tarah band hua — button dikhao
+        setShowAddMoneyButton(true);
+      }
+    } catch (error) {
+      console.error("Balance check error:", error);
+      // Error pe bhi button dikhao
+      setShowAddMoneyButton(true);
+    }
+  };
+
+  // ✅ $20 Trading Balance Add karne ka flow
+  const handleAddTradingBalance = async () => {
+    try {
+      setLoading(true);
+
+      // BSC Network switch
+      try {
+        const chainId = await window.ethereum.request({ method: "eth_chainId" });
+        const currentChainId = parseInt(chainId, 16);
+        if (currentChainId !== 56) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: "0x38" }],
+            });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: "wallet_addEthereumChain",
+                params: [{
+                  chainId: "0x38",
+                  chainName: "BSC Mainnet",
+                  rpcUrls: ["https://bsc-dataseed.binance.org/"],
+                  blockExplorerUrls: ["https://bscscan.com"],
+                  nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
+                }],
+              });
+            } else throw switchError;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+      } catch (networkError) {
+        Swal.fire({
+          icon: "error",
+          title: "Network Switch Required",
+          text: "Please switch to BSC Mainnet and try again",
+          confirmButtonColor: "#0f7a4a",
+        });
+        setLoading(false);
+        setShowAddMoneyButton(true);
+        return;
+      }
+
+      // Payment method select karo
+      const { value: paymentMethod } = await Swal.fire({
+        title: "Choose Payment Method",
+        html: `
+          <div class="text-left space-y-3">
+            <p class="font-semibold">Amount: <span class="text-green-600">$20 USD</span></p>
+            <div class="space-y-2">
+              <label class="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
+                <input type="radio" name="addpayment" value="usdt" checked class="mr-3">
+                <div><div class="font-semibold">💚 USDT (Recommended)</div></div>
+              </label>
+              <label class="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
+                <input type="radio" name="addpayment" value="bnb" class="mr-3">
+                <div><div class="font-semibold">🟡 BNB Payment</div></div>
+              </label>
+            </div>
+          </div>
+        `,
+        showCancelButton: false,
+        confirmButtonText: "Continue",
+        confirmButtonColor: "#0f7a4a",
+        allowOutsideClick: false,
+        preConfirm: () => {
+          const selected = document.querySelector('input[name="addpayment"]:checked');
+          return selected ? selected.value : "usdt";
+        },
+      });
+
+      if (!paymentMethod) {
+        setLoading(false);
+        setShowAddMoneyButton(true);
+        return;
+      }
+
+      // Processing popup
+      Swal.fire({
+        title: `Processing ${paymentMethod.toUpperCase()} Payment...`,
+        text: "Please confirm the transaction in your wallet",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      // Blockchain transaction
+      let paymentResult;
+      if (paymentMethod === "usdt") {
+        paymentResult = await realWalletService.sendUSDTPayment(20);
+      } else {
+        paymentResult = await realWalletService.sendPayment(20);
+      }
+
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || "Transaction failed");
+      }
+
+      // Transaction confirm hone ka wait
+      Swal.fire({
+        title: "Transaction Sent!",
+        text: "Waiting for blockchain confirmation...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await realWalletService.validateTransaction(paymentResult.txHash);
+
+      // Backend mein $20 add karo
+      const response = await walletAPI.addBalance(20);
+
+      if (!response.data.success) {
+        throw new Error("Failed to update balance");
+      }
+
+      setShowAddMoneyButton(false);
+
+      // Success — Dashboard pe jaao
+      await Swal.fire({
+        icon: "success",
+        title: "$20 Added Successfully! 🎉",
+        html: `
+          <div class="text-center">
+            <p>Trading balance added!</p>
+            <p class="mt-2 font-bold text-green-600">New Balance: $${response.data.newBalance}</p>
+            <p class="text-xs mt-2 text-gray-500">TX: ${paymentResult.txHash.slice(0, 15)}...</p>
+          </div>
+        `,
+        confirmButtonColor: "#0f7a4a",
+        confirmButtonText: "Go to Dashboard 🚀",
+        allowOutsideClick: false,
+      });
+
+      navigate("/dashbord");
+    } catch (error) {
+      console.error("Add trading balance error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Payment Failed",
+        text: error.message || "Transaction failed. Please try again.",
+        confirmButtonColor: "#0f7a4a",
+      });
+      setShowAddMoneyButton(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePayment = async (paymentMethod = "usdt") => {
     try {
       setLoading(true);
@@ -697,35 +917,8 @@ const Signup = () => {
             console.warn("⚠️ Wallet activation failed (non-critical):", activationError);
           }
 
-          // Show success message and redirect
-          Swal.fire({
-            icon: "success",
-            title: "Registration & Payment Successful! 🎉",
-            html: `
-              <div class="text-center">
-                <p>Payment of $${paymentResult.amountUSD} ${paymentResult.tokenSymbol} completed!</p>
-                <p>Account created successfully!</p>
-                <div class="mt-3 p-3 bg-green-50 rounded">
-                  <p class="text-sm text-green-800">
-                    ✅ Transaction: ${paymentResult.txHash.slice(0, 10)}...
-                  </p>
-                  <p class="text-sm text-green-800">
-                    💰 From: ${paymentResult.from.slice(0, 6)}...${paymentResult.from.slice(-4)}
-                  </p>
-                  <p class="text-sm text-green-800">
-                    🏦 To: ${paymentResult.to.slice(0, 6)}...${paymentResult.to.slice(-4)}
-                  </p>
-                </div>
-              </div>
-            `,
-            confirmButtonColor: "#0f7a4a",
-            confirmButtonText: "Go to Dashboard",
-            allowOutsideClick: false,
-          }).then((result) => {
-            if (result.isConfirmed) {
-              navigate("/dashbord");
-            }
-          });
+          // ✅ Registration success ke baad balance check karo
+          await checkBalanceAndAddMoney(paymentResult);
           
           return; // Exit successfully
           
@@ -1385,6 +1578,18 @@ const Signup = () => {
                   ? "Processing Registration & Payment..."
                   : `Register & Pay $${formData.selectedPlan === "premium" ? "20" : "10"}`}
               </button>
+
+              {/* ✅ Add $20 Button — sirf tab dikhega jab popup band ho jaaye */}
+              {showAddMoneyButton && (
+                <button
+                  type="button"
+                  onClick={handleAddTradingBalance}
+                  disabled={loading}
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-4 rounded-md font-bold mt-3 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  💰 {loading ? "Processing..." : "Add $20 to Continue Trading"}
+                </button>
+              )}
 
               <p className="text-center text-sm my-5">
                 Already registered?{" "}
