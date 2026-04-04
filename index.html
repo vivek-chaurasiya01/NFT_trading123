@@ -2,24 +2,88 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval';
-        style-src 'self' 'unsafe-inline';
-        img-src 'self' data: blob: https:;
-        font-src 'self' data: https:;
-        connect-src 'self' https: wss:;
-        frame-src 'self' https:;
-      "
-    />
-    <title>NFT</title>
+    <title>Website Temporarily Unavailable</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        min-height: 100vh;
+        background: #f0f4f8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Segoe UI', sans-serif;
+      }
+
+      .card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 50px 40px;
+        max-width: 480px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+        border-top: 5px solid #e53e3e;
+      }
+
+      .icon {
+        font-size: 56px;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 16px;
+      }
+
+      .divider {
+        width: 40px;
+        height: 3px;
+        background: #e53e3e;
+        border-radius: 3px;
+        margin: 0 auto 20px;
+      }
+
+      p {
+        color: #718096;
+        font-size: 14.5px;
+        line-height: 1.9;
+        margin-bottom: 30px;
+      }
+
+      .footer {
+        font-size: 13px;
+        color: #a0aec0;
+        border-top: 1px solid #edf2f7;
+        padding-top: 18px;
+      }
+
+      .footer strong {
+        color: #e53e3e;
+        font-weight: 700;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+
+    <div class="card">
+      <div class="icon">⚠️</div>
+      <h1>Website Temporarily Unavailable</h1>
+      <div class="divider"></div>
+      <p>
+        This website is currently suspended due to<br/>
+        <strong style="color:#4a5568;">pending payment obligations.</strong><br/><br/>
+        The services will be restored once the outstanding<br/>
+        dues are cleared by the client.<br/><br/>
+        We apologize for any inconvenience caused to visitors.
+      </p>
+      <div class="footer">
+        <strong>— Technical Team</strong>
+      </div>
+    </div>
+
   </body>
 </html>
