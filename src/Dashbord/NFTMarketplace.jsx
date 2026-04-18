@@ -68,7 +68,7 @@ const NFTMarketplace = () => {
                  status !== 'purchased' &&
                  (status === 'available' || status === 'listed' || !nft.status);
         })
-        .slice(0, 10); // Only show first 10 NFTs
+
       
       setNfts(availableNfts);
       setCurrentBatch(0);
